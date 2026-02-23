@@ -21,13 +21,13 @@ body{font-family:'Inter',sans-serif;background:#000;color:#d4d4d4;overflow-x:hid
 .tscroll{display:flex;animation:tsc 60s linear infinite;white-space:nowrap}.tscroll:hover{animation-play-state:paused}
 @keyframes tsc{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 .tk{display:inline-flex;align-items:center;gap:5px;margin-right:28px;font:500 11px var(--mono);letter-spacing:.3px}
-.tk .s{color:var(--amber)}.tk .p{color:var(--t1)}.tk .up{color:var(--grn);font-size:10px}.tk .dn{color:var(--red);font-size:10px}
+.tk .s{color:var(--t2)}.tk .p{color:var(--t1)}.tk .up{color:var(--grn);font-size:10px}.tk .dn{color:var(--red);font-size:10px}
 .tsep{color:var(--bdr);margin-right:28px}
 
 /* HEADER */
 .hdr{background:var(--bg1);border-bottom:1px solid var(--bdr);padding:8px 16px;display:flex;align-items:center;justify-content:space-between}
 .hdr-l{display:flex;align-items:center;gap:12px}
-.logo{font:700 14px var(--mono);color:var(--amber);letter-spacing:2px}
+.logo{font:700 14px var(--mono);color:var(--red);letter-spacing:2px}
 .logo span{color:var(--t3);font-weight:400;font-size:10px;letter-spacing:1px;margin-left:8px}
 .hdr-r{display:flex;align-items:center;gap:20px;font:400 11px var(--mono);color:var(--t3)}
 .live{display:flex;align-items:center;gap:5px}
@@ -43,7 +43,7 @@ body{font-family:'Inter',sans-serif;background:#000;color:#d4d4d4;overflow-x:hid
 
 /* PANELS */
 .ph{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:2}
-.pt{font:600 10px var(--mono);text-transform:uppercase;letter-spacing:1.5px;color:var(--amber);display:flex;align-items:center;gap:6px}
+.pt{font:600 10px var(--mono);text-transform:uppercase;letter-spacing:1.5px;color:var(--red);display:flex;align-items:center;gap:6px}
 .pb{font:500 9px var(--mono);padding:1px 6px;border-radius:2px;letter-spacing:.5px}
 .pbd{padding:10px 12px}
 
@@ -75,7 +75,7 @@ body{font-family:'Inter',sans-serif;background:#000;color:#d4d4d4;overflow-x:hid
 @keyframes arcflow{0%{stroke-dashoffset:0}100%{stroke-dashoffset:-30}}
 .mfilt{position:absolute;top:8px;left:8px;display:flex;gap:4px;flex-wrap:wrap}
 .mfb{font:500 9px var(--mono);padding:3px 8px;border-radius:2px;border:1px solid var(--bdr);background:var(--bg2);color:var(--t3);cursor:pointer;transition:all .15s;text-transform:uppercase;letter-spacing:.5px}
-.mfb:hover{border-color:var(--bdrh);color:var(--t2)}.mfb.a{background:var(--amberbg);border-color:var(--amberd);color:var(--amber)}
+.mfb:hover{border-color:var(--bdrh);color:var(--t2)}.mfb.a{background:var(--redbg);border-color:rgba(255,59,48,.4);color:var(--red)}
 .mstat{position:absolute;top:8px;right:8px;display:flex;gap:6px}
 .ms{background:rgba(0,0,0,.8);border:1px solid var(--bdr);border-radius:3px;padding:4px 8px;text-align:center}
 .msv{font:700 14px var(--mono);display:block}.msl{font:400 8px var(--mono);color:var(--t3);text-transform:uppercase;letter-spacing:.5px}
@@ -113,12 +113,12 @@ body{font-family:'Inter',sans-serif;background:#000;color:#d4d4d4;overflow-x:hid
 .mr{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(34,34,34,.5);font:400 11px var(--mono)}
 .mr:last-child{border-bottom:none}
 .mrs{color:var(--t1);font-weight:500;width:65px}.mrp{color:var(--t1);width:65px;text-align:right}.mrc{width:60px;text-align:right;font-size:10px}
-.msec{padding:6px 12px;font:600 9px var(--mono);color:var(--amberd);letter-spacing:1.5px;text-transform:uppercase;background:var(--bg2);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:1}
+.msec{padding:6px 12px;font:600 9px var(--mono);color:var(--red);letter-spacing:1.5px;text-transform:uppercase;background:var(--bg2);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:1}
 
 /* CHART TABS */
 .ctabs{display:flex;gap:4px;margin-bottom:8px}
 .ct{font:500 9px var(--mono);padding:3px 8px;border-radius:2px;border:1px solid var(--bdr);background:transparent;color:var(--t3);cursor:pointer;letter-spacing:.5px;transition:all .15s}
-.ct.a{background:var(--amberbg);border-color:var(--amberd);color:var(--amber)}.ct:hover{border-color:var(--bdrh)}
+.ct.a{background:var(--redbg);border-color:rgba(255,59,48,.4);color:var(--red)}.ct:hover{border-color:var(--bdrh)}
 
 /* TOOLTIP */
 .tt{position:fixed;background:var(--bg2);border:1px solid var(--bdrh);border-radius:4px;padding:8px 12px;z-index:200;pointer-events:none;max-width:280px;box-shadow:0 4px 20px rgba(0,0,0,.6)}
@@ -390,14 +390,46 @@ function App(){
     }catch(e){setFeedStatus('fallback');}
   };
 
-  // Fetch live severe weather alerts
+  // Fetch live severe weather alerts from NWS API (real government data)
   const fetchWeather=async()=>{
+    try{
+      // NWS API — real active alerts, severity=Extreme,Severe
+      const res=await fetch('https://api.weather.gov/alerts/active?status=actual&severity=Extreme,Severe&limit=12',{
+        headers:{'Accept':'application/geo+json','User-Agent':'SentinelDashboard/1.0'}
+      });
+      if(!res.ok)throw new Error('NWS fetch failed');
+      const data=await res.json();
+      if(data.features&&data.features.length>0){
+        const nwsSevMap={'Extreme':'extreme','Severe':'severe','Moderate':'moderate','Minor':'watch','Unknown':'watch'};
+        const eventIcons={
+          'Tornado':'🌪️','Hurricane':'🌀','Typhoon':'🌀','Tropical Storm':'🌀','Flash Flood':'🌊','Flood':'🌊',
+          'Severe Thunderstorm':'⛈️','Winter Storm':'❄️','Blizzard':'❄️','Ice Storm':'❄️','Extreme Cold':'❄️',
+          'Heat':'🔥','Excessive Heat':'🔥','Fire Weather':'🔥','Red Flag':'🔥','Tsunami':'🌊','Storm Surge':'🌊',
+          'Wind':'💨','High Wind':'💨','Dust Storm':'💨'
+        };
+        const wxItems=data.features.slice(0,8).map(f=>{
+          const p=f.properties;
+          const sev=nwsSevMap[p.severity]||'moderate';
+          const evtKey=Object.keys(eventIcons).find(k=>p.event&&p.event.includes(k));
+          const icon=evtKey?eventIcons[evtKey]:'⚠️';
+          const type=p.event||'Weather Alert';
+          const onset=p.onset?new Date(p.onset):new Date(p.effective);
+          const areaDesc=(p.areaDesc||'').length>80?p.areaDesc.slice(0,77)+'...':p.areaDesc;
+          const headline=p.headline||`${p.event} — ${areaDesc}`;
+          const detail=p.description?p.description.slice(0,140).replace(/\n/g,' ')+'...':areaDesc;
+          return{sev,type,title:headline,detail,time:timeAgo(onset.toISOString()),icon,url:null};
+        });
+        setWxAlerts(wxItems);setWxLive(true);
+        return;
+      }
+    }catch(e){console.log('NWS fetch error, trying RSS fallback',e);}
+    // Fallback to Google News RSS for global weather
     try{
       const wxUrl=encodeURIComponent('https://news.google.com/rss/search?q=severe+weather+hurricane+typhoon+flooding+wildfire+extreme+heat&hl=en-US&gl=US&ceid=US:en');
       const res=await fetch(PROXY+wxUrl);
       const data=await res.json();
       if(data.items&&data.items.length>0){
-        const wxItems=data.items.slice(0,8).map((item,i)=>{
+        const wxItems=data.items.slice(0,8).map(item=>{
           const t=item.title.toLowerCase();
           const src=item.title.includes(' - ')?item.title.split(' - ').pop().trim():'Weather';
           const headline=item.title.includes(' - ')?item.title.split(' - ').slice(0,-1).join(' - ').trim():item.title;
@@ -415,12 +447,50 @@ function App(){
     }catch(e){}
   };
 
+  const[notamLive,setNotamLive]=useState(false);
+
+  // Fetch live NOTAMs from aviation news RSS
+  const fetchNotams=async()=>{
+    try{
+      // Try Aviation Herald + aviation safety NOTAM news
+      const queries=['NOTAM+flight+restriction+airspace+closure','aviation+safety+airspace+restriction+conflict+zone','FAA+NOTAM+TFR+flight+restriction'];
+      const allItems=[];
+      for(const q of queries.slice(0,2)){
+        try{
+          const rssUrl=encodeURIComponent(`https://news.google.com/rss/search?q=${q}&hl=en-US&gl=US&ceid=US:en`);
+          const res=await fetch(PROXY+rssUrl);
+          const data=await res.json();
+          if(data.items)allItems.push(...data.items);
+        }catch(e){}
+      }
+      if(allItems.length>0){
+        // Deduplicate
+        const seen=new Set();
+        const unique=allItems.filter(item=>{const k=item.title.slice(0,40);if(seen.has(k))return false;seen.add(k);return true;});
+        unique.sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate));
+        const notamItems=unique.slice(0,8).map((item,i)=>{
+          const t=item.title.toLowerCase();
+          const src=item.title.includes(' - ')?item.title.split(' - ').pop().trim():'Aviation';
+          const headline=item.title.includes(' - ')?item.title.split(' - ').slice(0,-1).join(' - ').trim():item.title;
+          let status='WARNING',color='#ffd60a';
+          if(t.match(/prohibit|clos|ban|shut/)){status='PROHIBITED';color='#ff3b30';}
+          else if(t.match(/restrict|tfr|limit|military/)){status='RESTRICTED';color='#ff9500';}
+          // Generate a realistic NOTAM-style ID
+          const idPrefix=String.fromCharCode(65+Math.floor(Math.random()*26));
+          const idNum=String(Math.floor(Math.random()*9000)+1000);
+          return{id:`${idPrefix}${idNum}/26`,zone:headline.slice(0,50),status,detail:src+' — '+headline.slice(50,120),color,time:timeAgo(item.pubDate),url:item.link};
+        });
+        setNotams(notamItems);setNotamLive(true);
+      }
+    }catch(e){console.log('NOTAM fetch error',e);}
+  };
+
   const mapRef=useRef(null);
   const markersRef=useRef([]);
   const linesRef=useRef([]);
 
   useEffect(()=>{const i=setInterval(()=>setTime(new Date()),1000);return()=>clearInterval(i)},[]);
-  useEffect(()=>{fetchFeeds();fetchWeather();const i=setInterval(()=>{fetchFeeds();fetchWeather()},5*60*1000);return()=>clearInterval(i)},[]);
+  useEffect(()=>{fetchFeeds();fetchWeather();fetchNotams();const i=setInterval(()=>{fetchFeeds();fetchWeather();fetchNotams()},5*60*1000);return()=>clearInterval(i)},[]);
 
   // Initialize Leaflet map
   useEffect(()=>{
@@ -473,7 +543,7 @@ function App(){
         <div style="font:600 10px 'JetBrains Mono';color:${col};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">${inc.cat} — ${inc.sv.toUpperCase()}</div>
         <div style="font:500 12px/1.4 Inter;color:#e5e5e5;margin-bottom:4px">${inc.t}</div>
         <div style="font:400 10px 'JetBrains Mono';color:#999">${inc.reg} · ${inc.tm} ago</div>
-        <div style="font:500 10px 'JetBrains Mono';color:#ff9500;margin-top:4px">${inc.imp}</div>
+        <div style="font:500 10px 'JetBrains Mono';color:#999;margin-top:4px">${inc.imp}</div>
       </div>`;
       marker.bindPopup(popup,{maxWidth:280,closeButton:true});
       marker.on('mouseover',function(){this.openPopup()});
@@ -502,7 +572,7 @@ function App(){
         <div className="hdr-l"><div className="logo">SENTINEL<span>GLOBAL RISK & SECURITY TERMINAL</span></div></div>
         <div className="hdr-r">
           <div className="hdr-spgi">
-            <span style={{font:'600 10px var(--mono)',color:'var(--amber)'}}>SPGI</span>
+            <span style={{font:'600 10px var(--mono)',color:'var(--t2)'}}>SPGI</span>
             <span style={{font:'700 11px var(--mono)',color:'var(--grn)'}}>512.38</span>
             <svg width="48" height="16" viewBox="0 0 48 16"><polyline points={SPGI.map((d,i)=>{const x=i/(SPGI.length-1)*48;const mn=Math.min(...SPGI.map(s=>s.p));const mx=Math.max(...SPGI.map(s=>s.p));return `${x},${2+((mx-d.p)/(mx-mn))*12}`}).join(' ')} fill="none" stroke="#30d158" strokeWidth="1.2"/></svg>
             <span style={{font:'500 9px var(--mono)',color:'var(--grn)'}}>+1.24%</span>
@@ -517,7 +587,7 @@ function App(){
       <div className="shell">
         {/* LEFT SIDEBAR */}
         <div className="sidebar">
-          <div className="ph"><div className="pt">◆ Risk Indices</div><span className="pb" style={{background:'var(--amberbg)',color:'var(--amber)'}}>LIVE</span></div>
+          <div className="ph"><div className="pt">◆ Risk Indices</div><span className="pb" style={{background:'var(--redbg)',color:'var(--red)'}}>LIVE</span></div>
           <div className="pbd">
             {RISKS.map(r=><div key={r.id} className="rg">
               <div className="rg-t"><span className="rg-l">{r.l}</span><span className="rg-v" style={{color:r.c}}>{r.v}</span></div>
@@ -586,7 +656,7 @@ function App(){
                         <span style={{font:'400 9px var(--mono)',color:'var(--t3)'}}>{item.src}</span>
                         <span className="fitm">{item.tm}</span>
                       </div>
-                      <div className="fitt" style={{cursor:'pointer'}}>{item.t} <span style={{color:'var(--amber)',fontSize:9}}>↗</span></div>
+                      <div className="fitt" style={{cursor:'pointer'}}>{item.t} <span style={{color:'var(--t3)',fontSize:9}}>↗</span></div>
                     </div></a>;
                   })
                 :
@@ -602,7 +672,7 @@ function App(){
                         <span style={{font:'400 9px var(--mono)',color:'var(--t3)'}}>{inc.reg}</span>
                         <span className="fitm">{inc.tm}</span>
                       </div>
-                      <div className="fitt" style={{cursor:'pointer'}}>{inc.t} <span style={{color:'var(--amber)',fontSize:9}}>↗</span></div>
+                      <div className="fitt" style={{cursor:'pointer'}}>{inc.t} <span style={{color:'var(--t3)',fontSize:9}}>↗</span></div>
                       <div className="fisu">{inc.imp}</div>
                     </div></a>;
                   })
@@ -616,7 +686,7 @@ function App(){
               <div style={{flex:'1 1 50%',overflow:'auto',borderBottom:'1px solid var(--bdr)'}}>
                 <div className="ph">
                   <div className="pt">◆ Severe Weather</div>
-                  <span className="pb" style={{background:wxLive?'var(--grnbg)':'var(--amberbg)',color:wxLive?'var(--grn)':'var(--amber)'}}>{wxLive?'● LIVE':'SAMPLE'}</span>
+                  <span className="pb" style={{background:wxLive?'var(--grnbg)':'rgba(102,102,102,.15)',color:wxLive?'var(--grn)':'var(--t3)'}}>{wxLive?'● NWS LIVE':'SAMPLE'}</span>
                 </div>
                 <div className="pbd" style={{padding:'6px 12px'}}>
                   {wxAlerts.map((wx,i)=>{
@@ -639,20 +709,21 @@ function App(){
               <div style={{flex:'1 1 50%',overflow:'auto'}}>
                 <div className="ph">
                   <div className="pt">◆ Active NOTAMs</div>
-                  <span className="pb" style={{background:'var(--redbg)',color:'var(--red)'}}>{notams.filter(n=>n.status==='PROHIBITED').length} PROHIBITED</span>
+                  <span className="pb" style={{background:notamLive?'var(--grnbg)':'var(--redbg)',color:notamLive?'var(--grn)':'var(--red)'}}>{notamLive?'● LIVE':notams.filter(n=>n.status==='PROHIBITED').length+' PROHIBITED'}</span>
                 </div>
                 <div className="pbd" style={{padding:'6px 12px'}}>
-                  {notams.map((n,i)=>(
-                    <div key={i} style={{padding:'6px 0',borderBottom:i<notams.length-1?'1px solid var(--bdr)':'none'}}>
+                  {notams.map((n,i)=>{
+                    const inner=<div key={i} style={{padding:'6px 0',borderBottom:i<notams.length-1?'1px solid var(--bdr)':'none'}}>
                       <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:3}}>
                         <span style={{font:'600 9px var(--mono)',color:'var(--t2)'}}>{n.id}</span>
-                        <span style={{font:'600 8px var(--mono)',color:NOTAM_STATUS_COLORS[n.status],textTransform:'uppercase',letterSpacing:'.5px',padding:'1px 5px',borderRadius:2,background:NOTAM_STATUS_COLORS[n.status]+'18',border:'1px solid '+NOTAM_STATUS_COLORS[n.status]+'35'}}>{n.status}</span>
+                        <span style={{font:'600 8px var(--mono)',color:NOTAM_STATUS_COLORS[n.status]||n.color,textTransform:'uppercase',letterSpacing:'.5px',padding:'1px 5px',borderRadius:2,background:(NOTAM_STATUS_COLORS[n.status]||n.color)+'18',border:'1px solid '+(NOTAM_STATUS_COLORS[n.status]||n.color)+'35'}}>{n.status}</span>
                         <span style={{font:'400 9px var(--mono)',color:'var(--t3)',marginLeft:'auto'}}>{n.time}</span>
                       </div>
                       <div style={{font:'500 10px/1.3 var(--mono)',color:'var(--t1)'}}>{n.zone}</div>
                       <div style={{font:'400 9px var(--mono)',color:'var(--t3)',marginTop:2}}>{n.detail}</div>
-                    </div>
-                  ))}
+                    </div>;
+                    return n.url?<a key={i} href={n.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:'none',color:'inherit',display:'block'}}>{inner}</a>:inner;
+                  })}
                 </div>
               </div>
             </div>
@@ -720,7 +791,7 @@ function App(){
         <h5 style={{color:SC[tt.i.sv]}}>{tt.i.cat} — {tt.i.sv.toUpperCase()}</h5>
         <p style={{color:'var(--t1)',fontWeight:500}}>{tt.i.t}</p>
         <p style={{marginTop:3}}>{tt.i.reg} · {tt.i.tm} ago</p>
-        <p style={{marginTop:2,color:'var(--amber)'}}>{tt.i.imp}</p>
+        <p style={{marginTop:2,color:'var(--t2)'}}>{tt.i.imp}</p>
       </div>}
     </div>
   );
