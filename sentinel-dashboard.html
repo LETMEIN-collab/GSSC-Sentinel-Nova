@@ -99,6 +99,15 @@ body{font-family:'Inter',sans-serif;background:#000;color:#d4d4d4;overflow-x:hid
 /* HEADER SPARKLINE */
 .hdr-spgi{display:flex;align-items:center;gap:8px;padding:2px 10px;background:var(--bg2);border:1px solid var(--bdr);border-radius:3px}
 
+/* INTEL SEARCH */
+.isrch{display:flex;align-items:center;gap:6px;padding:4px 12px;background:var(--bg2);border-bottom:1px solid var(--bdr)}
+.isrch input{flex:1;background:var(--card);border:1px solid var(--bdr);border-radius:3px;padding:4px 8px;font:400 10px var(--mono);color:var(--t1);outline:none}
+.isrch input::placeholder{color:var(--t3)}
+.isrch input:focus{border-color:var(--red)}
+.isrch button{background:var(--red);color:#fff;border:none;border-radius:3px;padding:4px 10px;font:600 9px var(--mono);cursor:pointer;letter-spacing:.5px}
+.isrch button:hover{opacity:.85}
+.isrch .clear{background:transparent;color:var(--t3);border:1px solid var(--bdr);padding:4px 8px}
+
 /* INTEL FEED */
 .fi{padding:8px 0;border-bottom:1px solid var(--bdr)}.fi:last-child{border-bottom:none}
 .fi:hover{background:var(--bg2);margin:0 -12px;padding:8px 12px}
@@ -517,6 +526,9 @@ function App(){
   };
 
   const[notamLive,setNotamLive]=useState(false);
+  const[searchQuery,setSearchQuery]=useState('');
+  const[searchResults,setSearchResults]=useState([]);
+  const[searching,setSearching]=useState(false);
 
   // Fetch live NOTAMs — FAA TFR RSS (real-time), Aviation Herald, and ICAO news
   const fetchNotams=async()=>{
@@ -582,6 +594,35 @@ function App(){
       setNotams(unique.slice(0,8));setNotamLive(true);
     }
   };
+
+  // Intel search — queries Google News RSS for any topic
+  const searchIntel=async(query)=>{
+    if(!query.trim())return;
+    setSearching(true);setSearchResults([]);
+    try{
+      const rssUrl=encodeURIComponent(`https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`);
+      const res=await fetch(PROXY+rssUrl);
+      const data=await res.json();
+      if(data.items&&data.items.length>0){
+        const results=data.items.slice(0,15).map(item=>{
+          const src=item.title.includes(' - ')?item.title.split(' - ').pop().trim():'News';
+          const headline=item.title.includes(' - ')?item.title.split(' - ').slice(0,-1).join(' - ').trim():item.title;
+          const t=headline.toLowerCase();
+          let cat='INTEL',sv='medium';
+          if(t.match(/kill|war|attack|strike|milit|troops|bomb|clash|weapon|nuclear/)){cat='CONFLICT';sv='critical';}
+          else if(t.match(/flood|storm|quake|hurricane|fire|drought|climate|blizzard/)){cat='CLIMATE';sv='severe';}
+          else if(t.match(/hack|cyber|ransom|breach|malware/)){cat='CYBER';sv='high';}
+          else if(t.match(/trade|tariff|sanction|gdp|recession|market|stock|econom/)){cat='ECONOMIC';sv='medium';}
+          else if(t.match(/oil|gas|energy|opec|pipeline|nuclear power/)){cat='ENERGY';sv='medium';}
+          else if(t.match(/virus|pandemic|outbreak|disease|epidemic|covid|bird flu/)){cat='HEALTH';sv='high';}
+          return{t:headline,src,cat,sv,tm:timeAgo(item.pubDate),url:item.link};
+        });
+        setSearchResults(results);
+      }
+    }catch(e){console.log('Search error',e);}
+    setSearching(false);
+  };
+  const clearSearch=()=>{setSearchQuery('');setSearchResults([]);};
 
   const mapRef=useRef(null);
   const markersRef=useRef([]);
@@ -767,15 +808,48 @@ function App(){
           {/* BOTTOM: Intel + Trends */}
           <div style={{flex:'1 1 45%',display:'grid',gridTemplateColumns:'1fr 1fr',overflow:'hidden'}}>
             {/* Intel Feed — live or fallback */}
-            <div style={{overflow:'auto',borderRight:'1px solid var(--bdr)'}}>
+            <div style={{overflow:'auto',borderRight:'1px solid var(--bdr)',display:'flex',flexDirection:'column'}}>
               <div className="ph">
                 <div className="pt">◆ Intelligence Feed</div>
                 <span className="pb" style={{background:feedStatus==='live'?'var(--grnbg)':'var(--redbg)',color:feedStatus==='live'?'var(--grn)':'var(--red)'}}>
                   {feedStatus==='live'?'● LIVE RSS':feedStatus==='loading'?'LOADING...':feedItems.length+' ACTIVE'}
                 </span>
               </div>
-              <div className="pbd">
-                {feedStatus==='live'?
+              <div className="isrch">
+                <span style={{font:'400 9px var(--mono)',color:'var(--t3)'}}>🔍</span>
+                <input
+                  type="text"
+                  placeholder="Search intel — e.g. Mexico cartel, Iran nuclear, bird flu..."
+                  value={searchQuery}
+                  onChange={e=>setSearchQuery(e.target.value)}
+                  onKeyDown={e=>{if(e.key==='Enter')searchIntel(searchQuery);}}
+                />
+                <button onClick={()=>searchIntel(searchQuery)}>{searching?'...':'SEARCH'}</button>
+                {searchResults.length>0&&<button className="clear" onClick={clearSearch}>✕ CLEAR</button>}
+              </div>
+              <div className="pbd" style={{flex:1,overflow:'auto'}}>
+                {searchResults.length>0?
+                  /* SEARCH RESULTS */
+                  <>
+                    <div style={{padding:'6px 0',borderBottom:'1px solid var(--bdr)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                      <span style={{font:'600 9px var(--mono)',color:'var(--red)',letterSpacing:'.5px'}}>◆ SEARCH: "{searchQuery}" — {searchResults.length} RESULTS</span>
+                    </div>
+                    {searchResults.map((item,idx)=>(
+                      <a key={idx} href={item.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:'none',color:'inherit',display:'block'}}>
+                      <div className="fi">
+                        <div className="fit">
+                          <div className="fis" style={{background:SC[item.sv]||'#999'}}/>
+                          <span className="fitg" style={{background:(CC[item.cat]||'#999')+'20',color:CC[item.cat]||'#999',border:'1px solid '+(CC[item.cat]||'#999')+'40'}}>{item.cat}</span>
+                          <span style={{font:'400 9px var(--mono)',color:'var(--t3)'}}>{item.src}</span>
+                          <span className="fitm">{item.tm}</span>
+                        </div>
+                        <div className="fitt" style={{cursor:'pointer'}}>{item.t} <span style={{color:'var(--t3)',fontSize:9}}>↗</span></div>
+                      </div></a>
+                    ))}
+                  </>
+                :searching?
+                  <div style={{padding:'20px 0',textAlign:'center',font:'400 10px var(--mono)',color:'var(--t3)'}}>Searching web for intel...</div>
+                :feedStatus==='live'?
                   /* LIVE RSS ITEMS */
                   liveNews.map((item,idx)=>{
                     return <a key={idx} href={item.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:'none',color:'inherit',display:'block'}}>
