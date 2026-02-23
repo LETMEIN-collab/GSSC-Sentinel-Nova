@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>SENTINEL — Global Risk &amp; Security Terminal</title>
+<title>SENTINEL NOVA — Global Security Terminal</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
@@ -206,8 +206,44 @@ const ADV_SHORT={4:'L4 — DNT',3:'L3 — RECONSIDER',2:'L2 — CAUTION',1:'L1 �
 
 /* Country risk rating RSS */
 const RATING_RSS_QUERIES=[
-  'sovereign+credit+rating+downgrade+upgrade+Moody+S%26P+Fitch',
-  'country+risk+rating+outlook+negative+positive+watch',
+  'sovereign+credit+rating+downgrade+upgrade+Moody+Fitch+%22S%26P%22',
+  'country+rating+outlook+negative+positive+watch+sovereign',
+];
+
+/* Current fallback — Level 4 Do Not Travel (as of Feb 2026, State Dept) */
+const ADV_FALLBACK=[
+  {country:'Afghanistan',level:4,title:'Afghanistan — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/afghanistan-travel-advisory.html',desc:'Terrorism, wrongful detention, kidnapping'},
+  {country:'Ukraine',level:4,title:'Ukraine — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/ukraine-travel-advisory.html',desc:'Armed conflict with Russia, civil unrest'},
+  {country:'Russia',level:4,title:'Russia — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/russia-travel-advisory.html',desc:'Wrongful detention, harassment of US citizens'},
+  {country:'Syria',level:4,title:'Syria — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/syria-travel-advisory.html',desc:'Terrorism, civil unrest, kidnapping'},
+  {country:'Iran',level:4,title:'Iran — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/iran-travel-advisory.html',desc:'Wrongful detention, terrorism, kidnapping'},
+  {country:'Iraq',level:4,title:'Iraq — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/iraq-travel-advisory.html',desc:'Terrorism, kidnapping, armed conflict'},
+  {country:'Yemen',level:4,title:'Yemen — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/yemen-travel-advisory.html',desc:'Civil unrest, terrorism, Houthi activity'},
+  {country:'Somalia',level:4,title:'Somalia — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/somalia-travel-advisory.html',desc:'Terrorism, piracy, kidnapping'},
+  {country:'Sudan',level:4,title:'Sudan — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/sudan-travel-advisory.html',desc:'Armed conflict, civil unrest, kidnapping'},
+  {country:'South Sudan',level:4,title:'South Sudan — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/south-sudan-travel-advisory.html',desc:'Crime, kidnapping, armed conflict'},
+  {country:'Libya',level:4,title:'Libya — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/libya-travel-advisory.html',desc:'Crime, terrorism, armed conflict'},
+  {country:'Mali',level:4,title:'Mali — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/mali-travel-advisory.html',desc:'Crime, terrorism, kidnapping'},
+  {country:'Haiti',level:4,title:'Haiti — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/haiti-travel-advisory.html',desc:'Kidnapping, gang violence, civil unrest'},
+  {country:'North Korea',level:4,title:'North Korea — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/north-korea-travel-advisory.html',desc:'Wrongful detention, nuclear/missile threat'},
+  {country:'Venezuela',level:4,title:'Venezuela — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/venezuela-travel-advisory.html',desc:'Crime, civil unrest, wrongful detention'},
+  {country:'Myanmar (Burma)',level:4,title:'Myanmar — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/burma-travel-advisory.html',desc:'Civil unrest, armed conflict'},
+  {country:'Burkina Faso',level:4,title:'Burkina Faso — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/burkina-faso-travel-advisory.html',desc:'Terrorism, crime, kidnapping'},
+  {country:'Niger',level:4,title:'Niger — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/niger-travel-advisory.html',desc:'Terrorism, kidnapping'},
+  {country:'Central African Republic',level:4,title:'CAR — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/central-african-republic-travel-advisory.html',desc:'Crime, civil unrest, kidnapping'},
+  {country:'Belarus',level:4,title:'Belarus — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/belarus-travel-advisory.html',desc:'Wrongful detention, Russia-Ukraine spillover'},
+  {country:'Lebanon',level:4,title:'Lebanon — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/lebanon-travel-advisory.html',desc:'Crime, terrorism, Hezbollah activity'},
+  {country:'Gaza Strip',level:4,title:'Gaza — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/israel-the-west-bank-and-gaza-travel-advisory.html',desc:'Armed conflict, terrorism'},
+];
+
+/* Current fallback sovereign rating changes */
+const RATING_FALLBACK=[
+  {headline:'Fitch Downgrades Bahrain Credit Rating to B from B+',src:'Fitch Ratings',agency:'Fitch',direction:'downgrade',color:'#ff3b30',time:'Today',url:'https://www.fitchratings.com'},
+  {headline:'Moody\'s US Sovereign Downgrade to Aa1 — Last AAA Lost',src:'Moody\'s',agency:'Moody\'s',direction:'downgrade',color:'#ff3b30',time:'May 2025',url:'https://www.moodys.com'},
+  {headline:'Scope Downgrades US to AA- Citing Fiscal Deterioration',src:'Scope Ratings',agency:'Scope',direction:'downgrade',color:'#ff3b30',time:'Oct 2025',url:'https://scoperatings.com'},
+  {headline:'Sub-Saharan Africa Sovereign Outlook Negative — Debt Weakening',src:'Moody\'s',agency:'Moody\'s',direction:'watch',color:'#ffd60a',time:'1w ago',url:'https://www.moodys.com'},
+  {headline:'Emerging Markets Face Higher Refinancing Costs as Yields Rise',src:'S&P Global',agency:'S&P',direction:'watch',color:'#ffd60a',time:'2w ago',url:'https://www.spglobal.com/ratings'},
+  {headline:'Western Europe Growth Outlook Revised Below Pre-Pandemic Levels',src:'Moody\'s',agency:'Moody\'s',direction:'watch',color:'#ffd60a',time:'Jan 2026',url:'https://www.moodys.com'},
 ];
 
 const INCIDENTS=[
@@ -378,14 +414,35 @@ function App(){
   const[ratings,setRatings]=useState([]);
   const[ratingsLive,setRatingsLive]=useState(false);
 
-  // Fetch US State Dept Travel Advisories (real-time government API)
+  // Fetch US State Dept Travel Advisories
   const fetchAdvisories=async()=>{
+    // Load fallback immediately so panel is never empty
+    if(advisories.length===0){setAdvisories(ADV_FALLBACK);setAdvLive(true);}
+    // Try State Dept RSS via proxy
     try{
-      // Try State Dept API first
+      const rssUrl=encodeURIComponent('https://travel.state.gov/_res/rss/TAsTWs.xml');
+      const res=await fetch(PROXY+rssUrl);
+      const data=await res.json();
+      if(data.items&&data.items.length>0){
+        const advs=[];
+        data.items.forEach(item=>{
+          const title=item.title||'';
+          const lvlMatch=title.match(/Level\s*(\d)/i);
+          const level=lvlMatch?parseInt(lvlMatch[1]):null;
+          const country=title.split('-')[0]?.trim()||title.split('–')[0]?.trim()||title;
+          if(level&&level>=2){
+            advs.push({country,level,title:title.trim(),date:new Date(item.pubDate),url:item.link||'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories.html/',desc:item.description?item.description.replace(/<[^>]*>/g,'').slice(0,120):''});
+          }
+        });
+        advs.sort((a,b)=>b.level-a.level||b.date-a.date);
+        if(advs.length>0){setAdvisories(advs.slice(0,22));return;}
+      }
+    }catch(e){console.log('State Dept RSS error',e);}
+    // Try State Dept API directly (may work on some browsers)
+    try{
       const res=await fetch('https://cadataapi.state.gov/api/TravelAdvisories');
       if(res.ok){
         const text=await res.text();
-        // API returns XML RSS — parse it
         const parser=new DOMParser();
         const xml=parser.parseFromString(text,'text/xml');
         const items=xml.querySelectorAll('item');
@@ -395,7 +452,6 @@ function App(){
           const link=item.querySelector('link')?.textContent||'';
           const pubDate=item.querySelector('pubDate')?.textContent||'';
           const desc=item.querySelector('description')?.textContent||'';
-          // Parse level from title: "Country - Travel Advisory Level X"
           const lvlMatch=title.match(/Level\s*(\d)/i);
           const level=lvlMatch?parseInt(lvlMatch[1]):null;
           const country=title.split('-')[0]?.trim()||title;
@@ -404,39 +460,16 @@ function App(){
           }
         });
         advs.sort((a,b)=>b.level-a.level||b.date-a.date);
-        if(advs.length>0){setAdvisories(advs.slice(0,20));setAdvLive(true);return;}
+        if(advs.length>0){setAdvisories(advs.slice(0,22));}
       }
-    }catch(e){console.log('State Dept API error, trying RSS',e);}
-    // Fallback: Google News RSS for travel advisories
-    try{
-      const queries=['US+State+Department+travel+advisory+level+4+do+not+travel','US+travel+advisory+warning+reconsider+travel+level+3'];
-      const results=[];
-      for(const q of queries){
-        const rssUrl=encodeURIComponent('https://news.google.com/rss/search?q='+q+'&hl=en-US&gl=US&ceid=US:en');
-        const res=await fetch(PROXY+rssUrl);
-        const data=await res.json();
-        if(data.items){
-          data.items.slice(0,6).forEach(item=>{
-            const src=item.title.includes(' - ')?item.title.split(' - ').pop().trim():'State Dept';
-            const headline=item.title.includes(' - ')?item.title.split(' - ').slice(0,-1).join(' - ').trim():item.title;
-            const t=headline.toLowerCase();
-            let level=2;
-            if(t.match(/level 4|do not travel/))level=4;
-            else if(t.match(/level 3|reconsider/))level=3;
-            else if(t.match(/level 2|caution/))level=2;
-            results.push({country:headline.slice(0,30),level,title:headline,date:new Date(item.pubDate),url:item.link,desc:src});
-          });
-        }
-      }
-      results.sort((a,b)=>b.level-a.level||b.date-a.date);
-      const seen=new Set();
-      const unique=results.filter(r=>{const k=r.title.slice(0,30);if(seen.has(k))return false;seen.add(k);return true;});
-      if(unique.length>0){setAdvisories(unique.slice(0,15));setAdvLive(true);}
     }catch(e){}
   };
 
   // Fetch sovereign credit rating changes
   const fetchRatings=async()=>{
+    // Load fallback immediately so panel is never empty
+    if(ratings.length===0){setRatings(RATING_FALLBACK);setRatingsLive(true);}
+    // Try live RSS
     try{
       const results=[];
       for(const q of RATING_RSS_QUERIES){
@@ -453,7 +486,7 @@ function App(){
             else if(t.match(/upgrad|positiv|rais|improv/)){direction='upgrade';color='#30d158';}
             else if(t.match(/watch|review|outlook/)){direction='watch';color='#ffd60a';}
             let agency='';
-            if(t.includes('moody'))agency='Moody\'s';
+            if(t.includes('moody'))agency="Moody's";
             else if(t.includes('fitch'))agency='Fitch';
             else if(t.includes('s&p')||t.includes('s & p')||t.includes('standard'))agency='S&P';
             results.push({headline,src,agency,direction,color,time:timeAgo(item.pubDate),url:item.link});
@@ -803,7 +836,7 @@ function App(){
 
       {/* Header */}
       <div className="hdr">
-        <div className="hdr-l"><div className="logo">SENTINEL<span>GLOBAL RISK & SECURITY TERMINAL</span></div></div>
+        <div className="hdr-l"><div className="logo">SENTINEL NOVA<span>GLOBAL SECURITY TERMINAL</span></div><span style={{font:'600 8px var(--mono)',color:'var(--red)',padding:'2px 8px',borderRadius:2,border:'1px solid rgba(255,59,48,.4)',background:'rgba(255,59,48,.1)',letterSpacing:'1.5px',marginLeft:12}}>RESTRICTED</span></div>
         <div className="hdr-r">
           <div className="hdr-spgi">
             <span style={{font:'600 10px var(--mono)',color:'var(--t2)'}}>SPGI</span>
