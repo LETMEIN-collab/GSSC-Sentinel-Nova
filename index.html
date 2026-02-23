@@ -199,15 +199,15 @@ const TICKERS=[
   {s:'NG1',p:'3.42',c:'+4.12%',u:true},{s:'HG1',p:'4.28',c:'-0.56%',u:false},{s:'W1',p:'582.50',c:'+1.87%',u:true},
 ];
 
-const RISKS=[
-  {id:'geo',l:'Geopolitical Risk',v:78,c:'var(--red)',d:'+4.2',dir:'up',st:'ELEVATED'},
-  {id:'clim',l:'Climate Security',v:72,c:'var(--amber)',d:'+6.8',dir:'up',st:'HIGH'},
-  {id:'cyb',l:'Cyber Threat',v:65,c:'var(--pur)',d:'+2.1',dir:'up',st:'HIGH'},
-  {id:'econ',l:'Economic Stability',v:41,c:'var(--blu)',d:'-3.5',dir:'dn',st:'MODERATE'},
-  {id:'con',l:'Armed Conflict',v:83,c:'var(--red)',d:'+7.9',dir:'up',st:'CRITICAL'},
-  {id:'sup',l:'Supply Chain',v:58,c:'var(--cyan)',d:'+1.2',dir:'up',st:'ELEVATED'},
-  {id:'ene',l:'Energy Security',v:67,c:'var(--yel)',d:'+5.4',dir:'up',st:'HIGH'},
-  {id:'pan',l:'Health/Pandemic',v:29,c:'var(--grn)',d:'-8.1',dir:'dn',st:'LOW'},
+/* Advisory level colors & labels */
+const ADV_COLORS={4:'#ff3b30',3:'#ff9500',2:'#ffd60a',1:'#30d158'};
+const ADV_LABELS={4:'DO NOT TRAVEL',3:'RECONSIDER TRAVEL',2:'EXERCISE INCREASED CAUTION',1:'EXERCISE NORMAL PRECAUTIONS'};
+const ADV_SHORT={4:'L4 — DNT',3:'L3 — RECONSIDER',2:'L2 — CAUTION',1:'L1 — NORMAL'};
+
+/* Country risk rating RSS */
+const RATING_RSS_QUERIES=[
+  'sovereign+credit+rating+downgrade+upgrade+Moody+S%26P+Fitch',
+  'country+risk+rating+outlook+negative+positive+watch',
 ];
 
 const INCIDENTS=[
@@ -282,11 +282,7 @@ const TREND={
 
 const SPGI=[{t:'09:30',p:508.2},{t:'10:00',p:509.5},{t:'10:30',p:510.1},{t:'11:00',p:509.8},{t:'11:30',p:511.2},{t:'12:00',p:510.6},{t:'12:30',p:511.8},{t:'13:00',p:512.5},{t:'13:30',p:511.9},{t:'14:00',p:512.8},{t:'14:30',p:513.1},{t:'15:00',p:512.4},{t:'15:30',p:512.0},{t:'16:00',p:512.38}];
 
-const REGS=[
-  {r:'Middle East',v:89,n:24,d:'+12%'},{r:'Eastern Europe',v:84,n:18,d:'+8%'},{r:'East Asia',v:76,n:15,d:'+5%'},
-  {r:'Sub-Saharan Africa',v:74,n:22,d:'+11%'},{r:'South Asia',v:68,n:14,d:'+4%'},{r:'Latin America',v:52,n:9,d:'+2%'},
-  {r:'Western Europe',v:38,n:6,d:'+7%'},{r:'North America',v:32,n:4,d:'+1%'},
-];
+/* (Regional risk now computed from live advisories) */
 
 /* ═══ RSS FEED CONFIG ═══ */
 const RSS_FEEDS=[
@@ -377,6 +373,98 @@ function App(){
   const[wxLive,setWxLive]=useState(false);
   const[spgiNews,setSpgiNews]=useState([]);
   const[spgiNewsLive,setSpgiNewsLive]=useState(false);
+  const[advisories,setAdvisories]=useState([]);
+  const[advLive,setAdvLive]=useState(false);
+  const[ratings,setRatings]=useState([]);
+  const[ratingsLive,setRatingsLive]=useState(false);
+
+  // Fetch US State Dept Travel Advisories (real-time government API)
+  const fetchAdvisories=async()=>{
+    try{
+      // Try State Dept API first
+      const res=await fetch('https://cadataapi.state.gov/api/TravelAdvisories');
+      if(res.ok){
+        const text=await res.text();
+        // API returns XML RSS — parse it
+        const parser=new DOMParser();
+        const xml=parser.parseFromString(text,'text/xml');
+        const items=xml.querySelectorAll('item');
+        const advs=[];
+        items.forEach(item=>{
+          const title=item.querySelector('title')?.textContent||'';
+          const link=item.querySelector('link')?.textContent||'';
+          const pubDate=item.querySelector('pubDate')?.textContent||'';
+          const desc=item.querySelector('description')?.textContent||'';
+          // Parse level from title: "Country - Travel Advisory Level X"
+          const lvlMatch=title.match(/Level\s*(\d)/i);
+          const level=lvlMatch?parseInt(lvlMatch[1]):null;
+          const country=title.split('-')[0]?.trim()||title;
+          if(level&&level>=2){
+            advs.push({country,level,title:title.trim(),date:pubDate?new Date(pubDate):new Date(),url:link,desc:desc.replace(/<[^>]*>/g,'').slice(0,120)});
+          }
+        });
+        advs.sort((a,b)=>b.level-a.level||b.date-a.date);
+        if(advs.length>0){setAdvisories(advs.slice(0,20));setAdvLive(true);return;}
+      }
+    }catch(e){console.log('State Dept API error, trying RSS',e);}
+    // Fallback: Google News RSS for travel advisories
+    try{
+      const queries=['US+State+Department+travel+advisory+level+4+do+not+travel','US+travel+advisory+warning+reconsider+travel+level+3'];
+      const results=[];
+      for(const q of queries){
+        const rssUrl=encodeURIComponent('https://news.google.com/rss/search?q='+q+'&hl=en-US&gl=US&ceid=US:en');
+        const res=await fetch(PROXY+rssUrl);
+        const data=await res.json();
+        if(data.items){
+          data.items.slice(0,6).forEach(item=>{
+            const src=item.title.includes(' - ')?item.title.split(' - ').pop().trim():'State Dept';
+            const headline=item.title.includes(' - ')?item.title.split(' - ').slice(0,-1).join(' - ').trim():item.title;
+            const t=headline.toLowerCase();
+            let level=2;
+            if(t.match(/level 4|do not travel/))level=4;
+            else if(t.match(/level 3|reconsider/))level=3;
+            else if(t.match(/level 2|caution/))level=2;
+            results.push({country:headline.slice(0,30),level,title:headline,date:new Date(item.pubDate),url:item.link,desc:src});
+          });
+        }
+      }
+      results.sort((a,b)=>b.level-a.level||b.date-a.date);
+      const seen=new Set();
+      const unique=results.filter(r=>{const k=r.title.slice(0,30);if(seen.has(k))return false;seen.add(k);return true;});
+      if(unique.length>0){setAdvisories(unique.slice(0,15));setAdvLive(true);}
+    }catch(e){}
+  };
+
+  // Fetch sovereign credit rating changes
+  const fetchRatings=async()=>{
+    try{
+      const results=[];
+      for(const q of RATING_RSS_QUERIES){
+        const rssUrl=encodeURIComponent('https://news.google.com/rss/search?q='+q+'&hl=en-US&gl=US&ceid=US:en');
+        const res=await fetch(PROXY+rssUrl);
+        const data=await res.json();
+        if(data.items){
+          data.items.slice(0,5).forEach(item=>{
+            const src=item.title.includes(' - ')?item.title.split(' - ').pop().trim():'Ratings';
+            const headline=item.title.includes(' - ')?item.title.split(' - ').slice(0,-1).join(' - ').trim():item.title;
+            const t=headline.toLowerCase();
+            let direction='neutral',color='var(--t2)';
+            if(t.match(/downgrad|negativ|lower|cut|junk/)){direction='downgrade';color='#ff3b30';}
+            else if(t.match(/upgrad|positiv|rais|improv/)){direction='upgrade';color='#30d158';}
+            else if(t.match(/watch|review|outlook/)){direction='watch';color='#ffd60a';}
+            let agency='';
+            if(t.includes('moody'))agency='Moody\'s';
+            else if(t.includes('fitch'))agency='Fitch';
+            else if(t.includes('s&p')||t.includes('s & p')||t.includes('standard'))agency='S&P';
+            results.push({headline,src,agency,direction,color,time:timeAgo(item.pubDate),url:item.link});
+          });
+        }
+      }
+      const seen=new Set();
+      const unique=results.filter(r=>{const k=r.headline.slice(0,35);if(seen.has(k))return false;seen.add(k);return true;});
+      if(unique.length>0){setRatings(unique.slice(0,8));setRatingsLive(true);}
+    }catch(e){}
+  };
 
   // Fetch SPGI news
   const fetchSpgiNews=async()=>{
@@ -628,7 +716,7 @@ function App(){
   const linesRef=useRef([]);
 
   useEffect(()=>{const i=setInterval(()=>setTime(new Date()),1000);return()=>clearInterval(i)},[]);
-  useEffect(()=>{fetchFeeds();fetchWeather();fetchNotams();fetchSpgiNews();const i=setInterval(()=>{fetchFeeds();fetchWeather();fetchNotams();fetchSpgiNews()},2*60*1000);return()=>clearInterval(i)},[]);
+  useEffect(()=>{fetchFeeds();fetchWeather();fetchNotams();fetchSpgiNews();fetchAdvisories();fetchRatings();const i=setInterval(()=>{fetchFeeds();fetchWeather();fetchNotams();fetchSpgiNews();fetchAdvisories();fetchRatings()},2*60*1000);return()=>clearInterval(i)},[]);
 
   // Initialize Leaflet map
   useEffect(()=>{
@@ -695,6 +783,14 @@ function App(){
   const feedItems=liveNews.length>0?liveNews:INCIDENTS;
   const wireItems=liveNews.length>0?liveNews:NEWS;
 
+  // Compute advisory summary stats
+  const advStats=useMemo(()=>{
+    const l4=advisories.filter(a=>a.level===4).length;
+    const l3=advisories.filter(a=>a.level===3).length;
+    const l2=advisories.filter(a=>a.level===2).length;
+    return{l4,l3,l2,total:advisories.length};
+  },[advisories]);
+
   return(
     <div>
       {/* Ticker */}
@@ -715,7 +811,7 @@ function App(){
             <svg width="48" height="16" viewBox="0 0 48 16"><polyline points={SPGI.map((d,i)=>{const x=i/(SPGI.length-1)*48;const mn=Math.min(...SPGI.map(s=>s.p));const mx=Math.max(...SPGI.map(s=>s.p));return `${x},${2+((mx-d.p)/(mx-mn))*12}`}).join(' ')} fill="none" stroke="#30d158" strokeWidth="1.2"/></svg>
             <span style={{font:'500 9px var(--mono)',color:'var(--grn)'}}>+1.24%</span>
           </div>
-          <span className="threat">⚠ THREAT LEVEL: ELEVATED</span>
+          <span className="threat">⚠ {advStats.l4>0?'L4 ADVISORIES: '+advStats.l4:'THREAT LEVEL: ELEVATED'}</span>
           <span className="live"><span className="ldot"></span>LIVE</span>
           <span>{time.toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})}</span>
           <span style={{color:'var(--t3)'}}>UTC {time.toISOString().slice(11,19)}</span>
@@ -725,28 +821,52 @@ function App(){
       <div className="shell">
         {/* LEFT SIDEBAR */}
         <div className="sidebar">
-          <div className="ph"><div className="pt">◆ Risk Indices</div><span className="pb" style={{background:'var(--redbg)',color:'var(--red)'}}>LIVE</span></div>
-          <div className="pbd">
-            {RISKS.map(r=><div key={r.id} className="rg">
-              <div className="rg-t"><span className="rg-l">{r.l}</span><span className="rg-v" style={{color:r.c}}>{r.v}</span></div>
-              <div className="rg-b"><div className="rg-f" style={{width:r.v+'%',background:r.c}}/></div>
-              <div className="rg-m">
-                <span style={{color:r.dir==='up'?'var(--red)':'var(--grn)'}}>{r.d} {r.dir==='up'?'▲':'▼'}</span>
-                <span style={{color:r.v>=75?'var(--red)':r.v>=50?'var(--amber)':'var(--grn)',fontWeight:600}}>{r.st}</span>
-              </div>
-            </div>)}
-          </div>
-          <div className="ph"><div className="pt">◆ Regional Risk</div></div>
-          <div className="pbd">
-            {REGS.map((r,i)=><div key={i} className="rr">
-              <span style={{color:'var(--t2)',flex:1}}>{r.r}</span>
-              <span style={{color:r.v>=75?'var(--red)':r.v>=50?'var(--amber)':'var(--grn)',fontWeight:600,width:28,textAlign:'right'}}>{r.v}</span>
-              <span style={{color:'var(--t3)',width:22,textAlign:'right',fontSize:9}}>{r.n}</span>
-              <span style={{color:'var(--red)',width:35,textAlign:'right',fontSize:9}}>{r.d}</span>
-            </div>)}
-            <div style={{display:'flex',justifyContent:'space-between',font:'400 8px var(--mono)',color:'var(--t3)',marginTop:4,paddingTop:4,borderTop:'1px solid var(--bdr)'}}>
-              <span>REGION</span><span>IDX</span><span>#</span><span>Δ QoQ</span>
+          {/* TRAVEL ADVISORIES */}
+          <div className="ph"><div className="pt">◆ US Travel Advisories</div><span className="pb" style={{background:advLive?'var(--grnbg)':'rgba(102,102,102,.15)',color:advLive?'var(--grn)':'var(--t3)'}}>{advLive?'● STATE DEPT LIVE':'LOADING'}</span></div>
+          {/* Summary bar */}
+          {advLive&&<div style={{display:'flex',gap:0,borderBottom:'1px solid var(--bdr)'}}>
+            <div style={{flex:1,padding:'6px 8px',textAlign:'center',background:'rgba(255,59,48,0.08)',borderRight:'1px solid var(--bdr)'}}>
+              <div style={{font:'700 16px var(--mono)',color:'#ff3b30'}}>{advStats.l4}</div>
+              <div style={{font:'500 7px var(--mono)',color:'var(--t3)',letterSpacing:'.5px'}}>L4 — DNT</div>
             </div>
+            <div style={{flex:1,padding:'6px 8px',textAlign:'center',background:'rgba(255,149,0,0.06)',borderRight:'1px solid var(--bdr)'}}>
+              <div style={{font:'700 16px var(--mono)',color:'#ff9500'}}>{advStats.l3}</div>
+              <div style={{font:'500 7px var(--mono)',color:'var(--t3)',letterSpacing:'.5px'}}>L3 — RECON</div>
+            </div>
+            <div style={{flex:1,padding:'6px 8px',textAlign:'center',background:'rgba(255,214,10,0.05)'}}>
+              <div style={{font:'700 16px var(--mono)',color:'#ffd60a'}}>{advStats.l2}</div>
+              <div style={{font:'500 7px var(--mono)',color:'var(--t3)',letterSpacing:'.5px'}}>L2 — CAUT</div>
+            </div>
+          </div>}
+          <div className="pbd" style={{padding:'6px 12px'}}>
+            {advisories.length>0?advisories.map((adv,i)=>{
+              const inner=<div key={i} style={{padding:'5px 0',borderBottom:i<advisories.length-1?'1px solid var(--bdr)':'none'}}>
+                <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:2}}>
+                  <span style={{font:'600 8px var(--mono)',color:ADV_COLORS[adv.level],padding:'1px 5px',borderRadius:2,background:ADV_COLORS[adv.level]+'18',border:'1px solid '+ADV_COLORS[adv.level]+'35',letterSpacing:'.5px'}}>{ADV_SHORT[adv.level]||'L'+adv.level}</span>
+                  <span style={{font:'400 8px var(--mono)',color:'var(--t3)',marginLeft:'auto'}}>{adv.date?timeAgo(adv.date.toISOString()):''}</span>
+                </div>
+                <div style={{font:'500 10px/1.3 Inter,sans-serif',color:'var(--t1)',cursor:adv.url?'pointer':'default'}}>{adv.country}{adv.url&&<span style={{color:'var(--t3)',fontSize:9,marginLeft:4}}>↗</span>}</div>
+                {adv.desc&&<div style={{font:'400 9px Inter,sans-serif',color:'var(--t3)',marginTop:1}}>{adv.desc.slice(0,80)}</div>}
+              </div>;
+              return adv.url?<a key={i} href={adv.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:'none',color:'inherit',display:'block'}}>{inner}</a>:inner;
+            }):<div style={{font:'400 10px var(--mono)',color:'var(--t3)',padding:'8px 0'}}>Loading advisories...</div>}
+          </div>
+
+          {/* SOVEREIGN RISK RATINGS */}
+          <div className="ph"><div className="pt">◆ Sovereign Risk Ratings</div><span className="pb" style={{background:ratingsLive?'var(--grnbg)':'rgba(102,102,102,.15)',color:ratingsLive?'var(--grn)':'var(--t3)'}}>{ratingsLive?'● LIVE':'LOADING'}</span></div>
+          <div className="pbd" style={{padding:'6px 12px'}}>
+            {ratings.length>0?ratings.map((r,i)=>{
+              const inner=<div key={i} style={{padding:'5px 0',borderBottom:i<ratings.length-1?'1px solid var(--bdr)':'none'}}>
+                <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:2}}>
+                  <span style={{font:'600 8px var(--mono)',color:r.color,padding:'1px 5px',borderRadius:2,background:r.color+'18',border:'1px solid '+r.color+'35',letterSpacing:'.5px',textTransform:'uppercase'}}>{r.direction}</span>
+                  {r.agency&&<span style={{font:'500 8px var(--mono)',color:'var(--t2)'}}>{r.agency}</span>}
+                  <span style={{font:'400 8px var(--mono)',color:'var(--t3)',marginLeft:'auto'}}>{r.time}</span>
+                </div>
+                <div style={{font:'500 10px/1.3 Inter,sans-serif',color:'var(--t1)',cursor:r.url?'pointer':'default'}}>{r.headline.slice(0,65)}{r.headline.length>65?'...':''}{r.url&&<span style={{color:'var(--t3)',fontSize:9,marginLeft:4}}>↗</span>}</div>
+                <div style={{font:'400 9px var(--mono)',color:'var(--t3)',marginTop:1}}>{r.src}</div>
+              </div>;
+              return r.url?<a key={i} href={r.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:'none',color:'inherit',display:'block'}}>{inner}</a>:inner;
+            }):<div style={{font:'400 10px var(--mono)',color:'var(--t3)',padding:'8px 0'}}>Loading ratings...</div>}
           </div>
         </div>
 
