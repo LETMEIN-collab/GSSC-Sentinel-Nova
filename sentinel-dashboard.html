@@ -417,15 +417,58 @@ function App(){
           const areaDesc=(p.areaDesc||'').length>80?p.areaDesc.slice(0,77)+'...':p.areaDesc;
           const headline=p.headline||`${p.event} — ${areaDesc}`;
           const detail=p.description?p.description.slice(0,140).replace(/\n/g,' ')+'...':areaDesc;
-          return{sev,type,title:headline,detail,time:timeAgo(onset.toISOString()),icon,url:null};
+          // NWS provides a web URL for each alert
+          const alertUrl=p['@id']?p['@id'].replace('api.weather.gov/alerts','alerts.weather.gov/#'):('https://alerts.weather.gov');
+          return{sev,type,title:headline,detail,time:timeAgo(onset.toISOString()),icon,url:alertUrl};
+        });
+        setWxAlerts(wxItems);setWxLive(true);
+        // Also try to supplement with global alerts from GDACS
+        try{
+          const gdacsUrl=encodeURIComponent('https://www.gdacs.org/xml/rss.xml');
+          const gres=await fetch(PROXY+gdacsUrl);
+          const gdata=await gres.json();
+          if(gdata.items&&gdata.items.length>0){
+            const globalWx=gdata.items.slice(0,4).map(item=>{
+              const t=item.title.toLowerCase();
+              let sev='moderate',icon='⚠️',type='Disaster';
+              if(t.match(/earthquake|quake/)){sev='severe';icon='🌍';type='Earthquake';}
+              else if(t.match(/cyclone|hurricane|typhoon|storm/)){sev='extreme';icon='🌀';type='Cyclone';}
+              else if(t.match(/flood/)){sev='severe';icon='🌊';type='Flood';}
+              else if(t.match(/volcano/)){sev='severe';icon='🌋';type='Volcano';}
+              else if(t.match(/drought/)){sev='watch';icon='☀️';type='Drought';}
+              else if(t.match(/wildfire|fire/)){sev='severe';icon='🔥';type='Wildfire';}
+              return{sev,type,title:item.title,detail:item.content||item.description||'',time:timeAgo(item.pubDate),icon,url:item.link};
+            });
+            // Merge: NWS first, then global
+            setWxAlerts(prev=>[...prev.slice(0,5),...globalWx].slice(0,8));
+          }
+        }catch(ge){}
+        return;
+      }
+    }catch(e){console.log('NWS fetch error, trying RSS fallback',e);}
+    // Fallback: GDACS global disaster alerts
+    try{
+      const gdacsUrl=encodeURIComponent('https://www.gdacs.org/xml/rss.xml');
+      const gres=await fetch(PROXY+gdacsUrl);
+      const gdata=await gres.json();
+      if(gdata.items&&gdata.items.length>0){
+        const wxItems=gdata.items.slice(0,8).map(item=>{
+          const t=item.title.toLowerCase();
+          let sev='moderate',icon='⚠️',type='Disaster';
+          if(t.match(/earthquake|quake/)){sev='severe';icon='🌍';type='Earthquake';}
+          else if(t.match(/cyclone|hurricane|typhoon|storm/)){sev='extreme';icon='🌀';type='Cyclone';}
+          else if(t.match(/flood/)){sev='severe';icon='🌊';type='Flood';}
+          else if(t.match(/volcano/)){sev='severe';icon='🌋';type='Volcano';}
+          else if(t.match(/wildfire|fire/)){sev='severe';icon='🔥';type='Wildfire';}
+          return{sev,type,title:item.title,detail:item.content||item.description||'',time:timeAgo(item.pubDate),icon,url:item.link};
         });
         setWxAlerts(wxItems);setWxLive(true);
         return;
       }
-    }catch(e){console.log('NWS fetch error, trying RSS fallback',e);}
-    // Fallback to Google News RSS for global weather
+    }catch(ge){}
+    // Final fallback: Google News RSS for weather
     try{
-      const wxUrl=encodeURIComponent('https://news.google.com/rss/search?q=severe+weather+hurricane+typhoon+flooding+wildfire+extreme+heat&hl=en-US&gl=US&ceid=US:en');
+      const wxUrl=encodeURIComponent('https://news.google.com/rss/search?q=severe+weather+OR+hurricane+OR+typhoon+OR+earthquake+OR+wildfire+OR+flood+warning&hl=en-US&gl=US&ceid=US:en');
       const res=await fetch(PROXY+wxUrl);
       const data=await res.json();
       if(data.items&&data.items.length>0){
@@ -437,6 +480,7 @@ function App(){
           if(t.match(/hurricane|typhoon|cat.?[4-5]|super/)){sev='extreme';icon='🌀';type='Cyclone';}
           else if(t.match(/flood|tsunami|surge/)){sev='severe';icon='🌊';type='Flooding';}
           else if(t.match(/wildfire|fire|blaze|burn/)){sev='severe';icon='🔥';type='Wildfire';}
+          else if(t.match(/earthquake|quake/)){sev='severe';icon='🌍';type='Earthquake';}
           else if(t.match(/heat|record.?temp|heat.?dome/)){sev='moderate';icon='🔥';type='Heat';}
           else if(t.match(/storm|tornado|blizzard|snow/)){sev='severe';icon='❄️';type='Storm';}
           else if(t.match(/drought|dry/)){sev='watch';icon='☀️';type='Drought';}
@@ -449,40 +493,69 @@ function App(){
 
   const[notamLive,setNotamLive]=useState(false);
 
-  // Fetch live NOTAMs from aviation news RSS
+  // Fetch live NOTAMs — FAA TFR RSS (real-time), Aviation Herald, and ICAO news
   const fetchNotams=async()=>{
+    const allNotams=[];
+    // Source 1: FAA TFR (Temporary Flight Restrictions) — official real-time RSS
     try{
-      // Try Aviation Herald + aviation safety NOTAM news
-      const queries=['NOTAM+flight+restriction+airspace+closure','aviation+safety+airspace+restriction+conflict+zone','FAA+NOTAM+TFR+flight+restriction'];
-      const allItems=[];
-      for(const q of queries.slice(0,2)){
-        try{
-          const rssUrl=encodeURIComponent(`https://news.google.com/rss/search?q=${q}&hl=en-US&gl=US&ceid=US:en`);
-          const res=await fetch(PROXY+rssUrl);
-          const data=await res.json();
-          if(data.items)allItems.push(...data.items);
-        }catch(e){}
-      }
-      if(allItems.length>0){
-        // Deduplicate
-        const seen=new Set();
-        const unique=allItems.filter(item=>{const k=item.title.slice(0,40);if(seen.has(k))return false;seen.add(k);return true;});
-        unique.sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate));
-        const notamItems=unique.slice(0,8).map((item,i)=>{
-          const t=item.title.toLowerCase();
-          const src=item.title.includes(' - ')?item.title.split(' - ').pop().trim():'Aviation';
-          const headline=item.title.includes(' - ')?item.title.split(' - ').slice(0,-1).join(' - ').trim():item.title;
-          let status='WARNING',color='#ffd60a';
-          if(t.match(/prohibit|clos|ban|shut/)){status='PROHIBITED';color='#ff3b30';}
-          else if(t.match(/restrict|tfr|limit|military/)){status='RESTRICTED';color='#ff9500';}
-          // Generate a realistic NOTAM-style ID
-          const idPrefix=String.fromCharCode(65+Math.floor(Math.random()*26));
-          const idNum=String(Math.floor(Math.random()*9000)+1000);
-          return{id:`${idPrefix}${idNum}/26`,zone:headline.slice(0,50),status,detail:src+' — '+headline.slice(50,120),color,time:timeAgo(item.pubDate),url:item.link};
+      const tfrUrl=encodeURIComponent('https://tfr.faa.gov/tfr2/feed.jsp');
+      const res=await fetch(PROXY+tfrUrl);
+      const data=await res.json();
+      if(data.items&&data.items.length>0){
+        data.items.slice(0,6).forEach(item=>{
+          const t=item.title||'';
+          let status='RESTRICTED',color='#ff9500';
+          if(t.toLowerCase().match(/prohibit|p-40|dc sfra/)){status='PROHIBITED';color='#ff3b30';}
+          else if(t.toLowerCase().match(/hazard|security|national defense/)){status='PROHIBITED';color='#ff3b30';}
+          const notamId=t.match(/(\d\/\d+)/)?t.match(/(\d\/\d+)/)[1]:'TFR';
+          allNotams.push({id:notamId,zone:t.slice(0,55),status,detail:item.description?item.description.replace(/<[^>]*>/g,'').slice(0,100):'FAA TFR — Active restriction',color,time:timeAgo(item.pubDate),url:item.link||'https://tfr.faa.gov/tfr2/list.jsp',src:'FAA'});
         });
-        setNotams(notamItems);setNotamLive(true);
       }
-    }catch(e){console.log('NOTAM fetch error',e);}
+    }catch(e){console.log('FAA TFR fetch error',e);}
+
+    // Source 2: Aviation Herald (incidents/safety) via RSS
+    try{
+      const avhUrl=encodeURIComponent('https://avherald.com/h?rss=1');
+      const res=await fetch(PROXY+avhUrl);
+      const data=await res.json();
+      if(data.items&&data.items.length>0){
+        data.items.slice(0,4).forEach(item=>{
+          const t=item.title||'';
+          let status='WARNING',color='#ffd60a';
+          if(t.toLowerCase().match(/crash|fatal|emergency|mayday/)){status='PROHIBITED';color='#ff3b30';}
+          else if(t.toLowerCase().match(/divert|reject|engine|fire|smoke/)){status='RESTRICTED';color='#ff9500';}
+          allNotams.push({id:'AVH',zone:t.slice(0,55),status,detail:t,color,time:timeAgo(item.pubDate),url:item.link||'https://avherald.com',src:'AvHerald'});
+        });
+      }
+    }catch(e){}
+
+    // Source 3: Google News RSS for NOTAMs / airspace closures as supplement
+    try{
+      const queries=['NOTAM+airspace+closure+flight+restriction','TFR+temporary+flight+restriction+FAA'];
+      for(const q of queries){
+        const rssUrl=encodeURIComponent(`https://news.google.com/rss/search?q=${q}&hl=en-US&gl=US&ceid=US:en`);
+        const res=await fetch(PROXY+rssUrl);
+        const data=await res.json();
+        if(data.items){
+          data.items.slice(0,3).forEach(item=>{
+            const t=item.title.toLowerCase();
+            const src=item.title.includes(' - ')?item.title.split(' - ').pop().trim():'News';
+            const headline=item.title.includes(' - ')?item.title.split(' - ').slice(0,-1).join(' - ').trim():item.title;
+            let status='WARNING',color='#ffd60a';
+            if(t.match(/prohibit|clos|ban|shut/)){status='PROHIBITED';color='#ff3b30';}
+            else if(t.match(/restrict|tfr|limit|military/)){status='RESTRICTED';color='#ff9500';}
+            allNotams.push({id:'NEWS',zone:headline.slice(0,55),status,detail:src+' — '+headline.slice(55,120),color,time:timeAgo(item.pubDate),url:item.link,src});
+          });
+        }
+      }
+    }catch(e){}
+
+    if(allNotams.length>0){
+      // Deduplicate by first 35 chars of zone
+      const seen=new Set();
+      const unique=allNotams.filter(n=>{const k=n.zone.slice(0,35).toLowerCase();if(seen.has(k))return false;seen.add(k);return true;});
+      setNotams(unique.slice(0,8));setNotamLive(true);
+    }
   };
 
   const mapRef=useRef(null);
@@ -490,7 +563,7 @@ function App(){
   const linesRef=useRef([]);
 
   useEffect(()=>{const i=setInterval(()=>setTime(new Date()),1000);return()=>clearInterval(i)},[]);
-  useEffect(()=>{fetchFeeds();fetchWeather();fetchNotams();const i=setInterval(()=>{fetchFeeds();fetchWeather();fetchNotams()},5*60*1000);return()=>clearInterval(i)},[]);
+  useEffect(()=>{fetchFeeds();fetchWeather();fetchNotams();const i=setInterval(()=>{fetchFeeds();fetchWeather();fetchNotams()},2*60*1000);return()=>clearInterval(i)},[]);
 
   // Initialize Leaflet map
   useEffect(()=>{
@@ -717,9 +790,10 @@ function App(){
                       <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:3}}>
                         <span style={{font:'600 9px var(--mono)',color:'var(--t2)'}}>{n.id}</span>
                         <span style={{font:'600 8px var(--mono)',color:NOTAM_STATUS_COLORS[n.status]||n.color,textTransform:'uppercase',letterSpacing:'.5px',padding:'1px 5px',borderRadius:2,background:(NOTAM_STATUS_COLORS[n.status]||n.color)+'18',border:'1px solid '+(NOTAM_STATUS_COLORS[n.status]||n.color)+'35'}}>{n.status}</span>
+                        {n.src&&<span style={{font:'400 8px var(--mono)',color:'var(--t3)',padding:'1px 4px',border:'1px solid var(--bdr)',borderRadius:2}}>{n.src}</span>}
                         <span style={{font:'400 9px var(--mono)',color:'var(--t3)',marginLeft:'auto'}}>{n.time}</span>
                       </div>
-                      <div style={{font:'500 10px/1.3 var(--mono)',color:'var(--t1)'}}>{n.zone}</div>
+                      <div style={{font:'500 10px/1.3 var(--mono)',color:'var(--t1)',cursor:n.url?'pointer':'default'}}>{n.zone}{n.url&&<span style={{color:'var(--t3)',fontSize:9,marginLeft:4}}>↗</span>}</div>
                       <div style={{font:'400 9px var(--mono)',color:'var(--t3)',marginTop:2}}>{n.detail}</div>
                     </div>;
                     return n.url?<a key={i} href={n.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:'none',color:'inherit',display:'block'}}>{inner}</a>:inner;
