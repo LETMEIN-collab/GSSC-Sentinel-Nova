@@ -446,11 +446,6 @@ function App(){
   const[searchQuery,setSearchQuery]=useState('');
   const[searchResults,setSearchResults]=useState([]);
   const[searching,setSearching]=useState(false);
-  const[mapIntel,setMapIntel]=useState([]);
-  const[mapRegion,setMapRegion]=useState('');
-  const[mapFetching,setMapFetching]=useState(false);
-  const[searchError,setSearchError]=useState('');
-  const mapFetchTimer=useRef(null);
 
   // Fetch US State Dept Travel Advisories
   const fetchAdvisories=async()=>{
@@ -599,167 +594,12 @@ function App(){
     }
   };
 
-  // Classify headline into category and severity
-  const classifyHeadline=(headline)=>{
-    const t=headline.toLowerCase();
-    let cat='INTEL',sv='medium';
-    if(t.match(/kill|war|attack|strike|milit|troops|bomb|clash|weapon|nuclear|cartel|hostage|shoot/)){cat='CONFLICT';sv='critical';}
-    else if(t.match(/flood|storm|quake|hurricane|fire|drought|climate|blizzard|cyclone|tsunami/)){cat='CLIMATE';sv='severe';}
-    else if(t.match(/hack|cyber|ransom|breach|malware|data leak/)){cat='CYBER';sv='high';}
-    else if(t.match(/trade|tariff|sanction|gdp|recession|market|stock|econom|inflation/)){cat='ECONOMIC';sv='medium';}
-    else if(t.match(/oil|gas|energy|opec|pipeline|nuclear power/)){cat='ENERGY';sv='medium';}
-    else if(t.match(/virus|pandemic|outbreak|disease|epidemic|covid|bird flu|mpox/)){cat='HEALTH';sv='high';}
-    return{cat,sv};
+  // Simple search — opens Google News in new tab
+  const searchIntel=function(query){
+    if(!query||!query.trim())return;
+    window.open('https://news.google.com/search?q='+encodeURIComponent(query.trim())+'&hl=en-US','_blank');
   };
-
-  // Fetch with timeout helper (compatible with all browsers)
-  const fetchWithTimeout=async(url,ms=6000)=>{
-    const ctrl=new AbortController();
-    const timer=setTimeout(()=>ctrl.abort(),ms);
-    try{const r=await fetch(url,{signal:ctrl.signal});clearTimeout(timer);return r;}
-    catch(e){clearTimeout(timer);throw e;}
-  };
-
-  // Parse XML RSS into items array
-  const parseXMLItems=(text)=>{
-    try{
-      const parser=new DOMParser();
-      const xml=parser.parseFromString(text,'text/xml');
-      const items=xml.querySelectorAll('item');
-      if(items.length>0){
-        return Array.from(items).map(item=>({
-          title:item.querySelector('title')?.textContent||'',
-          link:item.querySelector('link')?.textContent||'',
-          pubDate:item.querySelector('pubDate')?.textContent||''
-        }));
-      }
-    }catch(e){}
-    return[];
-  };
-
-  // Multi-proxy RSS fetch — tries rss2json, then allorigins, then corsproxy
-  const fetchRSS=async(googleQuery)=>{
-    const gnUrl='https://news.google.com/rss/search?q='+encodeURIComponent(googleQuery)+'&hl=en-US&gl=US&ceid=US:en';
-    // Proxy 1: rss2json
-    try{
-      const res=await fetchWithTimeout(PROXY+encodeURIComponent(gnUrl));
-      const data=await res.json();
-      if(data.items&&data.items.length>0)return data.items;
-    }catch(e){console.log('rss2json failed',e);}
-    // Proxy 2: allorigins
-    try{
-      const res=await fetchWithTimeout('https://api.allorigins.win/raw?url='+encodeURIComponent(gnUrl));
-      const text=await res.text();
-      const items=parseXMLItems(text);
-      if(items.length>0)return items;
-    }catch(e){console.log('allorigins failed',e);}
-    // Proxy 3: corsproxy.io
-    try{
-      const res=await fetchWithTimeout('https://corsproxy.io/?url='+encodeURIComponent(gnUrl));
-      const text=await res.text();
-      const items=parseXMLItems(text);
-      if(items.length>0)return items;
-    }catch(e){console.log('corsproxy failed',e);}
-    // Proxy 4: thingproxy
-    try{
-      const res=await fetchWithTimeout('https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(gnUrl));
-      const text=await res.text();
-      const items=parseXMLItems(text);
-      if(items.length>0)return items;
-    }catch(e){console.log('codetabs failed',e);}
-    return[];
-  };
-
-  // Parse raw RSS items into display format
-  const parseRSSItems=(items,max=15)=>{
-    return items.slice(0,max).map(item=>{
-      const title=item.title||'';
-      const src=title.includes(' - ')?title.split(' - ').pop().trim():'News';
-      const headline=title.includes(' - ')?title.split(' - ').slice(0,-1).join(' - ').trim():title;
-      const{cat,sv}=classifyHeadline(headline);
-      return{t:headline,src,cat,sv,tm:timeAgo(item.pubDate),url:item.link};
-    });
-  };
-
-  // Intel search — queries Google News RSS via multiple proxies
-  const searchIntel=async(query)=>{
-    if(!query.trim())return;
-    setSearching(true);setSearchResults([]);setSearchError('');
-    try{
-      const items=await fetchRSS(query);
-      if(items.length>0){
-        setSearchResults(parseRSSItems(items,15));
-      } else {
-        // If all proxies fail, provide direct Google News links
-        setSearchError('Proxies unavailable');
-        setSearchResults([
-          {t:'Open Google News search for "'+query+'"',src:'Google News',cat:'INTEL',sv:'medium',tm:'now',url:'https://news.google.com/search?q='+encodeURIComponent(query)+'&hl=en-US'},
-          {t:'Open Reuters search for "'+query+'"',src:'Reuters',cat:'INTEL',sv:'medium',tm:'now',url:'https://www.reuters.com/search/news?query='+encodeURIComponent(query)},
-          {t:'Open AP News search for "'+query+'"',src:'AP News',cat:'INTEL',sv:'medium',tm:'now',url:'https://apnews.com/search?q='+encodeURIComponent(query)}
-        ]);
-      }
-    }catch(err){
-      console.log('Search failed entirely',err);
-      setSearchError('Search error');
-      setSearchResults([
-        {t:'Open Google News search for "'+query+'"',src:'Google News',cat:'INTEL',sv:'medium',tm:'now',url:'https://news.google.com/search?q='+encodeURIComponent(query)+'&hl=en-US'}
-      ]);
-    }
-    setSearching(false);
-  };
-  const clearSearch=()=>{setSearchQuery('');setSearchResults([]);};
-
-  // Region detection from map bounds
-  const REGIONS=[
-    {name:'Mexico & Central America',query:'Mexico OR "Central America" security conflict cartel',latMin:10,latMax:33,lonMin:-120,lonMax:-80},
-    {name:'United States',query:'United States security threat homeland',latMin:25,latMax:50,lonMin:-130,lonMax:-65},
-    {name:'South America',query:'South America Brazil Venezuela Colombia security crisis',latMin:-55,latMax:12,lonMin:-82,lonMax:-34},
-    {name:'Western Europe',query:'Europe NATO security France Germany UK threat',latMin:36,latMax:60,lonMin:-10,lonMax:20},
-    {name:'Eastern Europe & Russia',query:'Russia Ukraine war NATO Eastern Europe conflict',latMin:44,latMax:72,lonMin:20,lonMax:60},
-    {name:'Middle East',query:'Middle East Iran Israel Gaza war conflict oil',latMin:12,latMax:42,lonMin:25,lonMax:63},
-    {name:'East Asia',query:'China Taiwan Japan North Korea military threat',latMin:18,latMax:50,lonMin:100,lonMax:150},
-    {name:'South Asia',query:'India Pakistan Kashmir terrorism security',latMin:5,latMax:37,lonMin:60,lonMax:100},
-    {name:'Southeast Asia',query:'Southeast Asia South China Sea Philippines military',latMin:-10,latMax:25,lonMin:95,lonMax:140},
-    {name:'Sub-Saharan Africa',query:'Africa conflict Sahel Sudan Somalia security crisis',latMin:-35,latMax:15,lonMin:-20,lonMax:55},
-    {name:'North Africa',query:'Libya Egypt North Africa security migration',latMin:15,latMax:38,lonMin:-15,lonMax:35},
-    {name:'Central Asia',query:'Central Asia Afghanistan Taliban security threat',latMin:30,latMax:55,lonMin:50,lonMax:80},
-    {name:'Arctic & Northern',query:'Arctic military Russia NATO Northern route',latMin:60,latMax:85,lonMin:-180,lonMax:180},
-    {name:'Oceania & Pacific',query:'Pacific Islands Australia security climate threat',latMin:-50,latMax:0,lonMin:110,lonMax:180},
-  ];
-
-  const detectRegion=(bounds)=>{
-    const cLat=bounds.getCenter().lat;
-    const cLon=bounds.getCenter().lng;
-    let best=null,bestDist=Infinity;
-    REGIONS.forEach(r=>{
-      const rLat=(r.latMin+r.latMax)/2;
-      const rLon=(r.lonMin+r.lonMax)/2;
-      const d=Math.abs(cLat-rLat)+Math.abs(cLon-rLon);
-      // Also check if center is inside region bounds
-      if(cLat>=r.latMin&&cLat<=r.latMax&&cLon>=r.lonMin&&cLon<=r.lonMax){
-        if(d<bestDist){bestDist=d;best=r;}
-      }
-    });
-    if(!best){
-      // Fallback: closest region by center distance
-      REGIONS.forEach(r=>{
-        const rLat=(r.latMin+r.latMax)/2;const rLon=(r.lonMin+r.lonMax)/2;
-        const d=Math.abs(cLat-rLat)+Math.abs(cLon-rLon);
-        if(d<bestDist){bestDist=d;best=r;}
-      });
-    }
-    return best;
-  };
-
-  const fetchMapIntel=async(region)=>{
-    if(!region||region.name===mapRegion)return;
-    setMapFetching(true);setMapRegion(region.name);
-    const items=await fetchRSS(region.query);
-    if(items.length>0){
-      setMapIntel(parseRSSItems(items,10));
-    }
-    setMapFetching(false);
-  };
+  const clearSearch=function(){setSearchQuery('');};
 
   const mapRef=useRef(null);
   const markersRef=useRef([]);
@@ -784,21 +624,6 @@ function App(){
       subdomains:'abcd',maxZoom:19,pane:'shadowPane'
     }).addTo(map);
     mapRef.current=map;
-
-    // Fetch regional intel on pan/zoom (debounced)
-    map.on('moveend',()=>{
-      if(mapFetchTimer.current)clearTimeout(mapFetchTimer.current);
-      mapFetchTimer.current=setTimeout(()=>{
-        const zoom=map.getZoom();
-        if(zoom>=3){
-          const bounds=map.getBounds();
-          const region=detectRegion(bounds);
-          if(region)fetchMapIntel(region);
-        } else {
-          setMapIntel([]);setMapRegion('');
-        }
-      },800);
-    });
 
     // Add connection lines
     CONNS.forEach(([fromId,toId,label,color])=>{
@@ -980,40 +805,7 @@ function App(){
                 {searchResults.length>0&&<button className="clear" onClick={clearSearch}>✕ CLEAR</button>}
               </div>
               <div className="pbd" style={{flex:1,overflow:'auto'}}>
-                {/* Render intel items based on mode */}
-                {searching&&<div style={{padding:'20px 0',textAlign:'center',font:'400 10px var(--mono)',color:'var(--t3)'}}>Searching web for intel...</div>}
-                {!searching&&searchResults.length>0&&<div style={{padding:'6px 0',borderBottom:'1px solid var(--bdr)'}}>
-                  <span style={{font:'600 9px var(--mono)',color:'var(--red)',letterSpacing:'.5px'}}>{'◆ SEARCH: "'+searchQuery+'" — '+searchResults.length+' RESULTS'}</span>
-                </div>}
-                {!searching&&searchResults.length>0&&searchResults.map(function(item,idx){
-                  return <a key={'s'+idx} href={item.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:'none',color:'inherit',display:'block'}}>
-                    <div className="fi">
-                      <div className="fit">
-                        <div className="fis" style={{background:SC[item.sv]||'#999'}}/>
-                        <span className="fitg" style={{background:(CC[item.cat]||'#999')+'20',color:CC[item.cat]||'#999',border:'1px solid '+(CC[item.cat]||'#999')+'40'}}>{item.cat}</span>
-                        <span style={{font:'400 9px var(--mono)',color:'var(--t3)'}}>{item.src}</span>
-                        <span className="fitm">{item.tm}</span>
-                      </div>
-                      <div className="fitt" style={{cursor:'pointer'}}>{item.t} <span style={{color:'var(--t3)',fontSize:9}}>↗</span></div>
-                    </div></a>;
-                })}
-                {!searching&&searchResults.length===0&&mapIntel.length>0&&<div style={{padding:'6px 0',borderBottom:'1px solid var(--bdr)'}}>
-                  <span style={{font:'600 9px var(--mono)',color:'#0a84ff',letterSpacing:'.5px'}}>{'◆ MAP FOCUS: '+mapRegion.toUpperCase()+' — '+mapIntel.length+' ITEMS'}</span>
-                  {mapFetching&&<span style={{font:'400 8px var(--mono)',color:'var(--t3)',marginLeft:8}}>Updating...</span>}
-                </div>}
-                {!searching&&searchResults.length===0&&mapIntel.length>0&&mapIntel.map(function(item,idx){
-                  return <a key={'mi'+idx} href={item.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:'none',color:'inherit',display:'block'}}>
-                    <div className="fi">
-                      <div className="fit">
-                        <div className="fis" style={{background:SC[item.sv]||'#999'}}/>
-                        <span className="fitg" style={{background:(CC[item.cat]||'#999')+'20',color:CC[item.cat]||'#999',border:'1px solid '+(CC[item.cat]||'#999')+'40'}}>{item.cat}</span>
-                        <span style={{font:'400 9px var(--mono)',color:'var(--t3)'}}>{item.src}</span>
-                        <span className="fitm">{item.tm}</span>
-                      </div>
-                      <div className="fitt" style={{cursor:'pointer'}}>{item.t} <span style={{color:'var(--t3)',fontSize:9}}>↗</span></div>
-                    </div></a>;
-                })}
-                {!searching&&searchResults.length===0&&mapIntel.length===0&&feedStatus==='live'&&
+                {feedStatus==='live'?
                   liveNews.map(function(item,idx){
                     return <a key={idx} href={item.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:'none',color:'inherit',display:'block'}}>
                     <div className="fi">
@@ -1026,8 +818,7 @@ function App(){
                       <div className="fitt" style={{cursor:'pointer'}}>{item.t} <span style={{color:'var(--t3)',fontSize:9}}>↗</span></div>
                     </div></a>;
                   })
-                }
-                {!searching&&searchResults.length===0&&mapIntel.length===0&&feedStatus!=='live'&&
+                :
                   INCIDENTS.map(function(inc){
                     var q=encodeURIComponent(inc.t.split('—')[0].trim());
                     var url='https://news.google.com/search?q='+q;
