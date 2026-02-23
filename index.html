@@ -529,6 +529,10 @@ function App(){
   const[searchQuery,setSearchQuery]=useState('');
   const[searchResults,setSearchResults]=useState([]);
   const[searching,setSearching]=useState(false);
+  const[mapIntel,setMapIntel]=useState([]);
+  const[mapRegion,setMapRegion]=useState('');
+  const[mapFetching,setMapFetching]=useState(false);
+  const mapFetchTimer=useRef(null);
 
   // Fetch live NOTAMs — FAA TFR RSS (real-time), Aviation Herald, and ICAO news
   const fetchNotams=async()=>{
@@ -624,6 +628,75 @@ function App(){
   };
   const clearSearch=()=>{setSearchQuery('');setSearchResults([]);};
 
+  // Region detection from map bounds
+  const REGIONS=[
+    {name:'Mexico & Central America',query:'Mexico OR "Central America" security conflict cartel',latMin:10,latMax:33,lonMin:-120,lonMax:-80},
+    {name:'United States',query:'United States security threat homeland',latMin:25,latMax:50,lonMin:-130,lonMax:-65},
+    {name:'South America',query:'South America Brazil Venezuela Colombia security crisis',latMin:-55,latMax:12,lonMin:-82,lonMax:-34},
+    {name:'Western Europe',query:'Europe NATO security France Germany UK threat',latMin:36,latMax:60,lonMin:-10,lonMax:20},
+    {name:'Eastern Europe & Russia',query:'Russia Ukraine war NATO Eastern Europe conflict',latMin:44,latMax:72,lonMin:20,lonMax:60},
+    {name:'Middle East',query:'Middle East Iran Israel Gaza war conflict oil',latMin:12,latMax:42,lonMin:25,lonMax:63},
+    {name:'East Asia',query:'China Taiwan Japan North Korea military threat',latMin:18,latMax:50,lonMin:100,lonMax:150},
+    {name:'South Asia',query:'India Pakistan Kashmir terrorism security',latMin:5,latMax:37,lonMin:60,lonMax:100},
+    {name:'Southeast Asia',query:'Southeast Asia South China Sea Philippines military',latMin:-10,latMax:25,lonMin:95,lonMax:140},
+    {name:'Sub-Saharan Africa',query:'Africa conflict Sahel Sudan Somalia security crisis',latMin:-35,latMax:15,lonMin:-20,lonMax:55},
+    {name:'North Africa',query:'Libya Egypt North Africa security migration',latMin:15,latMax:38,lonMin:-15,lonMax:35},
+    {name:'Central Asia',query:'Central Asia Afghanistan Taliban security threat',latMin:30,latMax:55,lonMin:50,lonMax:80},
+    {name:'Arctic & Northern',query:'Arctic military Russia NATO Northern route',latMin:60,latMax:85,lonMin:-180,lonMax:180},
+    {name:'Oceania & Pacific',query:'Pacific Islands Australia security climate threat',latMin:-50,latMax:0,lonMin:110,lonMax:180},
+  ];
+
+  const detectRegion=(bounds)=>{
+    const cLat=bounds.getCenter().lat;
+    const cLon=bounds.getCenter().lng;
+    let best=null,bestDist=Infinity;
+    REGIONS.forEach(r=>{
+      const rLat=(r.latMin+r.latMax)/2;
+      const rLon=(r.lonMin+r.lonMax)/2;
+      const d=Math.abs(cLat-rLat)+Math.abs(cLon-rLon);
+      // Also check if center is inside region bounds
+      if(cLat>=r.latMin&&cLat<=r.latMax&&cLon>=r.lonMin&&cLon<=r.lonMax){
+        if(d<bestDist){bestDist=d;best=r;}
+      }
+    });
+    if(!best){
+      // Fallback: closest region by center distance
+      REGIONS.forEach(r=>{
+        const rLat=(r.latMin+r.latMax)/2;const rLon=(r.lonMin+r.lonMax)/2;
+        const d=Math.abs(cLat-rLat)+Math.abs(cLon-rLon);
+        if(d<bestDist){bestDist=d;best=r;}
+      });
+    }
+    return best;
+  };
+
+  const fetchMapIntel=async(region)=>{
+    if(!region||region.name===mapRegion)return;
+    setMapFetching(true);setMapRegion(region.name);
+    try{
+      const rssUrl=encodeURIComponent(`https://news.google.com/rss/search?q=${encodeURIComponent(region.query)}&hl=en-US&gl=US&ceid=US:en`);
+      const res=await fetch(PROXY+rssUrl);
+      const data=await res.json();
+      if(data.items&&data.items.length>0){
+        const results=data.items.slice(0,10).map(item=>{
+          const src=item.title.includes(' - ')?item.title.split(' - ').pop().trim():'News';
+          const headline=item.title.includes(' - ')?item.title.split(' - ').slice(0,-1).join(' - ').trim():item.title;
+          const t=headline.toLowerCase();
+          let cat='INTEL',sv='medium';
+          if(t.match(/kill|war|attack|strike|milit|troops|bomb|clash|weapon|nuclear/)){cat='CONFLICT';sv='critical';}
+          else if(t.match(/flood|storm|quake|hurricane|fire|drought|climate|blizzard/)){cat='CLIMATE';sv='severe';}
+          else if(t.match(/hack|cyber|ransom|breach|malware/)){cat='CYBER';sv='high';}
+          else if(t.match(/trade|tariff|sanction|gdp|recession|market|stock|econom/)){cat='ECONOMIC';sv='medium';}
+          else if(t.match(/oil|gas|energy|opec|pipeline/)){cat='ENERGY';sv='medium';}
+          else if(t.match(/virus|pandemic|outbreak|disease|epidemic|bird flu/)){cat='HEALTH';sv='high';}
+          return{t:headline,src,cat,sv,tm:timeAgo(item.pubDate),url:item.link};
+        });
+        setMapIntel(results);
+      }
+    }catch(e){console.log('Map intel fetch error',e);}
+    setMapFetching(false);
+  };
+
   const mapRef=useRef(null);
   const markersRef=useRef([]);
   const linesRef=useRef([]);
@@ -647,6 +720,21 @@ function App(){
       subdomains:'abcd',maxZoom:19,pane:'shadowPane'
     }).addTo(map);
     mapRef.current=map;
+
+    // Fetch regional intel on pan/zoom (debounced)
+    map.on('moveend',()=>{
+      if(mapFetchTimer.current)clearTimeout(mapFetchTimer.current);
+      mapFetchTimer.current=setTimeout(()=>{
+        const zoom=map.getZoom();
+        if(zoom>=3){
+          const bounds=map.getBounds();
+          const region=detectRegion(bounds);
+          if(region)fetchMapIntel(region);
+        } else {
+          setMapIntel([]);setMapRegion('');
+        }
+      },800);
+    });
 
     // Add connection lines
     CONNS.forEach(([fromId,toId,label,color])=>{
@@ -849,6 +937,26 @@ function App(){
                   </>
                 :searching?
                   <div style={{padding:'20px 0',textAlign:'center',font:'400 10px var(--mono)',color:'var(--t3)'}}>Searching web for intel...</div>
+                :mapIntel.length>0&&searchResults.length===0?
+                  /* MAP-DRIVEN REGIONAL INTEL */
+                  <>
+                    <div style={{padding:'6px 0',borderBottom:'1px solid var(--bdr)',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                      <span style={{font:'600 9px var(--mono)',color:'#0a84ff',letterSpacing:'.5px'}}>◆ MAP FOCUS: {mapRegion.toUpperCase()} — {mapIntel.length} ITEMS</span>
+                      {mapFetching&&<span style={{font:'400 8px var(--mono)',color:'var(--t3)'}}>Updating...</span>}
+                    </div>
+                    {mapIntel.map((item,idx)=>(
+                      <a key={'mi'+idx} href={item.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:'none',color:'inherit',display:'block'}}>
+                      <div className="fi">
+                        <div className="fit">
+                          <div className="fis" style={{background:SC[item.sv]||'#999'}}/>
+                          <span className="fitg" style={{background:(CC[item.cat]||'#999')+'20',color:CC[item.cat]||'#999',border:'1px solid '+(CC[item.cat]||'#999')+'40'}}>{item.cat}</span>
+                          <span style={{font:'400 9px var(--mono)',color:'var(--t3)'}}>{item.src}</span>
+                          <span className="fitm">{item.tm}</span>
+                        </div>
+                        <div className="fitt" style={{cursor:'pointer'}}>{item.t} <span style={{color:'var(--t3)',fontSize:9}}>↗</span></div>
+                      </div></a>
+                    ))}
+                  </>
                 :feedStatus==='live'?
                   /* LIVE RSS ITEMS */
                   liveNews.map((item,idx)=>{
