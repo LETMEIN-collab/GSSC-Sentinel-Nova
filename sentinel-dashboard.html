@@ -231,7 +231,7 @@ const INCIDENTS=[
   {id:18,t:'Gulf of Guinea Piracy — 12 Incidents in 30 Days',sv:'medium',cat:'MARITIME',reg:'W. Africa',tm:'2d',lat:4,lon:3,imp:'$800M insurance spike',ty:'Maritime'},
 ];
 
-const CC={CONFLICT:'#ff3b30',CLIMATE:'#ff9500',CYBER:'#bf5af2',ECONOMIC:'#0a84ff',ENERGY:'#ffd60a',REGULATORY:'#64d2ff',SOCIAL:'#30d158',INTEL:'#ff375f',MARITIME:'#5ac8fa'};
+const CC={CONFLICT:'#ff3b30',CLIMATE:'#ff9500',CYBER:'#bf5af2',ECONOMIC:'#0a84ff',ENERGY:'#ffd60a',REGULATORY:'#64d2ff',SOCIAL:'#30d158',INTEL:'#ff375f',MARITIME:'#5ac8fa',HEALTH:'#30d158'};
 const SC={critical:'#ff3b30',high:'#ff9500',medium:'#ffd60a',low:'#30d158'};
 
 /* Connection lines between related incidents [fromId, toId, label, color] */
@@ -285,19 +285,36 @@ const REGS=[
 
 /* ═══ RSS FEED CONFIG ═══ */
 const RSS_FEEDS=[
-  {q:'geopolitical+risk+conflict',cat:'CONFLICT'},
-  {q:'climate+change+disaster',cat:'CLIMATE'},
-  {q:'cybersecurity+attack+threat',cat:'CYBER'},
-  {q:'global+economy+sanctions+trade',cat:'ECONOMIC'},
-  {q:'oil+energy+crisis+OPEC',cat:'ENERGY'},
+  // Conflict & military
+  {q:'Russia+Ukraine+war+military+frontline',cat:'CONFLICT'},
+  {q:'Iran+US+tensions+military+strikes+nuclear',cat:'CONFLICT'},
+  {q:'China+Taiwan+military+South+China+Sea',cat:'CONFLICT'},
+  {q:'Israel+Gaza+Hamas+Hezbollah+Middle+East+war',cat:'CONFLICT'},
+  {q:'NATO+military+defense+troops+deployment',cat:'CONFLICT'},
+  {q:'North+Korea+missile+nuclear+ICBM',cat:'CONFLICT'},
+  // Climate & disasters
+  {q:'climate+disaster+extreme+weather+hurricane+wildfire',cat:'CLIMATE'},
+  // Cyber
+  {q:'cybersecurity+ransomware+hack+breach+critical+infrastructure',cat:'CYBER'},
+  // Economic & sanctions
+  {q:'global+economy+sanctions+trade+war+tariff+recession',cat:'ECONOMIC'},
+  {q:'US+China+trade+decoupling+semiconductor+sanctions',cat:'ECONOMIC'},
+  // Energy
+  {q:'oil+energy+crisis+OPEC+pipeline+gas+prices',cat:'ENERGY'},
+  // Health / Pandemic
+  {q:'pandemic+virus+outbreak+WHO+bird+flu+H5N1+epidemic',cat:'HEALTH'},
+  // Terrorism & intel
+  {q:'terrorism+intelligence+ISIS+security+threat+espionage',cat:'INTEL'},
 ];
 const PROXY='https://api.rss2json.com/v1/api.json?rss_url=';
 const catKeywords={
-  CONFLICT:['war','military','nato','conflict','troops','missile','attack','invasion','defense','army','weapon','strike','sanction'],
-  CLIMATE:['climate','flood','wildfire','hurricane','drought','emissions','carbon','warming','sea level','storm','heat','ice'],
-  CYBER:['cyber','ransomware','hack','breach','malware','vulnerability','phishing','data leak','CISA','zero-day'],
-  ECONOMIC:['economy','gdp','trade','tariff','inflation','recession','debt','imf','world bank','fiscal','monetary'],
-  ENERGY:['oil','gas','opec','energy','pipeline','refinery','nuclear','solar','wind','grid','fuel','petroleum'],
+  CONFLICT:['war','military','nato','conflict','troops','missile','attack','invasion','defense','army','weapon','strike','ukraine','russia','frontline','battalion','airstrike','drone strike','ceasefire','escalation','iran','hezbollah','hamas','gaza','israel','taiwan','korea','artillery','casualties'],
+  CLIMATE:['climate','flood','wildfire','hurricane','drought','emissions','carbon','warming','sea level','storm','heat','ice','snow','blizzard','cyclone','typhoon','earthquake','tornado','fire','weather'],
+  CYBER:['cyber','ransomware','hack','breach','malware','vulnerability','phishing','data leak','cisa','zero-day','ddos','spyware','critical infrastructure'],
+  ECONOMIC:['economy','gdp','trade','tariff','inflation','recession','debt','imf','world bank','fiscal','monetary','sanctions','decoupling','semiconductor','stock market','currency','default'],
+  ENERGY:['oil','gas','opec','energy','pipeline','refinery','nuclear','solar','wind','grid','fuel','petroleum','lng','electricity','power plant','crude'],
+  HEALTH:['pandemic','epidemic','virus','outbreak','who','h5n1','bird flu','covid','disease','vaccine','pathogen','quarantine','health emergency','mpox','ebola'],
+  INTEL:['intelligence','espionage','spy','terrorism','isis','al-qaeda','cia','fbi','mi6','surveillance','threat assessment','counterterrorism','mossad'],
   REGULATORY:['regulation','eu','law','compliance','legislation','tax','ban','policy','mandate','rule'],
 };
 function classifyHeadline(title){
@@ -364,14 +381,14 @@ function App(){
           const res=await fetch(PROXY+rssUrl);
           const data=await res.json();
           if(data.items){
-            data.items.slice(0,6).forEach(item=>{
+            data.items.slice(0,4).forEach(item=>{
               const cat=classifyHeadline(item.title);
               const src=item.title.includes(' - ')?item.title.split(' - ').pop().trim():'News';
               const headline=item.title.includes(' - ')?item.title.split(' - ').slice(0,-1).join(' - ').trim():item.title;
               results.push({
                 t:headline,
                 cat,
-                sv:['CONFLICT','CYBER'].includes(cat)?'critical':['CLIMATE','ENERGY'].includes(cat)?'high':'medium',
+                sv:['CONFLICT','CYBER','INTEL'].includes(cat)?'critical':['CLIMATE','ENERGY','HEALTH'].includes(cat)?'high':'medium',
                 src,
                 tm:timeAgo(item.pubDate),
                 url:item.link,
@@ -385,7 +402,7 @@ function App(){
       const seen=new Set();
       const unique=results.filter(r=>{const k=r.t.slice(0,50);if(seen.has(k))return false;seen.add(k);return true;});
       unique.sort((a,b)=>b.pubDate-a.pubDate);
-      if(unique.length>0){setLiveNews(unique.slice(0,25));setFeedStatus('live');}
+      if(unique.length>0){setLiveNews(unique.slice(0,40));setFeedStatus('live');}
       else{setFeedStatus('fallback');}
     }catch(e){setFeedStatus('fallback');}
   };
@@ -393,8 +410,8 @@ function App(){
   // Fetch live severe weather alerts from NWS API (real government data)
   const fetchWeather=async()=>{
     try{
-      // NWS API — real active alerts, severity=Extreme,Severe
-      const res=await fetch('https://api.weather.gov/alerts/active?status=actual&severity=Extreme,Severe&limit=12',{
+      // NWS API — real active alerts, all urgencies (captures snow, ice, wind, floods, fire, etc.)
+      const res=await fetch('https://api.weather.gov/alerts/active?status=actual&limit=50',{
         headers:{'Accept':'application/geo+json','User-Agent':'SentinelDashboard/1.0'}
       });
       if(!res.ok)throw new Error('NWS fetch failed');
@@ -402,12 +419,28 @@ function App(){
       if(data.features&&data.features.length>0){
         const nwsSevMap={'Extreme':'extreme','Severe':'severe','Moderate':'moderate','Minor':'watch','Unknown':'watch'};
         const eventIcons={
-          'Tornado':'🌪️','Hurricane':'🌀','Typhoon':'🌀','Tropical Storm':'🌀','Flash Flood':'🌊','Flood':'🌊',
-          'Severe Thunderstorm':'⛈️','Winter Storm':'❄️','Blizzard':'❄️','Ice Storm':'❄️','Extreme Cold':'❄️',
-          'Heat':'🔥','Excessive Heat':'🔥','Fire Weather':'🔥','Red Flag':'🔥','Tsunami':'🌊','Storm Surge':'🌊',
-          'Wind':'💨','High Wind':'💨','Dust Storm':'💨'
+          'Tornado':'🌪️','Hurricane':'🌀','Typhoon':'🌀','Tropical Storm':'🌀',
+          'Flash Flood':'🌊','Flood':'🌊','Coastal Flood':'🌊','Lakeshore Flood':'🌊',
+          'Severe Thunderstorm':'⛈️','Thunderstorm':'⛈️',
+          'Winter Storm':'❄️','Blizzard':'❄️','Ice Storm':'❄️','Snow':'❄️','Heavy Snow':'❄️','Lake Effect Snow':'❄️','Freezing Rain':'❄️','Sleet':'❄️','Winter Weather':'❄️','Wind Chill':'❄️',
+          'Extreme Cold':'🥶','Cold':'🥶','Freeze':'🥶','Frost':'🥶','Hard Freeze':'🥶',
+          'Heat':'🔥','Excessive Heat':'🔥','Fire Weather':'🔥','Red Flag':'🔥',
+          'Tsunami':'🌊','Storm Surge':'🌊','Rip Current':'🌊',
+          'Wind':'💨','High Wind':'💨','Dust Storm':'💨','Gale':'💨','Dense Fog':'🌫️','Avalanche':'🏔️'
         };
-        const wxItems=data.features.slice(0,8).map(f=>{
+        // Sort by severity so we get most impactful first
+        const sevOrder={Extreme:0,Severe:1,Moderate:2,Minor:3,Unknown:4};
+        const sorted=[...data.features].sort((a,b)=>(sevOrder[a.properties.severity]??4)-(sevOrder[b.properties.severity]??4));
+        // Deduplicate by event type — keep one per event type to show variety
+        const seenEvents=new Set();
+        const diverse=sorted.filter(f=>{
+          const evt=f.properties.event||'';
+          if(seenEvents.has(evt))return false;
+          seenEvents.add(evt);return true;
+        });
+        // If fewer than 8 diverse, backfill from sorted
+        const final=diverse.length>=8?diverse.slice(0,8):[...diverse,...sorted.filter(f=>!diverse.includes(f))].slice(0,8);
+        const wxItems=final.map(f=>{
           const p=f.properties;
           const sev=nwsSevMap[p.severity]||'moderate';
           const evtKey=Object.keys(eventIcons).find(k=>p.event&&p.event.includes(k));
