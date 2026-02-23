@@ -305,9 +305,20 @@ const MKTS={
 
 /* SPGI RSS feed queries */
 const SPGI_RSS_QUERIES=[
-  'S%26P+Global+SPGI+earnings+revenue+acquisition',
-  'S%26P+Global+ratings+credit+downgrade+upgrade',
-  'S%26P+Global+Market+Intelligence+Platts+IHS+Markit',
+  '%22S%26P+Global%22+SPGI+earnings+revenue',
+  '%22S%26P+Global%22+ratings+credit+Platts',
+];
+
+/* Current SPGI news fallback (Feb 2026) */
+const SPGI_NEWS_FALLBACK=[
+  {t:'S&P Global Reports Q4 & Full-Year 2025 Results — Revenue Up 9% to $3.92B',src:'S&P Global IR',tm:'Feb 10',url:'https://investor.spglobal.com/news-releases/news-details/2026/SP-Global-Reports-Fourth-Quarter-and-Full-Year-2025-Results/default.aspx'},
+  {t:'SPGI Stock Drops 17% Premarket After 2026 Guidance Disappoints Analysts',src:'Seeking Alpha',tm:'Feb 10',url:'https://seekingalpha.com/news/4549419-sp-global-stock-drops-after-q4-earnings-2026-guidance-disappoint'},
+  {t:'SPGI Up 7.3% — Strong 2025 Results and New Climate-Risk Data Push',src:'Simply Wall St',tm:'Feb 14',url:'https://simplywall.st/stocks/us/diversified-financials/nyse-spgi/sp-global/news/why-sp-global-spgi-is-up-73-after-strong-2025-results-and-ne'},
+  {t:'S&P Global Ratings Wins Ratings Provider of the Year — PE Wire Europe Awards',src:'PE Wire',tm:'Feb 12',url:'https://www.stocktitan.net/news/SPGI/s-p-global-ratings-wins-ratings-provider-of-the-year-at-private-g48vy8gp0m8s.html'},
+  {t:'S&P Global to Present at Raymond James 47th Institutional Investors Conference',src:'Stock Titan',tm:'Feb 18',url:'https://www.stocktitan.net/news/SPGI/s-p-global-to-present-at-raymond-james-47th-annual-institutional-dsjn8x6nn5cs.html'},
+  {t:'S&P Global Energy & Verisk Launch Climate-Risk Data Collaboration for Banks & Insurers',src:'S&P Global',tm:'Feb 2026',url:'https://press.spglobal.com'},
+  {t:'Full-Year 2025: Revenue $15.3B (+8%), Adjusted EPS $17.83 (+14%), $12.85B Buyback Complete',src:'S&P Global IR',tm:'Feb 10',url:'https://press.spglobal.com/2026-02-10-S-P-Global-Reports-Fourth-Quarter-and-Full-Year-2025-Results'},
+  {t:'2026 Guidance: Reported Revenue Growth 6.6%-8.6%, New CERAWeek Energy Conference Role',src:'S&P Global',tm:'Feb 10',url:'https://investor.spglobal.com'},
 ];
 
 const TREND={
@@ -501,6 +512,9 @@ function App(){
 
   // Fetch SPGI news
   const fetchSpgiNews=async()=>{
+    // Load fallback immediately so panel is never empty
+    if(spgiNews.length===0){setSpgiNews(SPGI_NEWS_FALLBACK);setSpgiNewsLive(true);}
+    // Try live RSS
     try{
       const results=[];
       for(const q of SPGI_RSS_QUERIES){
@@ -1059,18 +1073,7 @@ function App(){
             )):<div style={{font:'400 10px var(--mono)',color:'var(--t3)',padding:'8px 0'}}>Loading SPGI news...</div>}
           </div>
 
-          {/* Markets */}
-          {Object.entries(MKTS).map(([sec,items])=><React.Fragment key={sec}>
-            <div className="msec">{sec}</div>
-            <div style={{padding:'4px 12px'}}>
-              {items.map((m,i)=><div key={i} className="mr">
-                <span className="mrs">{m.s}</span>
-                <span style={{color:'var(--t3)',flex:1,fontSize:10}}>{m.n}</span>
-                <span className="mrp">{m.p}</span>
-                <span className="mrc" style={{color:m.u?'var(--grn)':'var(--red)'}}>{m.c}</span>
-              </div>)}
-            </div>
-          </React.Fragment>)}
+          {/* End of SPGI section — right panel is SPGI-focused only */}
         </div>
       </div>
 
