@@ -238,17 +238,22 @@ const ADV_FALLBACK=[
 
 /* Current fallback sovereign rating changes */
 const RATING_FALLBACK=[
-  {headline:'Moody\'s Downgrades US to Aa1 — Last AAA Rating Lost by Any Major Agency',src:'Moody\'s',agency:'Moody\'s',direction:'downgrade',color:'#ff3b30',time:'May 2025',url:'https://www.moodys.com/web/en/us/about-us/usrating.html'},
-  {headline:'Fitch Downgrades China to A from A+ — Debt Trajectory & Tariff Impact',src:'Fitch Ratings',agency:'Fitch',direction:'downgrade',color:'#ff3b30',time:'Apr 2025',url:'https://www.fitchratings.com'},
+  {headline:'Fitch Warns Eastern Europe Faces Downgrades if Greenland Strife Cracks NATO',src:'Fitch Ratings',agency:'Fitch',direction:'watch',color:'#ffd60a',time:'Jan 2026',url:'https://www.insurancejournal.com/news/international/2026/01/16/854630.htm'},
+  {headline:'Moody\'s Upgrades Israel Outlook to Stable from Negative — Ceasefire Effect',src:'Moody\'s',agency:'Moody\'s',direction:'upgrade',color:'#30d158',time:'Jan 2026',url:'https://ratings.moodys.com/ratings-news/429502'},
+  {headline:'Scope Downgrades US to AA- from AA — Fiscal Deterioration & Governance',src:'Scope Ratings',agency:'Scope',direction:'downgrade',color:'#ff3b30',time:'Oct 2025',url:'https://scoperatings.com'},
   {headline:'S&P Downgrades France to A+ from AA- — Unscheduled Move on Budget Risk',src:'S&P Global',agency:'S&P',direction:'downgrade',color:'#ff3b30',time:'Oct 2025',url:'https://www.spglobal.com/ratings'},
   {headline:'Moody\'s France Outlook Cut to Negative — Political Fragmentation Risk',src:'Moody\'s',agency:'Moody\'s',direction:'downgrade',color:'#ff3b30',time:'Oct 2025',url:'https://ratings.moodys.com/ratings-news/453186'},
-  {headline:'Moody\'s Downgrades Botswana to Baa1 — Diamond Downturn & Rising Debt',src:'Moody\'s',agency:'Moody\'s',direction:'downgrade',color:'#ff3b30',time:'Oct 2025',url:'https://www.moodys.com'},
-  {headline:'Moody\'s Upgrades Israel Outlook to Stable from Negative — Ceasefire Effect',src:'Moody\'s',agency:'Moody\'s',direction:'upgrade',color:'#30d158',time:'Jan 2026',url:'https://ratings.moodys.com/ratings-news/429502'},
   {headline:'S&P Upgrades South Africa to BB — First Upgrade in Nearly Two Decades',src:'S&P Global',agency:'S&P',direction:'upgrade',color:'#30d158',time:'Nov 2025',url:'https://www.spglobal.com/ratings'},
-  {headline:'NATO Rearmament Spending May Pressure European Sovereign Ratings in 2026',src:'Moody\'s',agency:'Moody\'s',direction:'watch',color:'#ffd60a',time:'Feb 2026',url:'https://www.moodys.com/web/en/us/insights/credit-risk/outlooks/global-sovereigns-2026.html'},
+  {headline:'Moody\'s Downgrades Botswana to Baa1 — Diamond Downturn & Rising Debt',src:'Moody\'s',agency:'Moody\'s',direction:'downgrade',color:'#ff3b30',time:'Oct 2025',url:'https://www.moodys.com'},
+  {headline:'Moody\'s Downgrades US to Aa1 — Last AAA Rating Lost by Any Major Agency',src:'Moody\'s',agency:'Moody\'s',direction:'downgrade',color:'#ff3b30',time:'May 2025',url:'https://www.moodys.com/web/en/us/about-us/usrating.html'},
+  {headline:'Fitch Downgrades China to A from A+ — Debt Trajectory & Tariff Impact',src:'Fitch Ratings',agency:'Fitch',direction:'downgrade',color:'#ff3b30',time:'Apr 2025',url:'https://www.fitchratings.com'},
+  {headline:'Fitch 2026 Sovereign Outlook: Neutral — Fiscal Consolidation Will Be Painful',src:'Fitch Ratings',agency:'Fitch',direction:'watch',color:'#ffd60a',time:'Feb 2026',url:'https://www.investmentexecutive.com/uncategorized/sovereign-rating-outlook-neutral-for-2026-fitch/'},
+  {headline:'Moody\'s 2026: Debt/GDP Ratios Remain High — Limited Room for Shocks',src:'Moody\'s',agency:'Moody\'s',direction:'watch',color:'#ffd60a',time:'Feb 2026',url:'https://www.moodys.com/web/en/us/insights/credit-risk/outlooks/global-sovereigns-2026.html'},
+  {headline:'S&P 2026 Outlook: Geopolitical Risks Could Destabilize Credit Quality',src:'S&P Global',agency:'S&P',direction:'watch',color:'#ffd60a',time:'Feb 2026',url:'https://www.spglobal.com/ratings/en/regulatory/article/global-sovereign-rating-trends-2026-geopolitical-risks-could-destabilize-credit-quality-dynamics-s101667695'},
 ];
 
 const INCIDENTS=[
+  {id:19,t:'Mexico — "El Mencho" CJNG Leader Killed, Nationwide Cartel Violence Erupts',sv:'critical',cat:'CONFLICT',reg:'N. America',tm:'NOW',lat:20.3,lon:-103.3,imp:'25 National Guard killed, 250+ roadblocks, 20 states, tourists stranded, Puerto Vallarta airport shut',ty:'Cartel'},
   {id:1,t:'Russian Naval Buildup in Black Sea — NATO Alert Level Raised',sv:'critical',cat:'CONFLICT',reg:'E. Europe',tm:'12m',lat:44,lon:34,imp:'NATO Article 5 consultation triggered',ty:'Military'},
   {id:2,t:'Cat-5 Cyclone Bearing Down on Bay of Bengal — 2.4M at Risk',sv:'critical',cat:'CLIMATE',reg:'S. Asia',tm:'28m',lat:16,lon:87,imp:'$8.2B estimated damage',ty:'Weather'},
   {id:3,t:'Major Ransomware Attack on European Energy Grid Operator',sv:'critical',cat:'CYBER',reg:'W. Europe',tm:'1h',lat:50,lon:8,imp:'3 nations, grid at 60%',ty:'Cyber'},
@@ -670,7 +675,7 @@ function App(){
 
       {/* Header */}
       <div className="hdr">
-        <div className="hdr-l"><div className="logo">SENTINEL NOVA<span>GLOBAL SECURITY TERMINAL</span></div><span style={{font:'600 8px var(--mono)',color:'var(--red)',padding:'2px 8px',borderRadius:2,border:'1px solid rgba(255,59,48,.4)',background:'rgba(255,59,48,.1)',letterSpacing:'1.5px',marginLeft:12}}>RESTRICTED</span></div>
+        <div className="hdr-l"><div className="logo">SENTINEL NOVA<span>GLOBAL SECURITY TERMINAL</span></div><span style={{font:'600 8px var(--mono)',color:'#30d158',padding:'2px 8px',borderRadius:2,border:'1px solid rgba(48,209,88,.4)',background:'rgba(48,209,88,.1)',letterSpacing:'1.5px',marginLeft:12}}>GSSC-READY</span></div>
         <div className="hdr-r">
           <div className="hdr-spgi">
             <span style={{font:'600 10px var(--mono)',color:'var(--t2)'}}>SPGI</span>
