@@ -997,8 +997,8 @@ function App(){
     }).addTo(map);
     mapRef.current=map;
 
-    // Fetch world GeoJSON for country advisory shading
-    fetch('https://raw.githubusercontent.com/datasets/geo-countries/main/data/countries.geojson')
+    // Fetch world GeoJSON for country advisory shading (~250KB lightweight source)
+    fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
       .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
       .then(function(geo){console.log('GeoJSON loaded:',geo.features?geo.features.length:'no features');setGeoData(geo);})
       .catch(function(e){console.error('GeoJSON fetch failed:',e);});
@@ -1046,73 +1046,68 @@ function App(){
   },[mf]);
 
   // ═══ ADVISORY COUNTRY SHADING — color-code map by State Dept levels ═══
-  // Map advisory country names -> GeoJSON ADMIN property names (bidirectional matching)
-  var ADV_TO_GEO={
-    'afghanistan':'afghanistan','ukraine':'ukraine','russia':'russia','syria':'syria','iran':'iran',
-    'iraq':'iraq','yemen':'yemen','somalia':'somalia','sudan':'sudan','south sudan':'south sudan',
-    'libya':'libya','mali':'mali','haiti':'haiti','north korea':'north korea',
-    'venezuela':'venezuela','myanmar (burma)':'myanmar','burkina faso':'burkina faso',
-    'niger':'niger','central african republic':'central african republic',
-    'belarus':'belarus','lebanon':'lebanon','gaza strip':'palestine',
-    'pakistan':'pakistan','nigeria':'nigeria','honduras':'honduras','el salvador':'el salvador',
-    'ethiopia':'ethiopia','democratic republic of the congo':'democratic republic of the congo',
-    'cameroon':'cameroon','chad':'chad','mauritania':'mauritania','guinea':'guinea',
-    'colombia':'colombia','kenya':'kenya',
-    'mexico':'mexico','brazil':'brazil','egypt':'egypt','turkey':'turkey','india':'india',
-    'israel':'israel','philippines':'philippines','south africa':'south africa',
-    'jamaica':'jamaica','china':'china'
+  // ISO3 code -> advisory level (bulletproof matching via feature.id)
+  var ADV_ISO3={
+    'AFG':4,'UKR':4,'RUS':4,'SYR':4,'IRN':4,'IRQ':4,'YEM':4,'SOM':4,'SDN':4,
+    'SSD':4,'LBY':4,'MLI':4,'HTI':4,'PRK':4,'VEN':4,'MMR':4,'BFA':4,'NER':4,
+    'CAF':4,'BLR':4,'LBN':4,'PSE':4,
+    'PAK':3,'NGA':3,'HND':3,'SLV':3,'ETH':3,'COD':3,'CMR':3,'TCD':3,'MRT':3,
+    'GIN':3,'COL':3,'KEN':3,
+    'MEX':2,'BRA':2,'EGY':2,'TUR':2,'IND':2,'ISR':2,'PHL':2,'ZAF':2,'JAM':2,'CHN':2
   };
-  // Reverse map: GeoJSON name -> advisory name (for names that differ)
-  var GEO_TO_ADV={
-    'myanmar':'myanmar (burma)',
-    'palestine':'gaza strip',
-    'republic of the congo':'',  // Skip — this is NOT the DRC
-    'the bahamas':'',
-    'united republic of tanzania':'',
-    'somaliland':'somalia',
-    'northern cyprus':'',
-    'Kosovo':'',
-  };
-  var findAdvisory=function(geoName,advMap){
-    var nl=geoName.toLowerCase();
-    // Direct match
-    if(advMap[nl])return advMap[nl];
-    // Reverse alias
-    if(GEO_TO_ADV[nl]!==undefined){
-      if(GEO_TO_ADV[nl]==='')return null;
-      return advMap[GEO_TO_ADV[nl]]||null;
-    }
-    // Fuzzy: check if any advisory country is contained in the geo name or vice versa
-    for(var key in advMap){
-      if(key.length>4&&nl.length>4){
-        if(nl.indexOf(key)!==-1||key.indexOf(nl)!==-1)return advMap[key];
-      }
-    }
-    return null;
+  // Advisory country name -> ISO3 (for building desc/title lookup)
+  var COUNTRY_ISO3={
+    'afghanistan':'AFG','ukraine':'UKR','russia':'RUS','syria':'SYR','iran':'IRN','iraq':'IRQ',
+    'yemen':'YEM','somalia':'SOM','sudan':'SDN','south sudan':'SSD','libya':'LBY','mali':'MLI',
+    'haiti':'HTI','north korea':'PRK','venezuela':'VEN','myanmar (burma)':'MMR','burkina faso':'BFA',
+    'niger':'NER','central african republic':'CAF','belarus':'BLR','lebanon':'LBN','gaza strip':'PSE',
+    'pakistan':'PAK','nigeria':'NGA','honduras':'HND','el salvador':'SLV','ethiopia':'ETH',
+    'democratic republic of the congo':'COD','cameroon':'CMR','chad':'TCD','mauritania':'MRT',
+    'guinea':'GIN','colombia':'COL','kenya':'KEN',
+    'mexico':'MEX','brazil':'BRA','egypt':'EGY','turkey':'TUR','india':'IND','israel':'ISR',
+    'philippines':'PHL','south africa':'ZAF','jamaica':'JAM','china':'CHN'
   };
   useEffect(()=>{
     if(!mapRef.current||!geoData||advisories.length===0){console.log('Advisory shading skipped — map:',!!mapRef.current,'geo:',!!geoData,'adv:',advisories.length);return;}
     console.log('Advisory shading: painting',advisories.length,'advisories onto',geoData.features?geoData.features.length:0,'countries');
     var map=mapRef.current;
-    // Remove old layer
     if(geoLayerRef.current){map.removeLayer(geoLayerRef.current);}
-    // Build lookup: lowercased advisory country name -> highest advisory level
-    var advMap={};var matchCount=0;
+    // Build ISO3 -> {level, desc, title, url} from live advisories
+    var isoMap={};
     advisories.forEach(function(a){
-      var nl=a.country.toLowerCase();
-      if(!advMap[nl]||a.level>advMap[nl].level){advMap[nl]={level:a.level,desc:a.desc||'Travel Advisory',title:a.title,url:a.url};}
-      // Also add forward alias
-      if(ADV_TO_GEO[nl]&&ADV_TO_GEO[nl]!==nl){
-        var alt=ADV_TO_GEO[nl];
-        if(!advMap[alt]||a.level>advMap[alt].level){advMap[alt]={level:a.level,desc:a.desc||'Travel Advisory',title:a.title,url:a.url};}
+      var iso=COUNTRY_ISO3[a.country.toLowerCase()];
+      if(iso){
+        if(!isoMap[iso]||a.level>isoMap[iso].level){
+          isoMap[iso]={level:a.level,desc:a.desc||'Travel Advisory',title:a.title,url:a.url};
+        }
       }
     });
-    var advColors={4:'rgba(255,59,48,0.4)',3:'rgba(255,149,0,0.3)',2:'rgba(255,214,10,0.18)'};
-    var advBorders={4:'rgba(255,59,48,0.7)',3:'rgba(255,149,0,0.5)',2:'rgba(255,214,10,0.3)'};
+    // Also fill from static ADV_ISO3 for any missing
+    for(var code in ADV_ISO3){
+      if(!isoMap[code]){
+        var lvl=ADV_ISO3[code];
+        var lvlLabel={4:'Do Not Travel',3:'Reconsider Travel',2:'Exercise Increased Caution'};
+        isoMap[code]={level:lvl,desc:lvlLabel[lvl],title:'Level '+lvl,url:'https://travel.state.gov'};
+      }
+    }
+    var matchCount=0;
+    var advColors={4:'rgba(255,59,48,0.45)',3:'rgba(255,149,0,0.35)',2:'rgba(255,214,10,0.2)'};
+    var advBorders={4:'rgba(255,59,48,0.8)',3:'rgba(255,149,0,0.6)',2:'rgba(255,214,10,0.35)'};
     var layer=L.geoJSON(geoData,{
       style:function(feature){
-        var name=feature.properties.name||feature.properties.ADMIN||'';
-        var adv=findAdvisory(name,advMap);
+        // Match by ISO3 code (feature.id) — guaranteed match
+        var iso=feature.id||'';
+        var adv=isoMap[iso];
+        // Fallback: match by name
+        if(!adv){
+          var nm=(feature.properties.name||'').toLowerCase();
+          for(var cname in COUNTRY_ISO3){
+            if(nm===cname||nm.indexOf(cname)!==-1||cname.indexOf(nm)!==-1){
+              adv=isoMap[COUNTRY_ISO3[cname]];
+              if(adv)break;
+            }
+          }
+        }
         if(adv&&adv.level>=2){
           matchCount++;
           return{fillColor:advColors[adv.level],fillOpacity:1,weight:1,color:advBorders[adv.level],opacity:0.8};
@@ -1120,19 +1115,29 @@ function App(){
         return{fillColor:'transparent',fillOpacity:0,weight:0.3,color:'rgba(255,255,255,0.05)',opacity:0.5};
       },
       onEachFeature:function(feature,layer){
-        var name=feature.properties.name||feature.properties.ADMIN||'';
-        var adv=findAdvisory(name,advMap);
+        var iso=feature.id||'';
+        var adv=isoMap[iso];
+        if(!adv){
+          var nm=(feature.properties.name||'').toLowerCase();
+          for(var cname in COUNTRY_ISO3){
+            if(nm===cname||nm.indexOf(cname)!==-1||cname.indexOf(nm)!==-1){
+              adv=isoMap[COUNTRY_ISO3[cname]];
+              if(adv)break;
+            }
+          }
+        }
         if(adv&&adv.level>=2){
+          var dispName=feature.properties.name||feature.id||'';
           var lvlLabel={4:'DO NOT TRAVEL',3:'RECONSIDER TRAVEL',2:'EXERCISE INCREASED CAUTION'};
           var lvlColor={4:'#ff3b30',3:'#ff9500',2:'#ffd60a'};
-          layer.bindPopup('<div style="font-family:Inter,sans-serif"><div style="font:700 10px JetBrains Mono;color:'+lvlColor[adv.level]+';letter-spacing:1px;margin-bottom:4px">LEVEL '+adv.level+' — '+lvlLabel[adv.level]+'</div><div style="font:600 12px Inter;color:#e5e5e5;margin-bottom:4px">'+name+'</div><div style="font:400 10px JetBrains Mono;color:#999">'+adv.desc+'</div></div>',{maxWidth:260});
+          layer.bindPopup('<div style="font-family:Inter,sans-serif"><div style="font:700 10px JetBrains Mono;color:'+lvlColor[adv.level]+';letter-spacing:1px;margin-bottom:4px">LEVEL '+adv.level+' — '+lvlLabel[adv.level]+'</div><div style="font:600 12px Inter;color:#e5e5e5;margin-bottom:4px">'+dispName+'</div><div style="font:400 10px JetBrains Mono;color:#999">'+adv.desc+'</div></div>',{maxWidth:260});
         }
       }
     });
     layer.addTo(map);
     layer.bringToBack();
     geoLayerRef.current=layer;
-    console.log('Advisory shading complete:',matchCount,'countries colored out of',Object.keys(advMap).length,'in advisory map');
+    console.log('Advisory shading complete:',matchCount,'countries colored');
   },[geoData,advisories]);
 
   const fi=mf==='ALL'?INCIDENTS:INCIDENTS.filter(i=>i.cat===mf);
