@@ -998,10 +998,10 @@ function App(){
     mapRef.current=map;
 
     // Fetch world GeoJSON for country advisory shading
-    fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
-      .then(function(r){return r.json();})
-      .then(function(geo){setGeoData(geo);})
-      .catch(function(){});
+    fetch('https://raw.githubusercontent.com/datasets/geo-countries/main/data/countries.geojson')
+      .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+      .then(function(geo){console.log('GeoJSON loaded:',geo.features?geo.features.length:'no features');setGeoData(geo);})
+      .catch(function(e){console.error('GeoJSON fetch failed:',e);});
 
     // Add connection lines
     CONNS.forEach(([fromId,toId,label,color])=>{
@@ -1091,12 +1091,13 @@ function App(){
     return null;
   };
   useEffect(()=>{
-    if(!mapRef.current||!geoData||advisories.length===0)return;
+    if(!mapRef.current||!geoData||advisories.length===0){console.log('Advisory shading skipped — map:',!!mapRef.current,'geo:',!!geoData,'adv:',advisories.length);return;}
+    console.log('Advisory shading: painting',advisories.length,'advisories onto',geoData.features?geoData.features.length:0,'countries');
     var map=mapRef.current;
     // Remove old layer
     if(geoLayerRef.current){map.removeLayer(geoLayerRef.current);}
     // Build lookup: lowercased advisory country name -> highest advisory level
-    var advMap={};
+    var advMap={};var matchCount=0;
     advisories.forEach(function(a){
       var nl=a.country.toLowerCase();
       if(!advMap[nl]||a.level>advMap[nl].level){advMap[nl]={level:a.level,desc:a.desc||'Travel Advisory',title:a.title,url:a.url};}
@@ -1110,15 +1111,16 @@ function App(){
     var advBorders={4:'rgba(255,59,48,0.7)',3:'rgba(255,149,0,0.5)',2:'rgba(255,214,10,0.3)'};
     var layer=L.geoJSON(geoData,{
       style:function(feature){
-        var name=feature.properties.ADMIN||feature.properties.name||'';
+        var name=feature.properties.name||feature.properties.ADMIN||'';
         var adv=findAdvisory(name,advMap);
         if(adv&&adv.level>=2){
+          matchCount++;
           return{fillColor:advColors[adv.level],fillOpacity:1,weight:1,color:advBorders[adv.level],opacity:0.8};
         }
         return{fillColor:'transparent',fillOpacity:0,weight:0.3,color:'rgba(255,255,255,0.05)',opacity:0.5};
       },
       onEachFeature:function(feature,layer){
-        var name=feature.properties.ADMIN||feature.properties.name||'';
+        var name=feature.properties.name||feature.properties.ADMIN||'';
         var adv=findAdvisory(name,advMap);
         if(adv&&adv.level>=2){
           var lvlLabel={4:'DO NOT TRAVEL',3:'RECONSIDER TRAVEL',2:'EXERCISE INCREASED CAUTION'};
@@ -1130,6 +1132,7 @@ function App(){
     layer.addTo(map);
     layer.bringToBack();
     geoLayerRef.current=layer;
+    console.log('Advisory shading complete:',matchCount,'countries colored out of',Object.keys(advMap).length,'in advisory map');
   },[geoData,advisories]);
 
   const fi=mf==='ALL'?INCIDENTS:INCIDENTS.filter(i=>i.cat===mf);
