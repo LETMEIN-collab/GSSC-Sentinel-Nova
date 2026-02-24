@@ -9,7 +9,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://unpkg.com/topojson-client@3/dist/topojson-client.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
@@ -998,49 +997,45 @@ function App(){
     }).addTo(map);
     mapRef.current=map;
 
-    // Fetch world country boundaries — try multiple sources with visible debug
-    var geoSources=[
-      {url:'https://unpkg.com/world-atlas@2/countries-110m.json',type:'topo'},
-      {url:'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json',type:'topo'},
-      {url:'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json',type:'geo'}
+    // ═══ ADVISORY COUNTRY SHADING — zero external dependencies ═══
+    // Paint colored circles at country centers — no GeoJSON/TopoJSON fetch needed
+    var ADV_CIRCLES=[
+      // Level 4 — Do Not Travel (red)
+      {n:'Afghanistan',lat:33.9,lon:67.7,r:220000,lv:4},{n:'Ukraine',lat:48.4,lon:31.2,r:280000,lv:4},
+      {n:'Russia',lat:61.5,lon:90,r:1200000,lv:4},{n:'Syria',lat:35,lon:38.5,r:160000,lv:4},
+      {n:'Iran',lat:32.4,lon:53.7,r:350000,lv:4},{n:'Iraq',lat:33.2,lon:43.7,r:200000,lv:4},
+      {n:'Yemen',lat:15.6,lon:48.5,r:180000,lv:4},{n:'Somalia',lat:5.2,lon:46.2,r:200000,lv:4},
+      {n:'Sudan',lat:15.5,lon:30,r:350000,lv:4},{n:'South Sudan',lat:6.9,lon:31.3,r:200000,lv:4},
+      {n:'Libya',lat:26.3,lon:17.2,r:350000,lv:4},{n:'Mali',lat:17.6,lon:-4,r:300000,lv:4},
+      {n:'Haiti',lat:19,lon:-72.1,r:80000,lv:4},{n:'North Korea',lat:40,lon:127,r:130000,lv:4},
+      {n:'Venezuela',lat:6.4,lon:-66.6,r:250000,lv:4},{n:'Myanmar',lat:19.8,lon:96.9,r:220000,lv:4},
+      {n:'Burkina Faso',lat:12.4,lon:-1.6,r:130000,lv:4},{n:'Niger',lat:17.6,lon:8.1,r:300000,lv:4},
+      {n:'CAR',lat:6.6,lon:20.9,r:200000,lv:4},{n:'Belarus',lat:53.7,lon:28,r:150000,lv:4},
+      {n:'Lebanon',lat:33.9,lon:35.9,r:60000,lv:4},{n:'Palestine',lat:31.9,lon:35.2,r:40000,lv:4},
+      // Level 3 — Reconsider Travel (orange)
+      {n:'Pakistan',lat:30.4,lon:69.3,r:280000,lv:3},{n:'Nigeria',lat:9.1,lon:8.7,r:260000,lv:3},
+      {n:'Honduras',lat:15.2,lon:-86.2,r:100000,lv:3},{n:'El Salvador',lat:13.8,lon:-88.9,r:60000,lv:3},
+      {n:'Ethiopia',lat:9.1,lon:40.5,r:280000,lv:3},{n:'DR Congo',lat:-4.0,lon:21.8,r:350000,lv:3},
+      {n:'Cameroon',lat:7.4,lon:12.4,r:170000,lv:3},{n:'Chad',lat:15.5,lon:19,r:300000,lv:3},
+      {n:'Mauritania',lat:21.0,lon:-10.9,r:250000,lv:3},{n:'Guinea',lat:9.9,lon:-11.4,r:120000,lv:3},
+      {n:'Colombia',lat:4.6,lon:-74.3,r:250000,lv:3},{n:'Kenya',lat:-0.2,lon:37.9,r:180000,lv:3},
+      // Level 2 — Exercise Increased Caution (yellow)
+      {n:'Mexico',lat:23.6,lon:-102.5,r:350000,lv:2},{n:'Brazil',lat:-14.2,lon:-51.9,r:600000,lv:2},
+      {n:'Egypt',lat:26.8,lon:30.8,r:250000,lv:2},{n:'Turkey',lat:39,lon:35.2,r:250000,lv:2},
+      {n:'India',lat:20.6,lon:79,r:500000,lv:2},{n:'Israel',lat:31.1,lon:34.8,r:70000,lv:2},
+      {n:'Philippines',lat:12.9,lon:121.8,r:200000,lv:2},{n:'South Africa',lat:-30.6,lon:22.9,r:300000,lv:2},
+      {n:'Jamaica',lat:18.1,lon:-77.3,r:50000,lv:2},{n:'China',lat:35.9,lon:104.2,r:700000,lv:2}
     ];
-    var geoDebug=document.createElement('div');
-    geoDebug.id='geo-debug';
-    geoDebug.style.cssText='position:absolute;top:4px;left:50px;z-index:9999;font:bold 9px monospace;padding:3px 8px;border-radius:3px;background:rgba(255,59,48,0.9);color:#fff';
-    geoDebug.textContent='MAP DATA: LOADING...';
-    document.getElementById('leaflet-map').appendChild(geoDebug);
-    (function tryGeoFetch(idx){
-      if(idx>=geoSources.length){
-        geoDebug.textContent='MAP DATA: ALL SOURCES FAILED';
-        geoDebug.style.background='rgba(255,59,48,0.9)';
-        return;
-      }
-      var src=geoSources[idx];
-      geoDebug.textContent='MAP DATA: TRYING SOURCE '+(idx+1)+'/'+geoSources.length+'...';
-      geoDebug.style.background='rgba(255,214,10,0.9)';geoDebug.style.color='#000';
-      fetch(src.url)
-        .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
-        .then(function(data){
-          var geo;
-          if(src.type==='topo'){
-            if(typeof topojson==='undefined'||!topojson.feature){throw new Error('topojson library not loaded');}
-            var objKey=data.objects.countries?'countries':Object.keys(data.objects)[0];
-            geo=topojson.feature(data,data.objects[objKey]);
-          }else{
-            geo=data;
-          }
-          if(!geo||!geo.features||geo.features.length<50)throw new Error('Bad data: '+((geo&&geo.features)?geo.features.length:0)+' features');
-          geoDebug.textContent='MAP DATA: OK — '+geo.features.length+' countries (src '+(idx+1)+')';
-          geoDebug.style.background='rgba(48,209,88,0.9)';geoDebug.style.color='#fff';
-          setTimeout(function(){geoDebug.style.display='none';},5000);
-          setGeoData(geo);
-        })
-        .catch(function(e){
-          geoDebug.textContent='MAP SRC '+(idx+1)+' FAILED: '+e.message;
-          geoDebug.style.background='rgba(255,149,0,0.9)';geoDebug.style.color='#000';
-          tryGeoFetch(idx+1);
-        });
-    })(0);
+    var advFills={4:'rgba(255,59,48,0.30)',3:'rgba(255,149,0,0.22)',2:'rgba(255,214,10,0.15)'};
+    var advStrokes={4:'#ff3b30',3:'#ff9500',2:'#ffd60a'};
+    var lvlLabels={4:'LEVEL 4 — DO NOT TRAVEL',3:'LEVEL 3 — RECONSIDER TRAVEL',2:'LEVEL 2 — EXERCISE INCREASED CAUTION'};
+    ADV_CIRCLES.forEach(function(c){
+      var circle=L.circle([c.lat,c.lon],{
+        radius:c.r,fillColor:advFills[c.lv],fillOpacity:1,
+        weight:1.5,color:advStrokes[c.lv],opacity:0.4
+      }).addTo(map);
+      circle.bindPopup('<div style="font-family:Inter,sans-serif"><div style="font:700 10px JetBrains Mono;color:'+advStrokes[c.lv]+';letter-spacing:1px;margin-bottom:4px">'+lvlLabels[c.lv]+'</div><div style="font:600 12px Inter;color:#e5e5e5">'+c.n+'</div></div>',{maxWidth:260});
+    });
 
     // Add connection lines
     CONNS.forEach(([fromId,toId,label,color])=>{
@@ -1084,88 +1079,7 @@ function App(){
     });
   },[mf]);
 
-  // ═══ ADVISORY COUNTRY SHADING — color-code map by State Dept levels ═══
-  // Supports both ISO numeric (world-atlas TopoJSON) and ISO alpha-3 (GeoJSON) IDs
-  var ADV_NUMERIC={
-    '004':4,'804':4,'643':4,'760':4,'364':4,'368':4,'887':4,'706':4,'729':4,
-    '728':4,'434':4,'466':4,'332':4,'408':4,'862':4,'104':4,'854':4,'562':4,
-    '140':4,'112':4,'422':4,'275':4,
-    '586':3,'566':3,'340':3,'222':3,'231':3,'180':3,'120':3,'148':3,'478':3,
-    '324':3,'170':3,'404':3,
-    '484':2,'076':2,'818':2,'792':2,'356':2,'376':2,'608':2,'710':2,'388':2,'156':2
-  };
-  var ADV_ALPHA3={
-    'AFG':4,'UKR':4,'RUS':4,'SYR':4,'IRN':4,'IRQ':4,'YEM':4,'SOM':4,'SDN':4,
-    'SSD':4,'LBY':4,'MLI':4,'HTI':4,'PRK':4,'VEN':4,'MMR':4,'BFA':4,'NER':4,
-    'CAF':4,'BLR':4,'LBN':4,'PSE':4,
-    'PAK':3,'NGA':3,'HND':3,'SLV':3,'ETH':3,'COD':3,'CMR':3,'TCD':3,'MRT':3,
-    'GIN':3,'COL':3,'KEN':3,
-    'MEX':2,'BRA':2,'EGY':2,'TUR':2,'IND':2,'ISR':2,'PHL':2,'ZAF':2,'JAM':2,'CHN':2
-  };
-  // Country names for popups: numeric ID -> display name
-  var ID_NAMES={
-    '004':'Afghanistan','804':'Ukraine','643':'Russia','760':'Syria','364':'Iran','368':'Iraq',
-    '887':'Yemen','706':'Somalia','729':'Sudan','728':'South Sudan','434':'Libya','466':'Mali',
-    '332':'Haiti','408':'North Korea','862':'Venezuela','104':'Myanmar','854':'Burkina Faso',
-    '562':'Niger','140':'Central African Republic','112':'Belarus','422':'Lebanon','275':'Palestine',
-    '586':'Pakistan','566':'Nigeria','340':'Honduras','222':'El Salvador','231':'Ethiopia',
-    '180':'DR Congo','120':'Cameroon','148':'Chad','478':'Mauritania','324':'Guinea',
-    '170':'Colombia','404':'Kenya','484':'Mexico','076':'Brazil','818':'Egypt','792':'Turkey',
-    '356':'India','376':'Israel','608':'Philippines','710':'South Africa','388':'Jamaica','156':'China',
-    'AFG':'Afghanistan','UKR':'Ukraine','RUS':'Russia','SYR':'Syria','IRN':'Iran','IRQ':'Iraq',
-    'YEM':'Yemen','SOM':'Somalia','SDN':'Sudan','SSD':'South Sudan','LBY':'Libya','MLI':'Mali',
-    'HTI':'Haiti','PRK':'North Korea','VEN':'Venezuela','MMR':'Myanmar','BFA':'Burkina Faso',
-    'NER':'Niger','CAF':'Central African Republic','BLR':'Belarus','LBN':'Lebanon','PSE':'Palestine',
-    'PAK':'Pakistan','NGA':'Nigeria','HND':'Honduras','SLV':'El Salvador','ETH':'Ethiopia',
-    'COD':'DR Congo','CMR':'Cameroon','TCD':'Chad','MRT':'Mauritania','GIN':'Guinea',
-    'COL':'Colombia','KEN':'Kenya','MEX':'Mexico','BRA':'Brazil','EGY':'Egypt','TUR':'Turkey',
-    'IND':'India','ISR':'Israel','PHL':'Philippines','ZAF':'South Africa','JAM':'Jamaica','CHN':'China'
-  };
-  var getAdvLevel=function(featureId){
-    var id=String(featureId||'');
-    return ADV_NUMERIC[id]||ADV_ALPHA3[id]||0;
-  };
-  useEffect(()=>{
-    if(!mapRef.current||!geoData||advisories.length===0){console.log('Advisory shading skipped — map:',!!mapRef.current,'geo:',!!geoData,'adv:',advisories.length);return;}
-    console.log('Advisory shading: painting onto',geoData.features?geoData.features.length:0,'countries');
-    var map=mapRef.current;
-    if(geoLayerRef.current){map.removeLayer(geoLayerRef.current);}
-    var matchCount=0;
-    var advColors={4:'rgba(255,59,48,0.45)',3:'rgba(255,149,0,0.35)',2:'rgba(255,214,10,0.2)'};
-    var advBorders={4:'rgba(255,59,48,0.8)',3:'rgba(255,149,0,0.6)',2:'rgba(255,214,10,0.35)'};
-    var layer=L.geoJSON(geoData,{
-      style:function(feature){
-        var lvl=getAdvLevel(feature.id);
-        if(lvl>=2){
-          matchCount++;
-          return{fillColor:advColors[lvl],fillOpacity:1,weight:1,color:advBorders[lvl],opacity:0.8};
-        }
-        return{fillColor:'transparent',fillOpacity:0,weight:0.3,color:'rgba(255,255,255,0.05)',opacity:0.5};
-      },
-      onEachFeature:function(feature,layer){
-        var lvl=getAdvLevel(feature.id);
-        if(lvl>=2){
-          var dispName=ID_NAMES[String(feature.id)]||feature.properties.name||String(feature.id);
-          var lvlLabel={4:'DO NOT TRAVEL',3:'RECONSIDER TRAVEL',2:'EXERCISE INCREASED CAUTION'};
-          var lvlColor={4:'#ff3b30',3:'#ff9500',2:'#ffd60a'};
-          layer.bindPopup('<div style="font-family:Inter,sans-serif"><div style="font:700 10px JetBrains Mono;color:'+lvlColor[lvl]+';letter-spacing:1px;margin-bottom:4px">LEVEL '+lvl+' — '+lvlLabel[lvl]+'</div><div style="font:600 12px Inter;color:#e5e5e5;margin-bottom:4px">'+dispName+'</div></div>',{maxWidth:260});
-        }
-      }
-    });
-    layer.addTo(map);
-    layer.bringToBack();
-    geoLayerRef.current=layer;
-    console.log('Advisory shading complete:',matchCount,'countries colored');
-    // Update debug indicator
-    var dbg=document.getElementById('geo-debug');
-    if(dbg){
-      dbg.style.display='block';
-      dbg.textContent='SHADING: '+matchCount+' countries colored';
-      dbg.style.background=matchCount>10?'rgba(48,209,88,0.9)':'rgba(255,59,48,0.9)';
-      dbg.style.color='#fff';
-      setTimeout(function(){dbg.style.display='none';},8000);
-    }
-  },[geoData,advisories]);
+  // Advisory shading is now painted directly via L.circle in map init (zero external deps)
 
   const fi=mf==='ALL'?INCIDENTS:INCIDENTS.filter(i=>i.cat===mf);
 
