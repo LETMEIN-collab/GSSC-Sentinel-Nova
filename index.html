@@ -1000,52 +1000,49 @@ function App(){
     }).addTo(map);
     mapRef.current=map;
 
-    // ═══ ADVISORY COUNTRY SHADING — zero external dependencies ═══
-    // Create a dedicated pane ABOVE tiles but below markers
-    map.createPane('advisoryPane');
-    map.getPane('advisoryPane').style.zIndex=350;
-    map.getPane('advisoryPane').style.pointerEvents='auto';
-
-    var ADV_CIRCLES=[
-      {n:'Afghanistan',lat:33.9,lon:67.7,r:220000,lv:4},{n:'Ukraine',lat:48.4,lon:31.2,r:280000,lv:4},
-      {n:'Russia',lat:61.5,lon:90,r:1200000,lv:4},{n:'Syria',lat:35,lon:38.5,r:160000,lv:4},
-      {n:'Iran',lat:32.4,lon:53.7,r:350000,lv:4},{n:'Iraq',lat:33.2,lon:43.7,r:200000,lv:4},
-      {n:'Yemen',lat:15.6,lon:48.5,r:180000,lv:4},{n:'Somalia',lat:5.2,lon:46.2,r:200000,lv:4},
-      {n:'Sudan',lat:15.5,lon:30,r:350000,lv:4},{n:'South Sudan',lat:6.9,lon:31.3,r:200000,lv:4},
-      {n:'Libya',lat:26.3,lon:17.2,r:350000,lv:4},{n:'Mali',lat:17.6,lon:-4,r:300000,lv:4},
-      {n:'Haiti',lat:19,lon:-72.1,r:80000,lv:4},{n:'North Korea',lat:40,lon:127,r:130000,lv:4},
-      {n:'Venezuela',lat:6.4,lon:-66.6,r:250000,lv:4},{n:'Myanmar',lat:19.8,lon:96.9,r:220000,lv:4},
-      {n:'Burkina Faso',lat:12.4,lon:-1.6,r:130000,lv:4},{n:'Niger',lat:17.6,lon:8.1,r:300000,lv:4},
-      {n:'CAR',lat:6.6,lon:20.9,r:200000,lv:4},{n:'Belarus',lat:53.7,lon:28,r:150000,lv:4},
-      {n:'Lebanon',lat:33.9,lon:35.9,r:60000,lv:4},{n:'Palestine',lat:31.9,lon:35.2,r:40000,lv:4},
-      {n:'Pakistan',lat:30.4,lon:69.3,r:280000,lv:3},{n:'Nigeria',lat:9.1,lon:8.7,r:260000,lv:3},
-      {n:'Honduras',lat:15.2,lon:-86.2,r:100000,lv:3},{n:'El Salvador',lat:13.8,lon:-88.9,r:60000,lv:3},
-      {n:'Ethiopia',lat:9.1,lon:40.5,r:280000,lv:3},{n:'DR Congo',lat:-4.0,lon:21.8,r:350000,lv:3},
-      {n:'Cameroon',lat:7.4,lon:12.4,r:170000,lv:3},{n:'Chad',lat:15.5,lon:19,r:300000,lv:3},
-      {n:'Mauritania',lat:21.0,lon:-10.9,r:250000,lv:3},{n:'Guinea',lat:9.9,lon:-11.4,r:120000,lv:3},
-      {n:'Colombia',lat:4.6,lon:-74.3,r:250000,lv:3},{n:'Kenya',lat:-0.2,lon:37.9,r:180000,lv:3},
-      {n:'Mexico',lat:23.6,lon:-102.5,r:350000,lv:2},{n:'Brazil',lat:-14.2,lon:-51.9,r:600000,lv:2},
-      {n:'Egypt',lat:26.8,lon:30.8,r:250000,lv:2},{n:'Turkey',lat:39,lon:35.2,r:250000,lv:2},
-      {n:'India',lat:20.6,lon:79,r:500000,lv:2},{n:'Israel',lat:31.1,lon:34.8,r:70000,lv:2},
-      {n:'Philippines',lat:12.9,lon:121.8,r:200000,lv:2},{n:'South Africa',lat:-30.6,lon:22.9,r:300000,lv:2},
-      {n:'Jamaica',lat:18.1,lon:-77.3,r:50000,lv:2},{n:'China',lat:35.9,lon:104.2,r:700000,lv:2}
+    // ═══ ADVISORY SHADING — HTML div markers (no SVG/Canvas dependency) ═══
+    var ADV_DATA=[
+      {n:'Afghanistan',lat:33.9,lon:67.7,sz:28,lv:4},{n:'Ukraine',lat:48.4,lon:31.2,sz:32,lv:4},
+      {n:'Russia',lat:61.5,lon:90,sz:80,lv:4},{n:'Syria',lat:35,lon:38.5,sz:22,lv:4},
+      {n:'Iran',lat:32.4,lon:53.7,sz:38,lv:4},{n:'Iraq',lat:33.2,lon:43.7,sz:26,lv:4},
+      {n:'Yemen',lat:15.6,lon:48.5,sz:24,lv:4},{n:'Somalia',lat:5.2,lon:46.2,sz:26,lv:4},
+      {n:'Sudan',lat:15.5,lon:30,sz:38,lv:4},{n:'South Sudan',lat:6.9,lon:31.3,sz:26,lv:4},
+      {n:'Libya',lat:26.3,lon:17.2,sz:38,lv:4},{n:'Mali',lat:17.6,lon:-4,sz:34,lv:4},
+      {n:'Haiti',lat:19,lon:-72.1,sz:14,lv:4},{n:'North Korea',lat:40,lon:127,sz:18,lv:4},
+      {n:'Venezuela',lat:6.4,lon:-66.6,sz:30,lv:4},{n:'Myanmar',lat:19.8,lon:96.9,sz:28,lv:4},
+      {n:'Burkina Faso',lat:12.4,lon:-1.6,sz:18,lv:4},{n:'Niger',lat:17.6,lon:8.1,sz:34,lv:4},
+      {n:'CAR',lat:6.6,lon:20.9,sz:26,lv:4},{n:'Belarus',lat:53.7,lon:28,sz:20,lv:4},
+      {n:'Lebanon',lat:33.9,lon:35.9,sz:10,lv:4},{n:'Palestine',lat:31.9,lon:35.2,sz:8,lv:4},
+      {n:'Pakistan',lat:30.4,lon:69.3,sz:32,lv:3},{n:'Nigeria',lat:9.1,lon:8.7,sz:30,lv:3},
+      {n:'Honduras',lat:15.2,lon:-86.2,sz:14,lv:3},{n:'El Salvador',lat:13.8,lon:-88.9,sz:10,lv:3},
+      {n:'Ethiopia',lat:9.1,lon:40.5,sz:32,lv:3},{n:'DR Congo',lat:-4.0,lon:21.8,sz:38,lv:3},
+      {n:'Cameroon',lat:7.4,lon:12.4,sz:22,lv:3},{n:'Chad',lat:15.5,lon:19,sz:34,lv:3},
+      {n:'Mauritania',lat:21.0,lon:-10.9,sz:30,lv:3},{n:'Guinea',lat:9.9,lon:-11.4,sz:16,lv:3},
+      {n:'Colombia',lat:4.6,lon:-74.3,sz:30,lv:3},{n:'Kenya',lat:-0.2,lon:37.9,sz:24,lv:3},
+      {n:'Mexico',lat:23.6,lon:-102.5,sz:40,lv:2},{n:'Brazil',lat:-14.2,lon:-51.9,sz:60,lv:2},
+      {n:'Egypt',lat:26.8,lon:30.8,sz:30,lv:2},{n:'Turkey',lat:39,lon:35.2,sz:30,lv:2},
+      {n:'India',lat:20.6,lon:79,sz:50,lv:2},{n:'Israel',lat:31.1,lon:34.8,sz:10,lv:2},
+      {n:'Philippines',lat:12.9,lon:121.8,sz:26,lv:2},{n:'South Africa',lat:-30.6,lon:22.9,sz:34,lv:2},
+      {n:'Jamaica',lat:18.1,lon:-77.3,sz:8,lv:2},{n:'China',lat:35.9,lon:104.2,sz:60,lv:2}
     ];
-    var advFills={4:'#ff3b30',3:'#ff9500',2:'#ffd60a'};
-    var advOpacity={4:0.35,3:0.25,2:0.18};
-    var advStrokes={4:'#ff3b30',3:'#ff9500',2:'#ffd60a'};
+    var advColors={4:'rgba(255,59,48,0.45)',3:'rgba(255,149,0,0.35)',2:'rgba(255,214,10,0.25)'};
+    var advBorders={4:'rgba(255,59,48,0.7)',3:'rgba(255,149,0,0.6)',2:'rgba(255,214,10,0.5)'};
     var lvlLabels={4:'LEVEL 4 — DO NOT TRAVEL',3:'LEVEL 3 — RECONSIDER TRAVEL',2:'LEVEL 2 — EXERCISE INCREASED CAUTION'};
-    var circleCount=0;
+    var advCount=0;
     try{
-      ADV_CIRCLES.forEach(function(c){
-        L.circle([c.lat,c.lon],{
-          radius:c.r,fillColor:advFills[c.lv],fillOpacity:advOpacity[c.lv],
-          weight:2,color:advStrokes[c.lv],opacity:0.6,
-          pane:'advisoryPane'
-        }).addTo(map).bindPopup('<div style="font-family:Inter,sans-serif"><div style="font:700 10px JetBrains Mono;color:'+advStrokes[c.lv]+';letter-spacing:1px;margin-bottom:4px">'+lvlLabels[c.lv]+'</div><div style="font:600 12px Inter;color:#e5e5e5">'+c.n+'</div></div>',{maxWidth:260});
-        circleCount++;
+      ADV_DATA.forEach(function(c){
+        var s=c.sz;
+        var icon=L.divIcon({
+          className:'',
+          iconSize:[s,s],
+          iconAnchor:[s/2,s/2],
+          html:'<div style="width:'+s+'px;height:'+s+'px;border-radius:50%;background:'+advColors[c.lv]+';border:1.5px solid '+advBorders[c.lv]+';pointer-events:auto;cursor:pointer" title="'+c.n+' — '+lvlLabels[c.lv]+'"></div>'
+        });
+        L.marker([c.lat,c.lon],{icon:icon,interactive:true}).addTo(map).bindPopup('<div style="font-family:Inter,sans-serif"><div style="font:700 10px JetBrains Mono;color:'+advBorders[c.lv]+';letter-spacing:1px;margin-bottom:4px">'+lvlLabels[c.lv]+'</div><div style="font:600 12px Inter;color:#e5e5e5">'+c.n+'</div></div>',{maxWidth:260});
+        advCount++;
       });
-      console.log('SENTINEL NOVA v6: '+circleCount+' advisory circles painted');
-    }catch(err){console.error('SENTINEL NOVA v6 CIRCLE ERROR:',err);}
+      console.log('SENTINEL NOVA v7: '+advCount+' advisory markers painted OK');
+    }catch(err){console.error('ADV MARKER ERROR:',err);}
 
     // Add connection lines
     CONNS.forEach(([fromId,toId,label,color])=>{
@@ -1129,7 +1126,7 @@ function App(){
 
       {/* Header */}
       <div className="hdr">
-        <div className="hdr-l"><div className="logo">SENTINEL NOVA<span>GLOBAL SECURITY TERMINAL</span></div><span style={{font:'600 8px var(--mono)',color:'#30d158',padding:'2px 8px',borderRadius:2,border:'1px solid rgba(48,209,88,.4)',background:'rgba(48,209,88,.1)',letterSpacing:'1.5px',marginLeft:12}}>GSSC-READY</span><span style={{font:'500 8px var(--mono)',color:'var(--t3)',marginLeft:8,letterSpacing:'1px'}}>BUILD 2026-02-24-v6</span></div>
+        <div className="hdr-l"><div className="logo">SENTINEL NOVA<span>GLOBAL SECURITY TERMINAL</span></div><span style={{font:'600 8px var(--mono)',color:'#30d158',padding:'2px 8px',borderRadius:2,border:'1px solid rgba(48,209,88,.4)',background:'rgba(48,209,88,.1)',letterSpacing:'1.5px',marginLeft:12}}>GSSC-READY</span><span style={{font:'500 8px var(--mono)',color:'var(--t3)',marginLeft:8,letterSpacing:'1px'}}>BUILD v7</span></div>
         <div className="hdr-r">
           <div className="hdr-spgi">
             <span style={{font:'600 10px var(--mono)',color:'var(--t2)'}}>SPGI</span>
