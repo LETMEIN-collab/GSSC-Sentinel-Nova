@@ -1,106 +1,77 @@
 <!DOCTYPE html>
-<html><head><title>Map Shading Test</title>
+<html><head><title>Map Shading Test v2</title>
 <style>body{background:#0a0a0a;color:#e5e5e5;font-family:'Courier New',monospace;padding:20px;font-size:12px}
-h1{color:#ff3b30;font-size:14px}.pass{color:#30d158}.fail{color:#ff3b30}.warn{color:#ffd60a}
+h1{color:#ff3b30;font-size:14px}h2{color:#64d2ff;font-size:12px;margin-top:16px}
+.pass{color:#30d158}.fail{color:#ff3b30}.warn{color:#ffd60a}
 pre{background:#111;padding:10px;border:1px solid #333;overflow:auto;max-height:400px}
 button{background:#ff3b30;color:#fff;border:none;padding:8px 16px;cursor:pointer;font:bold 12px monospace;margin-bottom:12px}
 </style></head><body>
-<h1>SENTINEL NOVA — MAP SHADING DIAGNOSTIC</h1>
+<h1>SENTINEL NOVA — MAP SHADING DIAGNOSTIC v2</h1>
+<p style="color:#999">Tests the lightweight GeoJSON source + ISO3 code matching</p>
 <button onclick="runTest()">▶ RUN TEST</button>
 <div id="out"></div>
 <script>
-var ADV_COUNTRIES = [
-  'Afghanistan','Ukraine','Russia','Syria','Iran','Iraq','Yemen','Somalia','Sudan',
-  'South Sudan','Libya','Mali','Haiti','North Korea','Venezuela','Myanmar (Burma)',
-  'Burkina Faso','Niger','Central African Republic','Belarus','Lebanon','Gaza Strip',
-  'Pakistan','Nigeria','Honduras','El Salvador','Ethiopia',
-  'Democratic Republic of the Congo','Cameroon','Chad','Mauritania','Guinea',
-  'Colombia','Kenya','Mexico','Brazil','Egypt','Turkey','India','Israel',
-  'Philippines','South Africa','Jamaica','China'
-];
-
-var ADV_TO_GEO = {
-  'myanmar (burma)':'Myanmar','gaza strip':'Palestine','north korea':'North Korea',
-  'democratic republic of the congo':'Democratic Republic of the Congo',
-  'central african republic':'Central African Republic','south sudan':'South Sudan',
-  'burkina faso':'Burkina Faso','el salvador':'El Salvador','south africa':'South Africa'
+var ADV_ISO3={
+  'AFG':4,'UKR':4,'RUS':4,'SYR':4,'IRN':4,'IRQ':4,'YEM':4,'SOM':4,'SDN':4,
+  'SSD':4,'LBY':4,'MLI':4,'HTI':4,'PRK':4,'VEN':4,'MMR':4,'BFA':4,'NER':4,
+  'CAF':4,'BLR':4,'LBN':4,'PSE':4,
+  'PAK':3,'NGA':3,'HND':3,'SLV':3,'ETH':3,'COD':3,'CMR':3,'TCD':3,'MRT':3,
+  'GIN':3,'COL':3,'KEN':3,
+  'MEX':2,'BRA':2,'EGY':2,'TUR':2,'IND':2,'ISR':2,'PHL':2,'ZAF':2,'JAM':2,'CHN':2
 };
+var lvlNames={4:'L4 DO NOT TRAVEL',3:'L3 RECONSIDER',2:'L2 CAUTION'};
+var lvlColors={4:'fail',3:'warn',2:'warn'};
 
 function runTest(){
-  var out = document.getElementById('out');
-  out.innerHTML = '<p class="warn">Fetching GeoJSON from MAIN branch...</p>';
+  var out=document.getElementById('out');
+  out.innerHTML='<p class="warn">Fetching GeoJSON...</p>';
+  var url='https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
+  var t0=performance.now();
+  fetch(url).then(function(r){
+    var elapsed=Math.round(performance.now()-t0);
+    if(!r.ok){out.innerHTML='<p class="fail">HTTP '+r.status+' — GeoJSON fetch failed!</p>';return;}
+    out.innerHTML='<p class="pass">HTTP 200 OK — loaded in '+elapsed+'ms</p>';
+    return r.json().then(function(geo){
+      out.innerHTML+='<p class="pass">GeoJSON parsed: <b>'+geo.features.length+' features</b></p>';
+      // Check properties
+      var f0=geo.features[0];
+      out.innerHTML+='<p>Property keys: '+Object.keys(f0.properties).join(', ')+'</p>';
+      out.innerHTML+='<p>Feature has .id field: '+(f0.id?'<span class="pass">YES ('+f0.id+')</span>':'<span class="fail">NO</span>')+'</p>';
+      out.innerHTML+='<p>First feature: id="'+f0.id+'" name="'+(f0.properties.name||'?')+'"</p>';
 
-  // Test both URLs
-  var urls = [
-    {label:'main branch', url:'https://raw.githubusercontent.com/datasets/geo-countries/main/data/countries.geojson'},
-    {label:'master branch', url:'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson'}
-  ];
-
-  urls.forEach(function(u){
-    fetch(u.url).then(function(r){
-      out.innerHTML += '<p>'+u.label+': HTTP '+r.status+' '+(r.ok?'<span class="pass">OK</span>':'<span class="fail">FAILED</span>')+'</p>';
-      if(!r.ok) return;
-      return r.json().then(function(geo){
-        out.innerHTML += '<p class="pass">GeoJSON loaded: '+geo.features.length+' features</p>';
-
-        // Check property keys
-        var f0 = geo.features[0].properties;
-        out.innerHTML += '<p>Property keys: '+Object.keys(f0).join(', ')+'</p>';
-        out.innerHTML += '<p>First feature: name="'+(f0.name||'MISSING')+'" ADMIN="'+(f0.ADMIN||'MISSING')+'"</p>';
-
-        // Get all GeoJSON names
-        var geoNames = {};
-        geo.features.forEach(function(f){
-          var n = f.properties.name || f.properties.ADMIN || '';
-          geoNames[n.toLowerCase()] = n;
-        });
-
-        // Match each advisory country
-        var html = '<h2>Advisory → GeoJSON Matching</h2><pre>';
-        var matched = 0, missed = 0;
-        ADV_COUNTRIES.forEach(function(c){
-          var cl = c.toLowerCase();
-          // Direct
-          if(geoNames[cl]){
-            html += '<span class="pass">✓ '+c+' → "'+geoNames[cl]+'"</span>\n';
-            matched++;
-            return;
-          }
-          // Via alias
-          var alias = ADV_TO_GEO[cl];
-          if(alias && geoNames[alias.toLowerCase()]){
-            html += '<span class="pass">✓ '+c+' → "'+geoNames[alias.toLowerCase()]+'" (via alias)</span>\n';
-            matched++;
-            return;
-          }
-          // Fuzzy
-          var found = false;
-          for(var key in geoNames){
-            if(key.length>4 && cl.length>4 && (key.indexOf(cl)!==-1 || cl.indexOf(key)!==-1)){
-              html += '<span class="warn">~ '+c+' → "'+geoNames[key]+'" (fuzzy)</span>\n';
-              matched++;
-              found = true;
-              break;
-            }
-          }
-          if(!found){
-            html += '<span class="fail">✗ '+c+' — NO MATCH</span>\n';
-            missed++;
-          }
-        });
-        html += '</pre>';
-        html += '<p><b>Result: <span class="'+(missed===0?'pass':'fail')+'">'+matched+'/'+ADV_COUNTRIES.length+' matched, '+missed+' missed</span></b></p>';
-
-        // Show all GeoJSON names for debugging
-        html += '<h2>All GeoJSON Country Names ('+Object.keys(geoNames).length+')</h2><pre>';
-        Object.values(geoNames).sort().forEach(function(n){ html += n + '\n'; });
-        html += '</pre>';
-
-        out.innerHTML += html;
+      // Build map of feature IDs
+      var geoById={};
+      var geoByName={};
+      geo.features.forEach(function(f){
+        if(f.id)geoById[f.id]=f.properties.name||f.id;
+        var n=(f.properties.name||'').toLowerCase();
+        if(n)geoByName[n]=f.id||n;
       });
-    }).catch(function(e){
-      out.innerHTML += '<p class="fail">'+u.label+': ERROR — '+e.message+'</p>';
+
+      // Match advisories by ISO3
+      var html='<h2>ISO3 Code Matching ('+Object.keys(ADV_ISO3).length+' advisory countries)</h2><pre>';
+      var matched=0,missed=0;
+      for(var iso in ADV_ISO3){
+        var lvl=ADV_ISO3[iso];
+        if(geoById[iso]){
+          html+='<span class="pass">✓ '+iso+' → "'+geoById[iso]+'" — '+lvlNames[lvl]+'</span>\n';
+          matched++;
+        }else{
+          html+='<span class="fail">✗ '+iso+' — NO MATCH IN GEOJSON — '+lvlNames[lvl]+'</span>\n';
+          missed++;
+        }
+      }
+      html+='</pre>';
+      html+='<p><b>ISO3 Match Result: <span class="'+(missed===0?'pass':'fail')+'">'+matched+'/'+Object.keys(ADV_ISO3).length+' matched, '+missed+' missed</span></b></p>';
+
+      // Show all feature IDs
+      html+='<h2>All Feature IDs ('+Object.keys(geoById).length+')</h2><pre style="max-height:200px">';
+      Object.keys(geoById).sort().forEach(function(id){html+=id+' → '+geoById[id]+'\n';});
+      html+='</pre>';
+      out.innerHTML+=html;
     });
+  }).catch(function(e){
+    out.innerHTML='<p class="fail">FETCH ERROR: '+e.message+'</p>';
   });
 }
 </script>
