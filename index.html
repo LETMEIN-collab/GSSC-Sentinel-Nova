@@ -478,7 +478,7 @@ function App(){
   const[wxLive,setWxLive]=useState(false);
   const[spgiNews,setSpgiNews]=useState([]);
   const[spgiNewsLive,setSpgiNewsLive]=useState(false);
-  const[advisories,setAdvisories]=useState([]);
+  const[advisories,setAdvisories]=useState(ADV_FALLBACK);
   const[advLive,setAdvLive]=useState(false);
   const[ratings,setRatings]=useState([]);
   const[ratingsLive,setRatingsLive]=useState(false);
@@ -495,8 +495,8 @@ function App(){
 
   // Fetch US State Dept Travel Advisories
   const fetchAdvisories=async()=>{
-    // Load curated fallback immediately so panel is never empty
-    if(advisories.length===0)setAdvisories(ADV_FALLBACK);
+    // Always load curated fallback first (no stale closure dependency)
+    setAdvisories(function(prev){return prev.length>0?prev:ADV_FALLBACK;});
     // Try State Dept travel advisory RSS via proxy
     try{
       var rssUrl=encodeURIComponent('https://travel.state.gov/_res/rss/TAsTWs.xml');
@@ -766,21 +766,24 @@ function App(){
   const fetchWeather=async()=>{
     // Load curated fallback immediately
     if(wxAlerts.length===0||wxAlerts===WEATHER_FALLBACK)setWxAlerts(WEATHER_FALLBACK);
-    // Try GDELT for real-time severe weather events (via corsproxy — GDELT has no CORS)
+    // Try GDELT for real-time severe weather/natural disaster events (via corsproxy)
     try{
-      var gq='(hurricane OR typhoon OR cyclone OR earthquake OR tsunami OR blizzard OR tornado OR wildfire OR flooding OR drought) (deaths OR emergency OR evacuation OR damage OR warning) sourcelang:eng';
-      var data=await gdeltFetch(gq,50,'2880min');
+      var gq='(hurricane OR typhoon OR cyclone OR earthquake OR tsunami OR blizzard OR tornado OR wildfire OR flooding OR drought OR volcanic OR avalanche OR landslide OR heatwave OR storm surge) sourcelang:eng';
+      var data=await gdeltFetch(gq,75,'2880min');
       if(!data||!data.articles||data.articles.length<3){setWxAlerts(WEATHER_FALLBACK);setWxLive(true);return;}
-      // Cluster by story similarity
+      // Weather/disaster keywords that MUST appear in the title for an article to qualify
+      var wxMustMatch=/hurricane|typhoon|cyclone|earthquake|tsunami|blizzard|tornado|wildfire|flood|drought|volcanic|eruption|avalanche|landslide|heatwave|heat wave|storm|severe weather|tropical|seismic|tremor|magnitude|lava|mudslide|ice storm|polar vortex|wind damage|snow|fire.*acre|fire.*burn|lightning|thunderstorm|hail|monsoon|El Ni/i;
       var clusters=[];
-      var wxIcons={'hurricane':'🌀','typhoon':'🌀','cyclone':'🌀','earthquake':'🫨','tsunami':'🌊','blizzard':'❄️','winter storm':'❄️','snow':'❄️','tornado':'🌪️','wildfire':'🔥','fire':'🔥','volcanic':'🌋','eruption':'🌋','flood':'🌊','drought':'☀️','heat':'🔥','polar vortex':'🥶'};
-      var wxTypes={'hurricane':'Hurricane','typhoon':'Typhoon','cyclone':'Cyclone','earthquake':'Earthquake','tsunami':'Tsunami','blizzard':'Blizzard','winter storm':'Winter Storm','snow':'Winter Storm','tornado':'Tornado','wildfire':'Wildfire','fire':'Wildfire','volcanic':'Eruption','eruption':'Eruption','flood':'Flooding','drought':'Drought','heat':'Heat','polar vortex':'Polar Vortex'};
+      var wxIcons={'hurricane':'🌀','typhoon':'🌀','cyclone':'🌀','tropical':'🌀','earthquake':'🫨','seismic':'🫨','tremor':'🫨','magnitude':'🫨','tsunami':'🌊','blizzard':'❄️','winter storm':'❄️','ice storm':'❄️','snow':'❄️','tornado':'🌪️','wildfire':'🔥','fire':'🔥','volcanic':'🌋','eruption':'🌋','lava':'🌋','flood':'🌊','monsoon':'🌊','storm surge':'🌊','drought':'☀️','heatwave':'🔥','heat wave':'🔥','polar vortex':'🥶','avalanche':'🏔️','landslide':'🏔️','mudslide':'🏔️','thunderstorm':'⛈️','hail':'⛈️','lightning':'⛈️'};
+      var wxTypes={'hurricane':'Hurricane','typhoon':'Typhoon','cyclone':'Cyclone','tropical':'Tropical Storm','earthquake':'Earthquake','seismic':'Earthquake','tremor':'Earthquake','magnitude':'Earthquake','tsunami':'Tsunami','blizzard':'Blizzard','winter storm':'Winter Storm','ice storm':'Ice Storm','snow':'Winter Storm','tornado':'Tornado','wildfire':'Wildfire','fire':'Wildfire','volcanic':'Eruption','eruption':'Eruption','lava':'Eruption','flood':'Flooding','monsoon':'Flooding','storm surge':'Storm Surge','drought':'Drought','heatwave':'Heatwave','heat wave':'Heatwave','polar vortex':'Polar Vortex','avalanche':'Avalanche','landslide':'Landslide','mudslide':'Landslide','thunderstorm':'Severe Storm','hail':'Severe Storm','lightning':'Severe Storm'};
       data.articles.forEach(function(art){
         if(!art.title)return;
         var t=art.title;
         var tl=t.toLowerCase();
+        // STRICT: title MUST contain a weather/disaster keyword — reject political, policy, opinion articles
+        if(!wxMustMatch.test(t))return;
         // Skip junk
-        if(/opinion|editorial|recipe|horoscope|celebrity|review:|top \d/i.test(t))return;
+        if(/opinion|editorial|recipe|horoscope|celebrity|review:|top \d|stock|market|crypto|bitcoin|trump|biden|congress|senate|election|campaign|poll|vote|legislation|bill passes|fema.*(map|funding|reform|budget)|insurance.*(rate|premium|reform|policy change)/i.test(t))return;
         // Match to existing cluster
         var matched=false;
         for(var c=0;c<clusters.length;c++){
@@ -1043,35 +1046,72 @@ function App(){
   },[mf]);
 
   // ═══ ADVISORY COUNTRY SHADING — color-code map by State Dept levels ═══
-  const COUNTRY_ALIASES={'Myanmar (Burma)':'Myanmar','Democratic Republic of the Congo':'Dem. Rep. Congo','Central African Republic':'Central African Rep.','South Sudan':'S. Sudan','Burkina Faso':'Burkina Faso','Gaza Strip':'Palestine','North Korea':"Dem. People's Rep. Korea",'Ivory Coast':"Côte d'Ivoire",'United States':'United States of America','Russia':'Russia'};
+  // Map advisory country names -> GeoJSON ADMIN property names (bidirectional matching)
+  var ADV_TO_GEO={
+    'afghanistan':'afghanistan','ukraine':'ukraine','russia':'russia','syria':'syria','iran':'iran',
+    'iraq':'iraq','yemen':'yemen','somalia':'somalia','sudan':'sudan','south sudan':'south sudan',
+    'libya':'libya','mali':'mali','haiti':'haiti','north korea':'north korea',
+    'venezuela':'venezuela','myanmar (burma)':'myanmar','burkina faso':'burkina faso',
+    'niger':'niger','central african republic':'central african republic',
+    'belarus':'belarus','lebanon':'lebanon','gaza strip':'palestine',
+    'pakistan':'pakistan','nigeria':'nigeria','honduras':'honduras','el salvador':'el salvador',
+    'ethiopia':'ethiopia','democratic republic of the congo':'democratic republic of the congo',
+    'cameroon':'cameroon','chad':'chad','mauritania':'mauritania','guinea':'guinea',
+    'colombia':'colombia','kenya':'kenya',
+    'mexico':'mexico','brazil':'brazil','egypt':'egypt','turkey':'turkey','india':'india',
+    'israel':'israel','philippines':'philippines','south africa':'south africa',
+    'jamaica':'jamaica','china':'china'
+  };
+  // Reverse map: GeoJSON name -> advisory name (for names that differ)
+  var GEO_TO_ADV={
+    'myanmar':'myanmar (burma)',
+    'palestine':'gaza strip',
+    'republic of the congo':'',  // Skip — this is NOT the DRC
+    'the bahamas':'',
+    'united republic of tanzania':'',
+    'somaliland':'somalia',
+    'northern cyprus':'',
+    'Kosovo':'',
+  };
+  var findAdvisory=function(geoName,advMap){
+    var nl=geoName.toLowerCase();
+    // Direct match
+    if(advMap[nl])return advMap[nl];
+    // Reverse alias
+    if(GEO_TO_ADV[nl]!==undefined){
+      if(GEO_TO_ADV[nl]==='')return null;
+      return advMap[GEO_TO_ADV[nl]]||null;
+    }
+    // Fuzzy: check if any advisory country is contained in the geo name or vice versa
+    for(var key in advMap){
+      if(key.length>4&&nl.length>4){
+        if(nl.indexOf(key)!==-1||key.indexOf(nl)!==-1)return advMap[key];
+      }
+    }
+    return null;
+  };
   useEffect(()=>{
     if(!mapRef.current||!geoData||advisories.length===0)return;
     var map=mapRef.current;
     // Remove old layer
     if(geoLayerRef.current){map.removeLayer(geoLayerRef.current);}
-    // Build lookup: country name -> highest advisory level
+    // Build lookup: lowercased advisory country name -> highest advisory level
     var advMap={};
     advisories.forEach(function(a){
-      var names=[a.country];
-      if(COUNTRY_ALIASES[a.country])names.push(COUNTRY_ALIASES[a.country]);
-      names.forEach(function(n){
-        var nl=n.toLowerCase();
-        if(!advMap[nl]||a.level>advMap[nl].level){advMap[nl]={level:a.level,desc:a.desc,title:a.title,url:a.url};}
-      });
+      var nl=a.country.toLowerCase();
+      if(!advMap[nl]||a.level>advMap[nl].level){advMap[nl]={level:a.level,desc:a.desc||'Travel Advisory',title:a.title,url:a.url};}
+      // Also add forward alias
+      if(ADV_TO_GEO[nl]&&ADV_TO_GEO[nl]!==nl){
+        var alt=ADV_TO_GEO[nl];
+        if(!advMap[alt]||a.level>advMap[alt].level){advMap[alt]={level:a.level,desc:a.desc||'Travel Advisory',title:a.title,url:a.url};}
+      }
     });
-    var advColors={4:'rgba(255,59,48,0.35)',3:'rgba(255,149,0,0.25)',2:'rgba(255,214,10,0.15)'};
-    var advBorders={4:'rgba(255,59,48,0.6)',3:'rgba(255,149,0,0.4)',2:'rgba(255,214,10,0.25)'};
+    var advColors={4:'rgba(255,59,48,0.4)',3:'rgba(255,149,0,0.3)',2:'rgba(255,214,10,0.18)'};
+    var advBorders={4:'rgba(255,59,48,0.7)',3:'rgba(255,149,0,0.5)',2:'rgba(255,214,10,0.3)'};
     var layer=L.geoJSON(geoData,{
       style:function(feature){
         var name=feature.properties.ADMIN||feature.properties.name||'';
-        var nl=name.toLowerCase();
-        // Try direct match, then partial match
-        var adv=advMap[nl];
-        if(!adv){
-          for(var key in advMap){
-            if(nl.indexOf(key)!==-1||key.indexOf(nl)!==-1){adv=advMap[key];break;}
-          }
-        }
+        var adv=findAdvisory(name,advMap);
         if(adv&&adv.level>=2){
           return{fillColor:advColors[adv.level],fillOpacity:1,weight:1,color:advBorders[adv.level],opacity:0.8};
         }
@@ -1079,13 +1119,7 @@ function App(){
       },
       onEachFeature:function(feature,layer){
         var name=feature.properties.ADMIN||feature.properties.name||'';
-        var nl=name.toLowerCase();
-        var adv=advMap[nl];
-        if(!adv){
-          for(var key in advMap){
-            if(nl.indexOf(key)!==-1||key.indexOf(nl)!==-1){adv=advMap[key];break;}
-          }
-        }
+        var adv=findAdvisory(name,advMap);
         if(adv&&adv.level>=2){
           var lvlLabel={4:'DO NOT TRAVEL',3:'RECONSIDER TRAVEL',2:'EXERCISE INCREASED CAUTION'};
           var lvlColor={4:'#ff3b30',3:'#ff9500',2:'#ffd60a'};
