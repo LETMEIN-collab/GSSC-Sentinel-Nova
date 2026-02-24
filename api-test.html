@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html><head><title>Sentinel Nova — API Diagnostic v2</title>
+<style>
+body{background:#0a0a0a;color:#e5e5e5;font-family:'Courier New',monospace;padding:20px;font-size:13px}
+h1{color:#ff3b30;font-size:16px;margin-bottom:4px}
+h2{color:#999;font-size:11px;font-weight:normal;margin-bottom:20px}
+.test{border:1px solid #333;padding:12px;margin:8px 0;border-radius:4px;background:#111}
+.test .name{font-weight:bold;color:#64d2ff;margin-bottom:4px}
+.test .url{color:#666;font-size:11px;word-break:break-all;margin-bottom:6px}
+.test .status{font-weight:bold;margin-top:6px}
+.pass{color:#30d158}.fail{color:#ff3b30}.wait{color:#ffd60a}
+.summary{margin-top:16px;padding:12px;border:1px solid #333;border-radius:4px;background:#111;font-weight:bold}
+button{background:#ff3b30;color:#fff;border:none;padding:8px 20px;font:bold 13px 'Courier New';cursor:pointer;border-radius:3px;margin-bottom:16px}
+</style></head><body>
+<h1>SENTINEL NOVA — LIVE API DIAGNOSTIC v2</h1>
+<h2>Updated: Tests now match actual dashboard endpoints (corsproxy.io for GDELT + Yahoo v8 chart)</h2>
+<button onclick="runAll()">▶ RUN ALL TESTS</button>
+<div id="results"></div>
+<div id="summary"></div>
+<script>
+var tests = [
+  {
+    name: '1. GDELT Breaking News (via corsproxy.io)',
+    url: 'https://corsproxy.io/?' + encodeURIComponent('https://api.gdeltproject.org/api/v2/doc/doc?query=(war OR missile OR airstrike OR bombing OR tariff) sourcelang:eng&mode=artlist&maxrecords=5&format=json&sort=datedesc&timespan=180min'),
+    validate: function(data) {
+      if (data.articles && data.articles.length > 0) return 'PASS — ' + data.articles.length + ' articles. Top: "' + data.articles[0].title.substring(0,80) + '..."';
+      return 'FAIL — No articles returned';
+    }
+  },
+  {
+    name: '2. GDELT Weather/Disasters (via corsproxy.io)',
+    url: 'https://corsproxy.io/?' + encodeURIComponent('https://api.gdeltproject.org/api/v2/doc/doc?query=(hurricane OR earthquake OR blizzard OR flooding OR wildfire) sourcelang:eng&mode=artlist&maxrecords=5&format=json&sort=datedesc&timespan=2880min'),
+    validate: function(data) {
+      if (data.articles && data.articles.length > 0) return 'PASS — ' + data.articles.length + ' articles. Top: "' + data.articles[0].title.substring(0,80) + '..."';
+      return 'FAIL — No articles returned';
+    }
+  },
+  {
+    name: '3. GDELT Sovereign Ratings (via corsproxy.io)',
+    url: 'https://corsproxy.io/?' + encodeURIComponent('https://api.gdeltproject.org/api/v2/doc/doc?query=(credit rating OR sovereign rating OR downgrades OR upgrades) (Moodys OR Fitch OR S&P Global) sourcelang:eng&mode=artlist&maxrecords=5&format=json&sort=datedesc&timespan=10080min'),
+    validate: function(data) {
+      if (data.articles && data.articles.length > 0) return 'PASS — ' + data.articles.length + ' articles. Top: "' + data.articles[0].title.substring(0,80) + '..."';
+      return 'FAIL — No articles returned';
+    }
+  },
+  {
+    name: '4. GDELT NOTAMs/TFR (via corsproxy.io)',
+    url: 'https://corsproxy.io/?' + encodeURIComponent('https://api.gdeltproject.org/api/v2/doc/doc?query=(NOTAM OR TFR OR airspace closure OR flight restriction) (FAA OR ICAO OR aviation) sourcelang:eng&mode=artlist&maxrecords=5&format=json&sort=datedesc&timespan=4320min'),
+    validate: function(data) {
+      if (data.articles && data.articles.length > 0) return 'PASS — ' + data.articles.length + ' articles. Top: "' + data.articles[0].title.substring(0,80) + '..."';
+      return 'FAIL — No articles returned';
+    }
+  },
+  {
+    name: '5. State Dept Travel Advisories (via rss2json)',
+    url: 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Ftravel.state.gov%2F_res%2Frss%2FTAsTWs.xml',
+    validate: function(data) {
+      if (data.items && data.items.length > 0) return 'PASS — ' + data.items.length + ' advisories. First: "' + data.items[0].title.substring(0,80) + '"';
+      if (data.status === 'error') return 'FAIL — rss2json error: ' + (data.message || 'unknown');
+      return 'FAIL — No items returned';
+    }
+  },
+  {
+    name: '6. Google News RSS / Intel Feed (via rss2json)',
+    url: 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fnews.google.com%2Frss%2Fsearch%3Fq%3Dgeopolitical%2Bconflict%26hl%3Den-US%26gl%3DUS%26ceid%3DUS%3Aen',
+    validate: function(data) {
+      if (data.items && data.items.length > 0) return 'PASS — ' + data.items.length + ' news items. Top: "' + data.items[0].title.substring(0,80) + '"';
+      if (data.status === 'error') return 'FAIL — rss2json error: ' + (data.message || 'unknown');
+      return 'FAIL — No items returned';
+    }
+  },
+  {
+    name: '7. Aviation Herald RSS (via rss2json)',
+    url: 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Favherald.com%2Fh%3Frss%3D1',
+    validate: function(data) {
+      if (data.items && data.items.length > 0) return 'PASS — ' + data.items.length + ' incidents. First: "' + data.items[0].title.substring(0,80) + '"';
+      if (data.status === 'error') return 'FAIL — rss2json error: ' + (data.message || 'unknown');
+      return 'FAIL — No items returned';
+    }
+  },
+  {
+    name: '8. GeoJSON Country Boundaries (GitHub raw)',
+    url: 'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson',
+    validate: function(data) {
+      if (data.features && data.features.length > 0) return 'PASS — ' + data.features.length + ' countries loaded';
+      return 'FAIL — No features found';
+    }
+  },
+  {
+    name: '9. Yahoo Finance v8 Chart — SPGI (via corsproxy.io) [PRIMARY]',
+    url: 'https://corsproxy.io/?' + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/SPGI?interval=1d&range=5d'),
+    validate: function(data) {
+      if (data.chart && data.chart.result && data.chart.result[0]) {
+        var meta = data.chart.result[0].meta;
+        if (meta && meta.regularMarketPrice) return 'PASS — SPGI: $' + meta.regularMarketPrice.toFixed(2) + ' (v8 chart)';
+      }
+      return 'FAIL — No chart data';
+    }
+  },
+  {
+    name: '10. Yahoo Finance v8 Chart — BTC (via corsproxy.io)',
+    url: 'https://corsproxy.io/?' + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?interval=1d&range=5d'),
+    validate: function(data) {
+      if (data.chart && data.chart.result && data.chart.result[0]) {
+        var meta = data.chart.result[0].meta;
+        if (meta && meta.regularMarketPrice) return 'PASS — BTC: $' + meta.regularMarketPrice.toLocaleString('en-US',{maximumFractionDigits:0}) + ' (v8 chart)';
+      }
+      return 'FAIL — No chart data';
+    }
+  },
+  {
+    name: '11. Yahoo Finance v8 Chart — VIX (via corsproxy.io)',
+    url: 'https://corsproxy.io/?' + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX?interval=1d&range=5d'),
+    validate: function(data) {
+      if (data.chart && data.chart.result && data.chart.result[0]) {
+        var meta = data.chart.result[0].meta;
+        if (meta && meta.regularMarketPrice) return 'PASS — VIX: ' + meta.regularMarketPrice.toFixed(2) + ' (v8 chart)';
+      }
+      return 'FAIL — No chart data';
+    }
+  }
+];
+
+var passCount = 0, failCount = 0;
+
+function runAll() {
+  passCount = 0; failCount = 0;
+  var container = document.getElementById('results');
+  var summaryEl = document.getElementById('summary');
+  container.innerHTML = '';
+  summaryEl.innerHTML = '';
+  var total = tests.length;
+
+  tests.forEach(function(test, idx) {
+    var div = document.createElement('div');
+    div.className = 'test';
+    div.innerHTML = '<div class="name">' + test.name + '</div><div class="url">' + test.url.substring(0,150) + (test.url.length>150?'...':'') + '</div><div class="status wait">⏳ TESTING...</div>';
+    container.appendChild(div);
+
+    var controller = new AbortController();
+    var timeout = setTimeout(function() { controller.abort(); }, 15000);
+
+    fetch(test.url, { signal: controller.signal })
+      .then(function(resp) {
+        clearTimeout(timeout);
+        var statusEl = div.querySelector('.status');
+        if (!resp.ok) {
+          statusEl.className = 'status fail';
+          statusEl.textContent = '✗ HTTP ' + resp.status + ' — ' + resp.statusText;
+          failCount++; updateSummary(total);
+          return;
+        }
+        return resp.json().then(function(data) {
+          var result = test.validate(data);
+          var passed = result.indexOf('PASS') === 0;
+          statusEl.className = 'status ' + (passed ? 'pass' : 'fail');
+          statusEl.textContent = (passed ? '✓ ' : '✗ ') + result;
+          if (passed) passCount++; else failCount++;
+          updateSummary(total);
+        });
+      })
+      .catch(function(err) {
+        clearTimeout(timeout);
+        var statusEl = div.querySelector('.status');
+        statusEl.className = 'status fail';
+        statusEl.textContent = '✗ NETWORK ERROR — ' + err.message;
+        failCount++; updateSummary(total);
+      });
+  });
+}
+
+function updateSummary(total) {
+  var done = passCount + failCount;
+  if (done < total) return;
+  var summaryEl = document.getElementById('summary');
+  var allPass = failCount === 0;
+  summaryEl.className = 'summary';
+  summaryEl.style.borderColor = allPass ? '#30d158' : '#ff3b30';
+  summaryEl.innerHTML = '<span style="color:' + (allPass?'#30d158':'#ff3b30') + '">' +
+    (allPass ? '✓ ALL TESTS PASSED' : '⚠ ' + failCount + ' of ' + total + ' FAILED') +
+    '</span> — ' + passCount + '/' + total + ' endpoints operational';
+}
+</script>
+</body></html>
