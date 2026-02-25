@@ -1316,142 +1316,87 @@ function App(){
     return{l4,l3,l2,total:advisories.length};
   },[advisories]);
 
-  // ═══ GENERATE BRIEF — export .docx intelligence report ═══
+  // ═══ GENERATE BRIEF — one-page 24h security summary ═══
   const generateBrief=async function(){
     var D=window.docx;if(!D){alert('Document library not loaded. Please refresh.');return;}
     var now=new Date();
     var dateStr=now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
     var timeStr=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false})+' UTC';
-    var border={style:D.BorderStyle.SINGLE,size:1,color:'CCCCCC'};
-    var borders={top:border,bottom:border,left:border,right:border};
-    var cellMar={top:60,bottom:60,left:100,right:100};
-    // Gather live data
-    var l4Advs=advisories.filter(function(a){return a.level===4;});
-    var l3Advs=advisories.filter(function(a){return a.level===3;});
+    // Gather data — focus on what matters in the last 24h
+    var topNews=(liveNews.length>0?liveNews:INCIDENTS).slice(0,8);
     var prohibNotams=notams.filter(function(n){return n.status==='PROHIBITED';});
-    var restrictNotams=notams.filter(function(n){return n.status==='RESTRICTED'||n.status==='WARNING';});
-    var topNews=(liveNews.length>0?liveNews:INCIDENTS).slice(0,10);
+    var critNotams=notams.filter(function(n){return n.status==='PROHIBITED'||n.status==='RESTRICTED';}).slice(0,5);
     var mktData=TICKERS.map(function(t){var lp=livePrices[t.s];return{s:t.s,p:lp?lp.p:t.p,c:lp?lp.c:t.c,u:lp?lp.u:t.u};});
-    // Helper: make a table row
-    var makeRow=function(cells,isHeader){
-      return new D.TableRow({children:cells.map(function(c,ci){
-        var widths=[3200,2200,3960];
-        return new D.TableCell({
-          borders:borders,width:{size:widths[ci]||3120,type:D.WidthType.DXA},
-          margins:cellMar,
-          shading:isHeader?{fill:'1a1a2e',type:D.ShadingType.CLEAR}:{fill:'FFFFFF',type:D.ShadingType.CLEAR},
-          children:[new D.Paragraph({children:[new D.TextRun({text:c,bold:isHeader,font:'Arial',size:isHeader?18:17,color:isHeader?'FFFFFF':'333333'})]})]
-        });
-      })});
-    };
-    // Build advisory table rows
-    var advRows=[makeRow(['Country','Level','Risk Factors'],true)];
-    l4Advs.slice(0,12).forEach(function(a){advRows.push(makeRow([a.country||'','Level 4 — Do Not Travel',a.desc||'']));});
-    l3Advs.slice(0,10).forEach(function(a){advRows.push(makeRow([a.country||'','Level 3 — Reconsider Travel',a.desc||'']));});
-    // Build NOTAM table rows
-    var notamRows=[makeRow(['Zone / Location','Status','Detail'],true)];
-    notams.slice(0,12).forEach(function(n){notamRows.push(makeRow([n.zone||'',n.status||'',n.detail?n.detail.slice(0,80):'']));});
-    // Build market table rows
-    var mktRows=[makeRow(['Instrument','Price','Change'],true)];
-    mktData.forEach(function(m){mktRows.push(makeRow([m.s,m.p,m.c]));});
-    // Exec summary bullets
-    var summaryItems=[];
-    summaryItems.push(advStats.l4+' countries at Level 4 (Do Not Travel), '+advStats.l3+' at Level 3 (Reconsider Travel)');
-    if(prohibNotams.length>0)summaryItems.push(prohibNotams.length+' active airspace prohibitions including '+prohibNotams.map(function(n){return n.zone;}).slice(0,3).join(', '));
-    if(restrictNotams.length>0)summaryItems.push(restrictNotams.length+' airspace restrictions or warnings currently in effect');
-    var vixTicker=mktData.find(function(m){return m.s==='VIX';});
-    if(vixTicker)summaryItems.push('VIX at '+vixTicker.p+' ('+vixTicker.c+') — '+(parseFloat(vixTicker.p)>20?'elevated':'moderate')+' market volatility');
-    var goldTicker=mktData.find(function(m){return m.s==='GC1';});
-    if(goldTicker)summaryItems.push('Gold at $'+goldTicker.p+' ('+goldTicker.c+') — safe-haven '+(goldTicker.u?'demand rising':'flows steady'));
-    if(topNews.length>0)summaryItems.push('Top developing story: '+decEnt(topNews[0].t||topNews[0].title||'').slice(0,90));
-    // Ratings summary
-    var ratingSummary=[];
-    ratings.slice(0,6).forEach(function(r){ratingSummary.push((r.agency||'')+': '+decEnt(r.headline||'').slice(0,80));});
-    // Severe weather summary
-    var wxSummary=[];
-    wxAlerts.filter(function(w){return w.sev==='extreme'||w.sev==='severe';}).slice(0,4).forEach(function(w){wxSummary.push(w.title+' — '+w.detail);});
+    var bigMovers=mktData.filter(function(m){var pct=parseFloat(m.c);return!isNaN(pct)&&Math.abs(pct)>=1.5;});
+    var extremeWx=wxAlerts.filter(function(w){return w.sev==='extreme'||w.sev==='severe';}).slice(0,3);
+    var vix=mktData.find(function(m){return m.s==='VIX';});
+    // Build narrative paragraphs
+    var children=[];
+    // ── Header block ──
+    children.push(new D.Paragraph({spacing:{after:0},children:[
+      new D.TextRun({text:'SENTINEL NOVA',font:'Arial',size:36,bold:true,color:'cc0000'}),
+      new D.TextRun({text:'   24-HOUR SECURITY BRIEF',font:'Arial',size:20,bold:true,color:'666666'}),
+    ]}));
+    children.push(new D.Paragraph({spacing:{after:160},border:{bottom:{style:D.BorderStyle.SINGLE,size:4,color:'cc0000',space:6}},children:[
+      new D.TextRun({text:dateStr+' | Generated '+timeStr+'  |  UNCLASSIFIED',font:'Arial',size:16,color:'888888'}),
+    ]}));
+    // ── Situation Overview (narrative paragraph) ──
+    children.push(new D.Paragraph({spacing:{after:60},children:[new D.TextRun({text:'SITUATION OVERVIEW',font:'Arial',size:22,bold:true,color:'1a1a2e'})]}));
+    var overviewText=advStats.l4+' countries remain at Level 4 (Do Not Travel) and '+advStats.l3+' at Level 3 (Reconsider Travel). ';
+    overviewText+=prohibNotams.length+' airspace zones are currently under full prohibition. ';
+    if(vix)overviewText+='The VIX stands at '+vix.p+' ('+vix.c+'), indicating '+(parseFloat(vix.p)>25?'heightened':'elevated')+' market volatility. ';
+    if(bigMovers.length>0)overviewText+='Notable market moves: '+bigMovers.map(function(m){return m.s+' '+m.c;}).join(', ')+'. ';
+    if(extremeWx.length>0)overviewText+=extremeWx.length+' extreme/severe weather event'+(extremeWx.length>1?'s':'')+' being tracked.';
+    children.push(new D.Paragraph({spacing:{after:140},children:[new D.TextRun({text:overviewText,font:'Arial',size:19,color:'333333'})]}));
+    // ── Key Developments ──
+    children.push(new D.Paragraph({spacing:{after:60},children:[new D.TextRun({text:'KEY DEVELOPMENTS',font:'Arial',size:22,bold:true,color:'1a1a2e'})]}));
+    topNews.forEach(function(n,idx){
+      var headline=decEnt(n.t||n.title||'').slice(0,130);
+      var source=decEnt(n.src||n.reg||'');
+      var cat=n.cat||'';
+      children.push(new D.Paragraph({spacing:{after:40},children:[
+        new D.TextRun({text:(idx+1)+'. ',font:'Arial',size:18,bold:true,color:'cc0000'}),
+        new D.TextRun({text:headline,font:'Arial',size:18,bold:true,color:'222222'}),
+      ]}));
+      if(source||cat)children.push(new D.Paragraph({spacing:{after:60},indent:{left:360},children:[
+        new D.TextRun({text:(cat?cat.toUpperCase()+' | ':'')+source+(n.tm?' | '+n.tm:''),font:'Arial',size:16,color:'888888'}),
+      ]}));
+    });
+    // ── Active Airspace Restrictions ──
+    if(critNotams.length>0){
+      children.push(new D.Paragraph({spacing:{before:100,after:60},children:[new D.TextRun({text:'AIRSPACE RESTRICTIONS',font:'Arial',size:22,bold:true,color:'1a1a2e'})]}));
+      critNotams.forEach(function(n){
+        children.push(new D.Paragraph({spacing:{after:30},indent:{left:360},children:[
+          new D.TextRun({text:n.status+': ',font:'Arial',size:17,bold:true,color:n.status==='PROHIBITED'?'cc0000':'cc6600'}),
+          new D.TextRun({text:n.zone+(n.detail?' \u2014 '+n.detail.slice(0,90):''),font:'Arial',size:17,color:'333333'}),
+        ]}));
+      });
+    }
+    // ── Market Snapshot (one line) ──
+    children.push(new D.Paragraph({spacing:{before:100,after:60},children:[new D.TextRun({text:'MARKET SNAPSHOT',font:'Arial',size:22,bold:true,color:'1a1a2e'})]}));
+    var mktLine=mktData.slice(0,10).map(function(m){return m.s+' '+m.p+' ('+m.c+')';}).join('  |  ');
+    children.push(new D.Paragraph({spacing:{after:100},children:[new D.TextRun({text:mktLine,font:'Arial',size:16,color:'555555'})]}));
+    // ── Disclaimer ──
+    children.push(new D.Paragraph({spacing:{before:120},border:{top:{style:D.BorderStyle.SINGLE,size:1,color:'CCCCCC',space:6}},children:[
+      new D.TextRun({text:'This brief is auto-generated from open-source feeds for situational awareness only. All assessments require human verification before operational use.',font:'Arial',size:15,color:'999999',italics:true}),
+    ]}));
     // Build doc
     var doc=new D.Document({
-      styles:{
-        default:{document:{run:{font:'Arial',size:22}}},
-        paragraphStyles:[
-          {id:'Heading1',name:'Heading 1',basedOn:'Normal',next:'Normal',quickFormat:true,run:{size:32,bold:true,font:'Arial',color:'1a1a2e'},paragraph:{spacing:{before:360,after:200},outlineLevel:0}},
-          {id:'Heading2',name:'Heading 2',basedOn:'Normal',next:'Normal',quickFormat:true,run:{size:26,bold:true,font:'Arial',color:'333333'},paragraph:{spacing:{before:240,after:140},outlineLevel:1}}
-        ]
-      },
-      numbering:{config:[{reference:'bullets',levels:[{level:0,format:D.LevelFormat.BULLET,text:'\u2022',alignment:D.AlignmentType.LEFT,style:{paragraph:{indent:{left:720,hanging:360}}}}]}]},
+      styles:{default:{document:{run:{font:'Arial',size:20}}}},
       sections:[{
         properties:{
-          page:{size:{width:12240,height:15840},margin:{top:1440,right:1440,bottom:1440,left:1440}}
-        },
-        headers:{
-          default:new D.Header({children:[
-            new D.Paragraph({alignment:D.AlignmentType.RIGHT,children:[
-              new D.TextRun({text:'SENTINEL NOVA — Global Security Brief',font:'Arial',size:16,color:'999999',italics:true})
-            ]})
-          ]})
+          page:{size:{width:12240,height:15840},margin:{top:1080,right:1200,bottom:900,left:1200}}
         },
         footers:{
           default:new D.Footer({children:[
-            new D.Paragraph({alignment:D.AlignmentType.CENTER,spacing:{before:100},children:[
-              new D.TextRun({text:'Powered by SENTINEL NOVA — Human Verified',font:'Arial',size:16,color:'666666',italics:true}),
-            ]}),
             new D.Paragraph({alignment:D.AlignmentType.CENTER,children:[
-              new D.TextRun({text:'Page ',font:'Arial',size:14,color:'999999'}),
-              new D.TextRun({children:[D.PageNumber.CURRENT],font:'Arial',size:14,color:'999999'}),
+              new D.TextRun({text:'Powered by SENTINEL NOVA \u2014 Human Verified',font:'Arial',size:15,color:'888888',italics:true}),
             ]})
           ]})
         },
-        children:[
-          // Title
-          new D.Paragraph({spacing:{after:80},children:[
-            new D.TextRun({text:'SENTINEL NOVA',font:'Arial',size:44,bold:true,color:'cc0000'}),
-          ]}),
-          new D.Paragraph({spacing:{after:40},children:[
-            new D.TextRun({text:'Global Security Intelligence Brief',font:'Arial',size:28,color:'333333'}),
-          ]}),
-          new D.Paragraph({spacing:{after:200},border:{bottom:{style:D.BorderStyle.SINGLE,size:6,color:'cc0000',space:8}},children:[
-            new D.TextRun({text:dateStr+' | '+timeStr+'  |  Classification: UNCLASSIFIED',font:'Arial',size:18,color:'666666'}),
-          ]}),
-          // Executive Summary
-          new D.Paragraph({heading:D.HeadingLevel.HEADING_1,children:[new D.TextRun('Executive Summary')]}),
-          new D.Paragraph({spacing:{after:120},children:[new D.TextRun({text:'This brief provides a snapshot of the current global security environment as monitored by SENTINEL NOVA at the time of generation. All data points are sourced from live feeds and should be independently verified before operational use.',size:20,color:'555555',italics:true})]}),
-          ...summaryItems.map(function(s){return new D.Paragraph({numbering:{reference:'bullets',level:0},spacing:{after:60},children:[new D.TextRun({text:s,size:21})]});}),
-          // Travel Advisories
-          new D.Paragraph({heading:D.HeadingLevel.HEADING_1,children:[new D.TextRun('US State Department Travel Advisories')]}),
-          new D.Paragraph({spacing:{after:120},children:[new D.TextRun({text:advStats.l4+' countries at Level 4, '+advStats.l3+' at Level 3, '+advStats.l2+' at Level 2. Total: '+advStats.total+' active advisories.',size:20})]}),
-          new D.Table({width:{size:9360,type:D.WidthType.DXA},columnWidths:[3200,2200,3960],rows:advRows}),
-          // NOTAMs
-          new D.Paragraph({heading:D.HeadingLevel.HEADING_1,children:[new D.TextRun('Active NOTAMs & Airspace Restrictions')]}),
-          new D.Paragraph({spacing:{after:120},children:[new D.TextRun({text:prohibNotams.length+' prohibited zones, '+(notams.length-prohibNotams.length)+' restrictions/warnings. '+(notamLive?'Source: FAA NOTAM API + news feeds.':'Source: Verified fallback data.'),size:20})]}),
-          new D.Table({width:{size:9360,type:D.WidthType.DXA},columnWidths:[3200,2200,3960],rows:notamRows}),
-          // Sovereign Ratings
-          new D.Paragraph({heading:D.HeadingLevel.HEADING_1,children:[new D.TextRun('Sovereign Credit Rating Actions')]}),
-          ...(ratingSummary.length>0?ratingSummary.map(function(r){return new D.Paragraph({numbering:{reference:'bullets',level:0},spacing:{after:60},children:[new D.TextRun({text:r,size:20})]});}):
-          [new D.Paragraph({children:[new D.TextRun({text:'No recent rating actions detected.',size:20,color:'666666',italics:true})]})]),
-          // Market Overview
-          new D.Paragraph({heading:D.HeadingLevel.HEADING_1,children:[new D.TextRun('Market Overview')]}),
-          new D.Table({width:{size:9360,type:D.WidthType.DXA},columnWidths:[3200,2200,3960],rows:mktRows}),
-          // Severe Weather
-          new D.Paragraph({heading:D.HeadingLevel.HEADING_1,children:[new D.TextRun('Severe Weather Alerts')]}),
-          ...(wxSummary.length>0?wxSummary.map(function(w){return new D.Paragraph({numbering:{reference:'bullets',level:0},spacing:{after:60},children:[new D.TextRun({text:w,size:20})]});}):
-          [new D.Paragraph({children:[new D.TextRun({text:'No extreme or severe weather alerts at time of generation.',size:20,color:'666666',italics:true})]})]),
-          // Intelligence Headlines
-          new D.Paragraph({heading:D.HeadingLevel.HEADING_1,children:[new D.TextRun('Intelligence Feed — Top Headlines')]}),
-          ...topNews.map(function(n,idx){return new D.Paragraph({spacing:{after:60},children:[
-            new D.TextRun({text:(idx+1)+'. ',bold:true,size:20}),
-            new D.TextRun({text:decEnt(n.t||n.title||'').slice(0,120),size:20}),
-            new D.TextRun({text:'  ('+decEnt(n.src||n.reg||'')+')',size:18,color:'888888'}),
-          ]});}),
-          // Disclaimer
-          new D.Paragraph({pageBreakBefore:false,spacing:{before:400},border:{top:{style:D.BorderStyle.SINGLE,size:2,color:'CCCCCC',space:8}},children:[
-            new D.TextRun({text:'DISCLAIMER: ',bold:true,size:18,color:'cc0000'}),
-            new D.TextRun({text:'This report is auto-generated from open-source intelligence feeds and is provided for situational awareness only. All assessments require human verification. Data may be delayed or incomplete. Do not use as sole basis for operational decisions. SENTINEL NOVA is not a substitute for professional intelligence analysis.',size:18,color:'666666',italics:true}),
-          ]}),
-        ]
+        children:children
       }]
     });
-    // Generate and download
     var blob=await D.Packer.toBlob(doc);
     var url=URL.createObjectURL(blob);
     var a=document.createElement('a');
