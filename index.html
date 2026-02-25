@@ -324,7 +324,8 @@ const ADV_FALLBACK=[
 ];
 
 /* Polymarket geopolitical search terms — used to find relevant markets */
-const POLY_GEO_TERMS=['war','conflict','military','nuclear','invasion','ceasefire','nato','sanctions','coup','assassination','missile','iran','russia','ukraine','china','taiwan','korea','middle east','terrorism','troops'];
+const POLY_GEO_TERMS=['war','conflict','military','nuclear','invasion','ceasefire','nato','sanctions','coup','assassination','missile','iran','russia','ukraine','china','taiwan','korea','middle east','terrorism','troops','election','president','prime minister','parliament','tariff','embargo','drone','strike','border','refugee','diplomat','treaty','security','geopolit','protest','uprising','regime','dictator','authoritarian','democrat','republic','congress','senate','legislation','indictment','impeach','arrest','detain','hostage','kidnap','cartel','insurgent','rebel','separatist','annexation','occupation','airstrike','casualt','deploy','weapon','cyber','hack','breach','espionage','intelligence','surveillance','climate','hurricane','earthquake','tsunami','pandemic','outbreak','famine'];
+const POLY_EXCLUDE=/\b(nba|nfl|mlb|nhl|soccer|football match|premier league|champions league|world cup|super bowl|oscar|grammy|emmy|tony award|billboard|box office|fashion|kardashian|celebrity|tiktok|youtube|spotify|netflix|bachelor|bachelorette|love island|crypto price|bitcoin price|ethereum price|solana price|memecoin|dogecoin|shiba|pepe coin)\b/i;
 /* Fallback markets if API is unavailable */
 const POLY_FALLBACK=[
   {question:'Russia-Ukraine ceasefire in 2026?',yes:0.18,volume:'$12.4M',slug:'russia-ukraine-ceasefire-2026',category:'Geopolitics'},
@@ -636,20 +637,19 @@ function App(){
       if(!resp){setPolyMarkets(POLY_FALLBACK);setPolyLive(true);return;}
       var allMarkets=await resp.json();
       if(!Array.isArray(allMarkets)||allMarkets.length===0){setPolyMarkets(POLY_FALLBACK);setPolyLive(true);return;}
-      // Filter for geopolitical/security-relevant markets
+      // Filter for geopolitical/security/politics markets — exclude sports, entertainment, crypto prices
       var geoMarkets=allMarkets.filter(function(m){
-        var q=(m.question||'').toLowerCase()+' '+(m.description||'').toLowerCase()+' '+(m.category||'').toLowerCase();
-        return POLY_GEO_TERMS.some(function(term){return q.indexOf(term)!==-1;});
+        var q=(m.question||'')+' '+(m.description||'')+' '+(m.category||'');
+        // Hard exclude: sports, entertainment, fashion, crypto prices
+        if(POLY_EXCLUDE.test(q))return false;
+        var ql=q.toLowerCase();
+        // Include if matches any geo/security/politics term
+        if(POLY_GEO_TERMS.some(function(term){return ql.indexOf(term)!==-1;}))return true;
+        // Include if categorised as politics/world/geopolitics
+        var cat=(m.category||'').toLowerCase();
+        if(cat==='politics'||cat==='world'||cat==='geopolitics'||cat==='science'||cat==='climate')return true;
+        return false;
       });
-      if(geoMarkets.length<3){
-        // Broaden: also include any "Politics" or "World" tagged markets
-        allMarkets.forEach(function(m){
-          var cat=(m.category||'').toLowerCase();
-          if((cat==='politics'||cat==='world'||cat==='geopolitics')&&!geoMarkets.includes(m)){
-            geoMarkets.push(m);
-          }
-        });
-      }
       // Parse and format
       var items=geoMarkets.slice(0,12).map(function(m){
         var prices=[];
