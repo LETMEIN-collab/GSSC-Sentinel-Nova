@@ -433,6 +433,11 @@ function classifyHeadline(title){
   }
   return best;
 }
+// Decode HTML entities from RSS/API responses (e.g. &amp; → &, &#39; → ')
+function decEnt(s){
+  if(!s||typeof s!=='string')return s||'';
+  return s.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&#x27;/g,"'").replace(/&apos;/g,"'").replace(/&#(\d+);/g,function(_,n){return String.fromCharCode(n);});
+}
 function timeAgo(dateStr){
   if(!dateStr)return 'Active';
   // Handle various date formats: ISO, FAA (MM/DD/YYYY HH:MM), epoch ms, YYYYMMDDHHMMSS
@@ -548,12 +553,13 @@ function App(){
       var data=await res.json();
       if(data.items&&data.items.length>5){
         var parsed=data.items.map(function(item){
+          var _tit=decEnt(item.title||'');
           var lvl=4;
-          if(/Level 3/i.test(item.title))lvl=3;
-          else if(/Level 2/i.test(item.title))lvl=2;
-          else if(/Level 1/i.test(item.title))lvl=1;
-          var country=item.title.replace(/\s*[-–—]\s*Level \d.*/i,'').trim();
-          return{country:country,level:lvl,title:item.title,date:new Date(item.pubDate),url:item.link||item.guid||'https://travel.state.gov',desc:item.description?(item.description.replace(/<[^>]*>/g,'').slice(0,80)):'Travel Advisory'};
+          if(/Level 3/i.test(_tit))lvl=3;
+          else if(/Level 2/i.test(_tit))lvl=2;
+          else if(/Level 1/i.test(_tit))lvl=1;
+          var country=_tit.replace(/\s*[-–—]\s*Level \d.*/i,'').trim();
+          return{country:country,level:lvl,title:_tit,date:new Date(item.pubDate),url:item.link||item.guid||'https://travel.state.gov',desc:item.description?decEnt(item.description.replace(/<[^>]*>/g,'').slice(0,80)):'Travel Advisory'};
         });
         // Sort: Level 4 first, then 3, then 2
         parsed.sort(function(a,b){return b.level-a.level||b.date-a.date;});
@@ -578,7 +584,7 @@ function App(){
       var items=[];
       data.articles.forEach(function(art){
         if(!art.title)return;
-        var t=art.title;
+        var t=decEnt(art.title);
         var key=t.slice(0,40).toLowerCase();
         if(seen.has(key))return;seen.add(key);
         // Detect agency
@@ -756,8 +762,9 @@ function App(){
           const data=await res.json();
           if(data.items){
             data.items.slice(0,4).forEach(item=>{
-              const src=item.title.includes(' - ')?item.title.split(' - ').pop().trim():'News';
-              const headline=item.title.includes(' - ')?item.title.split(' - ').slice(0,-1).join(' - ').trim():item.title;
+              var _t=decEnt(item.title||'');
+              const src=_t.includes(' - ')?_t.split(' - ').pop().trim():'News';
+              const headline=_t.includes(' - ')?_t.split(' - ').slice(0,-1).join(' - ').trim():_t;
               results.push({t:headline,src,tm:timeAgo(item.pubDate),url:item.link,pubDate:new Date(item.pubDate)});
             });
           }
@@ -781,9 +788,10 @@ function App(){
           const data=await res.json();
           if(data.items){
             data.items.slice(0,4).forEach(item=>{
-              const cat=classifyHeadline(item.title);
-              const src=item.title.includes(' - ')?item.title.split(' - ').pop().trim():'News';
-              const headline=item.title.includes(' - ')?item.title.split(' - ').slice(0,-1).join(' - ').trim():item.title;
+              var _ti=decEnt(item.title||'');
+              const cat=classifyHeadline(_ti);
+              const src=_ti.includes(' - ')?_ti.split(' - ').pop().trim():'News';
+              const headline=_ti.includes(' - ')?_ti.split(' - ').slice(0,-1).join(' - ').trim():_ti;
               results.push({
                 t:headline,
                 cat,
@@ -822,7 +830,7 @@ function App(){
       var wxTypes={'hurricane':'Hurricane','typhoon':'Typhoon','cyclone':'Cyclone','tropical':'Tropical Storm','earthquake':'Earthquake','seismic':'Earthquake','tremor':'Earthquake','magnitude':'Earthquake','tsunami':'Tsunami','blizzard':'Blizzard','winter storm':'Winter Storm','ice storm':'Ice Storm','snow':'Winter Storm','tornado':'Tornado','wildfire':'Wildfire','fire':'Wildfire','volcanic':'Eruption','eruption':'Eruption','lava':'Eruption','flood':'Flooding','monsoon':'Flooding','storm surge':'Storm Surge','drought':'Drought','heatwave':'Heatwave','heat wave':'Heatwave','polar vortex':'Polar Vortex','avalanche':'Avalanche','landslide':'Landslide','mudslide':'Landslide','thunderstorm':'Severe Storm','hail':'Severe Storm','lightning':'Severe Storm'};
       data.articles.forEach(function(art){
         if(!art.title)return;
-        var t=art.title;
+        var t=decEnt(art.title);
         var tl=t.toLowerCase();
         // STRICT: title MUST contain a weather/disaster keyword — reject political, policy, opinion articles
         if(!wxMustMatch.test(t))return;
@@ -924,7 +932,7 @@ function App(){
       var tfrData=await gdeltFetch('(NOTAM OR TFR OR "airspace closure" OR "flight restriction" OR "no-fly zone" OR "airspace closed" OR "flight ban" OR FIR) (FAA OR ICAO OR EASA OR aviation OR airspace) sourcelang:eng',25,'4320min');
       if(tfrData&&tfrData.articles&&tfrData.articles.length>0){
         tfrData.articles.slice(0,6).forEach(function(art){
-          var t=art.title||'';
+          var t=decEnt(art.title||'');
           var tl=t.toLowerCase();
           var status='WARNING',color='#ffd60a';
           if(tl.match(/prohibit|no.fly|closed|shutdown|ban/)){status='PROHIBITED';color='#ff3b30';}
@@ -942,7 +950,7 @@ function App(){
       const data=await res.json();
       if(data.items&&data.items.length>0){
         data.items.slice(0,4).forEach(item=>{
-          const t=item.title||'';
+          const t=decEnt(item.title||'');
           let status='WARNING',color='#ffd60a';
           if(t.toLowerCase().match(/crash|fatal|emergency|mayday/)){status='PROHIBITED';color='#ff3b30';}
           else if(t.toLowerCase().match(/divert|reject|engine|fire|smoke/)){status='RESTRICTED';color='#ff9500';}
@@ -960,9 +968,10 @@ function App(){
         const data=await res.json();
         if(data.items){
           data.items.slice(0,3).forEach(item=>{
-            const t=item.title.toLowerCase();
-            const src=item.title.includes(' - ')?item.title.split(' - ').pop().trim():'News';
-            const headline=item.title.includes(' - ')?item.title.split(' - ').slice(0,-1).join(' - ').trim():item.title;
+            var _ti=decEnt(item.title||'');
+            const t=_ti.toLowerCase();
+            const src=_ti.includes(' - ')?_ti.split(' - ').pop().trim():'News';
+            const headline=_ti.includes(' - ')?_ti.split(' - ').slice(0,-1).join(' - ').trim():_ti;
             let status='WARNING',color='#ffd60a';
             if(t.match(/prohibit|clos|ban|shut/)){status='PROHIBITED';color='#ff3b30';}
             else if(t.match(/restrict|tfr|limit|military/)){status='RESTRICTED';color='#ff9500';}
@@ -1018,6 +1027,7 @@ function App(){
       var clusters=[];
       data.articles.forEach(function(art){
         if(!art.title)return;
+        art.title=decEnt(art.title);
         var titleLower=art.title.toLowerCase();
         // Skip junk: opinion, listicles, entertainment
         if(/opinion|editorial|top \d|best \d|review|recipe|horoscope|celebrity|kardashian/i.test(art.title))return;
