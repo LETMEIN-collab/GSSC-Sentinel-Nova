@@ -456,12 +456,13 @@ const WEATHER_FALLBACK=[
 
 const NOTAM_FALLBACK=[
   {id:'A0095/25',zone:'UKBV — Ukraine All FIRs',status:'PROHIBITED',detail:'All altitudes. Full airspace closure since Feb 2022. Armed conflict.',color:'#ff3b30',time:'Active'},
-  {id:'A0001/21',zone:'OPKR/OPLR — Pakistan FIRs',status:'WARNING',detail:'Caution all altitudes. Islamabad attack Feb 6. Airstrikes into Afghanistan Feb 22.',color:'#ff9500',time:'2d ago'},
+  {id:'A0131/26',zone:'ORBB — Baghdad FIR / Iraq',status:'RESTRICTED',detail:'Below FL320 prohibited (SFAR 77). IAMG UAS/missile threat. GNSS spoofing reported. EASA CZIB active.',color:'#ff9500',time:'Active'},
   {id:'A0561/26',zone:'HSSS — Sudan/Khartoum FIR',status:'PROHIBITED',detail:'All altitudes. Khartoum airport closed. Armed conflict. No ATC available.',color:'#ff3b30',time:'Active'},
   {id:'SFAR117',zone:'OIIX — Iran Tehran FIR',status:'PROHIBITED',detail:'FAA SFAR 117. All US civil ops prohibited. EASA warning active.',color:'#ff3b30',time:'Active'},
+  {id:'A0001/21',zone:'OPKR/OPLR — Pakistan FIRs',status:'WARNING',detail:'Caution all altitudes. Islamabad attack Feb 6. Airstrikes into Afghanistan Feb 22.',color:'#ff9500',time:'2d ago'},
   {id:'W0120/21',zone:'OEJD — Saudi/Yemen Border',status:'RESTRICTED',detail:'ESCAT active. Houthi drone/missile threat. Asir, Jizan, Najran provinces.',color:'#ff9500',time:'Active'},
   {id:'FZNA/25',zone:'FZNA — DRC Eastern/Goma',status:'RESTRICTED',detail:'200NM eastern border. Goma airport closed. Anti-aircraft weaponry risk.',color:'#ff9500',time:'Active'},
-  {id:'A0334/26',zone:'GABS/DRRR — Sahel Region',status:'WARNING',detail:'FL320+ only north of Bamako. AES shoot-down threat. Wagner air defense FL490.',color:'#ffd60a',time:'Active'},
+  {id:'A0334/26',zone:'GABS/DRRR — Sahel Region',status:'WARNING',detail:'FL320+ only. AES shoot-down threat. Wagner air defense active.',color:'#ffd60a',time:'Active'},
   {id:'KICZ/26',zone:'Eastern Pacific Corridors',status:'WARNING',detail:'FAA advisory: GNSS interference & military activity. Jan 16–Mar 17 2026.',color:'#ffd60a',time:'Active'},
 ];
 
@@ -824,12 +825,55 @@ function App(){
     setWxAlerts(WEATHER_FALLBACK);setWxLive(true);
   };
 
-  // Fetch live NOTAMs — FAA TFR RSS (real-time), Aviation Herald, and ICAO news
+  // ═══ NOTAM FETCH — FAA direct API (primary) + news supplements ═══
+  // Key FIRs and airports to monitor for NOTAMs
+  var NOTAM_LOCATIONS='ORBB,UKBV,HSSS,OIIX,OPKR,FZZA,OEJD,KZDC,ORBI,UKBB,HSSK,OIIE,FZNA,LTBB,VHHH,RCTP,EGLL,LFPG';
   const fetchNotams=async()=>{
     const allNotams=[];
-    // Source 1: GDELT for TFR/NOTAM/airspace restriction news (FAA RSS feed is broken)
+    // Source 1 (PRIMARY): FAA NOTAM Search API — real NOTAM data
     try{
-      var tfrData=await gdeltFetch('(NOTAM OR TFR OR airspace closure OR flight restriction OR no-fly zone) (FAA OR ICAO OR aviation) sourcelang:eng',20,'4320min');
+      var faaUrl='https://notams.aim.faa.gov/notamSearch/search';
+      var body='searchType=0&designatorsForLocation='+NOTAM_LOCATIONS;
+      var pUrl='https://corsproxy.io/?'+encodeURIComponent(faaUrl);
+      var controller=new AbortController();
+      var tm=setTimeout(function(){controller.abort();},12000);
+      var resp=await fetch(pUrl,{
+        method:'POST',signal:controller.signal,
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:body
+      });
+      clearTimeout(tm);
+      if(resp.ok){
+        var faaData=await resp.json();
+        // FAA returns {notamList:[{facilityDesignator,notamNumber,icaoMessage,issueDate,startDate,endDate,...}]}
+        var items=faaData.notamList||faaData.endpointResponse||faaData;
+        if(Array.isArray(items)){
+          items.forEach(function(n){
+            var msg=(n.icaoMessage||n.traditionalMessage||n.text||'').toUpperCase();
+            var loc=n.facilityDesignator||n.icaoLocation||'';
+            var id=n.notamNumber||n.id||'FAA';
+            // Filter: only show significant NOTAMs (closures, restrictions, hazards, prohibited)
+            var isSig=msg.match(/CLSD|CLOSED|PROHIBIT|RESTRICT|TFR|NO.FLY|HAZARD|MILITARY|ARMED CONFLICT|LASER|UAS|DRONE|GPS|GNSS|JAMM|SPOOF|MISSILE|VOLCANIC|ASH|NUCLEAR/);
+            if(!isSig)return;
+            var status='WARNING',color='#ffd60a';
+            if(msg.match(/CLSD|CLOSED|PROHIBIT|NO.FLY/)){status='PROHIBITED';color='#ff3b30';}
+            else if(msg.match(/RESTRICT|TFR|MILITARY|ARMED|MISSILE|HAZARD/)){status='RESTRICTED';color='#ff9500';}
+            var zone=loc;
+            if(msg.length>10)zone=loc+' — '+msg.slice(0,50).replace(/\n/g,' ');
+            var detail=msg.slice(0,120).replace(/\n/g,' ');
+            var t='Active';
+            if(n.issueDate)t=timeAgo(n.issueDate);
+            else if(n.startDate)t=timeAgo(n.startDate);
+            allNotams.push({id:id,zone:zone.slice(0,60),status:status,detail:detail,color:color,time:t,src:'FAA'});
+          });
+          if(allNotams.length>0)console.log('SENTINEL: FAA NOTAM API returned '+allNotams.length+' significant NOTAMs');
+        }
+      }
+    }catch(e){console.log('FAA NOTAM API error (falling back to news)',e);}
+
+    // Source 2: GDELT news for TFR/airspace restriction articles (supplements FAA data)
+    try{
+      var tfrData=await gdeltFetch('(NOTAM OR TFR OR "airspace closure" OR "flight restriction" OR "no-fly zone" OR "airspace closed" OR "flight ban" OR FIR) (FAA OR ICAO OR EASA OR aviation OR airspace) sourcelang:eng',25,'4320min');
       if(tfrData&&tfrData.articles&&tfrData.articles.length>0){
         tfrData.articles.slice(0,6).forEach(function(art){
           var t=art.title||'';
@@ -838,12 +882,12 @@ function App(){
           if(tl.match(/prohibit|no.fly|closed|shutdown|ban/)){status='PROHIBITED';color='#ff3b30';}
           else if(tl.match(/restrict|tfr|limit|military|intercept/)){status='RESTRICTED';color='#ff9500';}
           var src=art.domain||'GDELT';
-          allNotams.push({id:'TFR',zone:t.slice(0,55),status,detail:src+' — '+t.slice(0,100),color,time:timeAgo(art.seendate),url:art.url||'https://tfr.faa.gov/tfr2/list.jsp',src:src});
+          allNotams.push({id:'TFR',zone:t.slice(0,55),status,detail:src+' — '+t.slice(0,100),color,time:timeAgo(art.seendate),src:src});
         });
       }
-    }catch(e){console.log('NOTAM GDELT fetch error',e);}
+    }catch(e){}
 
-    // Source 2: Aviation Herald (incidents/safety) via RSS
+    // Source 3: Aviation Herald (incidents/safety) via RSS
     try{
       const avhUrl=encodeURIComponent('https://avherald.com/h?rss=1');
       const res=await fetch(PROXY+avhUrl);
@@ -854,16 +898,16 @@ function App(){
           let status='WARNING',color='#ffd60a';
           if(t.toLowerCase().match(/crash|fatal|emergency|mayday/)){status='PROHIBITED';color='#ff3b30';}
           else if(t.toLowerCase().match(/divert|reject|engine|fire|smoke/)){status='RESTRICTED';color='#ff9500';}
-          allNotams.push({id:'AVH',zone:t.slice(0,55),status,detail:t,color,time:timeAgo(item.pubDate),url:item.link||'https://avherald.com',src:'AvHerald'});
+          allNotams.push({id:'AVH',zone:t.slice(0,55),status,detail:t,color,time:timeAgo(item.pubDate),src:'AvHerald'});
         });
       }
     }catch(e){}
 
-    // Source 3: Google News RSS for NOTAMs / airspace closures as supplement
+    // Source 4: Google News RSS for NOTAMs / airspace closures
     try{
       const queries=['NOTAM+airspace+closure+flight+restriction','TFR+temporary+flight+restriction+FAA'];
       for(const q of queries){
-        const rssUrl=encodeURIComponent(`https://news.google.com/rss/search?q=${q}&hl=en-US&gl=US&ceid=US:en`);
+        const rssUrl=encodeURIComponent('https://news.google.com/rss/search?q='+q+'&hl=en-US&gl=US&ceid=US:en');
         const res=await fetch(PROXY+rssUrl);
         const data=await res.json();
         if(data.items){
@@ -874,7 +918,7 @@ function App(){
             let status='WARNING',color='#ffd60a';
             if(t.match(/prohibit|clos|ban|shut/)){status='PROHIBITED';color='#ff3b30';}
             else if(t.match(/restrict|tfr|limit|military/)){status='RESTRICTED';color='#ff9500';}
-            allNotams.push({id:'NEWS',zone:headline.slice(0,55),status,detail:src+' — '+headline.slice(55,120),color,time:timeAgo(item.pubDate),url:item.link,src});
+            allNotams.push({id:'NEWS',zone:headline.slice(0,55),status,detail:src+' — '+headline.slice(55,120),color,time:timeAgo(item.pubDate),src:src});
           });
         }
       }
@@ -884,7 +928,7 @@ function App(){
       // Deduplicate by first 35 chars of zone
       const seen=new Set();
       const unique=allNotams.filter(n=>{const k=n.zone.slice(0,35).toLowerCase();if(seen.has(k))return false;seen.add(k);return true;});
-      setNotams(unique.slice(0,8));setNotamLive(true);
+      setNotams(unique.slice(0,12));setNotamLive(true);
     }
   };
 
@@ -1126,7 +1170,7 @@ function App(){
 
       {/* Header */}
       <div className="hdr">
-        <div className="hdr-l"><div className="logo">SENTINEL NOVA<span>GLOBAL SECURITY TERMINAL</span></div><span style={{font:'600 8px var(--mono)',color:'#30d158',padding:'2px 8px',borderRadius:2,border:'1px solid rgba(48,209,88,.4)',background:'rgba(48,209,88,.1)',letterSpacing:'1.5px',marginLeft:12}}>GSSC-READY</span><span style={{font:'500 8px var(--mono)',color:'var(--t3)',marginLeft:8,letterSpacing:'1px'}}>BUILD v7</span></div>
+        <div className="hdr-l"><div className="logo">SENTINEL NOVA<span>GLOBAL SECURITY TERMINAL</span></div><span style={{font:'600 8px var(--mono)',color:'#30d158',padding:'2px 8px',borderRadius:2,border:'1px solid rgba(48,209,88,.4)',background:'rgba(48,209,88,.1)',letterSpacing:'1.5px',marginLeft:12}}>GSSC-READY</span><span style={{font:'500 8px var(--mono)',color:'var(--t3)',marginLeft:8,letterSpacing:'1px'}}>BUILD v8</span></div>
         <div className="hdr-r">
           <div className="hdr-spgi">
             <span style={{font:'600 10px var(--mono)',color:'var(--t2)'}}>SPGI</span>
