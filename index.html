@@ -265,27 +265,30 @@ const ADV_FALLBACK=[
   {country:'Pakistan',level:3,title:'Pakistan — Level 3: Reconsider Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Terrorism, sectarian violence'},
   {country:'Nigeria',level:3,title:'Nigeria — Level 3: Reconsider Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime, terrorism, kidnapping'},
   {country:'Honduras',level:3,title:'Honduras — Level 3: Reconsider Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime, kidnapping'},
-  {country:'El Salvador',level:3,title:'El Salvador — Level 3: Reconsider Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime'},
   {country:'Ethiopia',level:3,title:'Ethiopia — Level 3: Reconsider Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Civil unrest, armed conflict'},
   {country:'Democratic Republic of the Congo',level:3,title:'DRC — Level 3: Reconsider Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime, armed conflict'},
   {country:'Cameroon',level:3,title:'Cameroon — Level 3: Reconsider Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime, terrorism, kidnapping'},
   {country:'Chad',level:3,title:'Chad — Level 3: Reconsider Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime, terrorism, minefields'},
   {country:'Mauritania',level:3,title:'Mauritania — Level 3: Reconsider Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime, terrorism'},
-  {country:'Guinea',level:3,title:'Guinea — Level 3: Reconsider Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Civil unrest, crime'},
+  {country:'Guinea-Bissau',level:3,title:'Guinea-Bissau — Level 3: Reconsider Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime, civil unrest'},
+  {country:'Bangladesh',level:3,title:'Bangladesh — Level 3: Reconsider Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime, terrorism, civil unrest'},
+  {country:'Guatemala',level:3,title:'Guatemala — Level 3: Reconsider Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime, violence'},
+  {country:'Uganda',level:3,title:'Uganda — Level 3: Reconsider Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime, terrorism'},
+  {country:'Nicaragua',level:3,title:'Nicaragua — Level 3: Reconsider Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Arbitrary detention, limited healthcare'},
   {country:'Colombia',level:3,title:'Colombia — Level 3: Reconsider Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime, terrorism, kidnapping'},
-  {country:'Kenya',level:3,title:'Kenya — Level 3: Reconsider Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime, terrorism'},
+  {country:'Israel',level:3,title:'Israel — Level 3: Reconsider Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/israel-the-west-bank-and-gaza-travel-advisory.html',desc:'Terrorism, civil unrest, armed conflict'},
   // Level 2 — Exercise Increased Caution
+  {country:'Kenya',level:2,title:'Kenya — Level 2: Exercise Increased Caution',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime, terrorism'},
   {country:'Mexico',level:2,title:'Mexico — Level 2: Exercise Increased Caution',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime, kidnapping'},
   {country:'Brazil',level:2,title:'Brazil — Level 2: Exercise Increased Caution',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime'},
   {country:'Egypt',level:2,title:'Egypt — Level 2: Exercise Increased Caution',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Terrorism'},
   {country:'Turkey',level:2,title:'Turkey — Level 2: Exercise Increased Caution',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Terrorism, arbitrary detention'},
   {country:'India',level:2,title:'India — Level 2: Exercise Increased Caution',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime, terrorism'},
-  {country:'Israel',level:2,title:'Israel — Level 2: Exercise Increased Caution',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Terrorism, civil unrest'},
   {country:'Philippines',level:2,title:'Philippines — Level 2: Exercise Increased Caution',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime, terrorism'},
   {country:'South Africa',level:2,title:'South Africa — Level 2: Exercise Increased Caution',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime'},
   {country:'Jamaica',level:2,title:'Jamaica — Level 2: Exercise Increased Caution',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Crime'},
   {country:'China',level:2,title:'China — Level 2: Exercise Increased Caution',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Wrongful detention, arbitrary enforcement'},
-  {country:'Russia',level:4,title:'Russia — Level 4: Do Not Travel',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Wrongful detention'},
+  {country:'Guinea',level:2,title:'Guinea — Level 2: Exercise Increased Caution',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Civil unrest, crime'},
 ];
 
 /* Current fallback sovereign rating changes */
@@ -1104,6 +1107,7 @@ function App(){
 
     // ═══ ADVISORY SHADING — HTML div markers (no SVG/Canvas dependency) ═══
     var ADV_DATA=[
+      // Level 4 — Do Not Travel (22 countries, verified Feb 2026)
       {n:'Afghanistan',lat:33.9,lon:67.7,sz:28,lv:4},{n:'Ukraine',lat:48.4,lon:31.2,sz:32,lv:4},
       {n:'Russia',lat:61.5,lon:90,sz:80,lv:4},{n:'Syria',lat:35,lon:38.5,sz:22,lv:4},
       {n:'Iran',lat:32.4,lon:53.7,sz:38,lv:4},{n:'Iraq',lat:33.2,lon:43.7,sz:26,lv:4},
@@ -1114,16 +1118,20 @@ function App(){
       {n:'Venezuela',lat:6.4,lon:-66.6,sz:30,lv:4},{n:'Myanmar',lat:19.8,lon:96.9,sz:28,lv:4},
       {n:'Burkina Faso',lat:12.4,lon:-1.6,sz:18,lv:4},{n:'Niger',lat:17.6,lon:8.1,sz:34,lv:4},
       {n:'CAR',lat:6.6,lon:20.9,sz:26,lv:4},{n:'Belarus',lat:53.7,lon:28,sz:20,lv:4},
-      {n:'Lebanon',lat:33.9,lon:35.9,sz:10,lv:4},{n:'Palestine',lat:31.9,lon:35.2,sz:8,lv:4},
+      {n:'Lebanon',lat:33.9,lon:35.9,sz:10,lv:4},{n:'Gaza',lat:31.4,lon:34.4,sz:8,lv:4},
+      // Level 3 — Reconsider Travel (verified Feb 2026)
       {n:'Pakistan',lat:30.4,lon:69.3,sz:32,lv:3},{n:'Nigeria',lat:9.1,lon:8.7,sz:30,lv:3},
-      {n:'Honduras',lat:15.2,lon:-86.2,sz:14,lv:3},{n:'El Salvador',lat:13.8,lon:-88.9,sz:10,lv:3},
+      {n:'Honduras',lat:15.2,lon:-86.2,sz:14,lv:3},{n:'Israel',lat:31.1,lon:34.8,sz:12,lv:3},
       {n:'Ethiopia',lat:9.1,lon:40.5,sz:32,lv:3},{n:'DR Congo',lat:-4.0,lon:21.8,sz:38,lv:3},
-      {n:'Cameroon',lat:7.4,lon:12.4,sz:22,lv:3},{n:'Chad',lat:15.5,lon:19,sz:34,lv:3},
-      {n:'Mauritania',lat:21.0,lon:-10.9,sz:30,lv:3},{n:'Guinea',lat:9.9,lon:-11.4,sz:16,lv:3},
-      {n:'Colombia',lat:4.6,lon:-74.3,sz:30,lv:3},{n:'Kenya',lat:-0.2,lon:37.9,sz:24,lv:3},
+      {n:'Chad',lat:15.5,lon:19,sz:34,lv:3},{n:'Mauritania',lat:21.0,lon:-10.9,sz:30,lv:3},
+      {n:'Colombia',lat:4.6,lon:-74.3,sz:30,lv:3},{n:'Bangladesh',lat:23.7,lon:90.4,sz:18,lv:3},
+      {n:'Guatemala',lat:15.8,lon:-90.2,sz:14,lv:3},{n:'Uganda',lat:1.4,lon:32.3,sz:18,lv:3},
+      {n:'Guinea-Bissau',lat:12.0,lon:-15.2,sz:10,lv:3},{n:'Cameroon',lat:7.4,lon:12.4,sz:22,lv:3},
+      {n:'Nicaragua',lat:12.9,lon:-85.2,sz:14,lv:3},{n:'Kenya',lat:-0.2,lon:37.9,sz:24,lv:3},
+      // Level 2 — Exercise Increased Caution (select high-profile countries)
       {n:'Mexico',lat:23.6,lon:-102.5,sz:40,lv:2},{n:'Brazil',lat:-14.2,lon:-51.9,sz:60,lv:2},
       {n:'Egypt',lat:26.8,lon:30.8,sz:30,lv:2},{n:'Turkey',lat:39,lon:35.2,sz:30,lv:2},
-      {n:'India',lat:20.6,lon:79,sz:50,lv:2},{n:'Israel',lat:31.1,lon:34.8,sz:10,lv:2},
+      {n:'India',lat:20.6,lon:79,sz:50,lv:2},{n:'Guinea',lat:9.9,lon:-11.4,sz:16,lv:2},
       {n:'Philippines',lat:12.9,lon:121.8,sz:26,lv:2},{n:'South Africa',lat:-30.6,lon:22.9,sz:34,lv:2},
       {n:'Jamaica',lat:18.1,lon:-77.3,sz:8,lv:2},{n:'China',lat:35.9,lon:104.2,sz:60,lv:2}
     ];
