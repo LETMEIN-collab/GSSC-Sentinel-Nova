@@ -1597,7 +1597,7 @@ function App(){
                   <span style={{font:'400 8px var(--mono)',color:'var(--t3)',minWidth:44,textAlign:'right'}}>{m.volume}</span>
                 </div>
               </div>;
-              var pmUrl=m.slug?'https://polymarket.com/event/'+m.slug:'https://polymarket.com/search?query='+encodeURIComponent(m.question);
+              var pmUrl='https://polymarket.com/search?query='+encodeURIComponent(m.question);
               return <a key={i} href={pmUrl} target="_blank" rel="noopener noreferrer" style={{textDecoration:'none',color:'inherit',display:'block'}}>{inner}</a>;
             }):<div style={{font:'400 10px var(--mono)',color:'var(--t3)',padding:'8px 0'}}>Loading markets...</div>}
           </div>
