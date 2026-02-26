@@ -183,9 +183,12 @@ body{font-family:'Inter',sans-serif;background:#000;color:#d4d4d4;overflow-x:hid
 /* THEME TOGGLE */
 .theme-toggle{background:transparent;border:1px solid var(--bdr);color:var(--t2);padding:3px 8px;border-radius:3px;cursor:pointer;font:500 11px var(--mono);transition:all .2s;margin-left:8px}
 .theme-toggle:hover{border-color:var(--bdrh);color:var(--t1)}
-.adv-tog{display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;user-select:none;border-radius:2px}
+.adv-tog{display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;user-select:none;border-radius:2px;flex-direction:column;position:relative}
 .adv-tog:hover{filter:brightness(1.3)}
-.adv-tog.off{opacity:0.3;filter:grayscale(0.7)}
+.adv-tog.off{opacity:0.25;filter:grayscale(1)}
+.adv-tog::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:2px;border-radius:1px;transition:all .2s}
+.adv-tog.on::after{background:currentColor;opacity:0.6}
+.adv-tog.off::after{background:var(--t3);opacity:0.15}
 .brief-btn{background:rgba(10,132,255,.12);border:1px solid rgba(10,132,255,.4);color:#0a84ff;padding:3px 8px;border-radius:3px;cursor:pointer;font:600 9px var(--mono);letter-spacing:.5px;transition:all .2s;white-space:nowrap;flex-shrink:0}
 .brief-btn:hover{background:rgba(10,132,255,.25);color:#4da6ff}
 .brief-btn:disabled{opacity:.5;cursor:wait}
@@ -1576,9 +1579,10 @@ function App(){
             {[[4,'#ff3b30','rgba(255,59,48,0.08)','L4 — DNT',advStats.l4],[3,'#ff9500','rgba(255,149,0,0.06)','L3 — RECON',advStats.l3],[2,'#ffd60a','rgba(255,214,10,0.05)','L2 — CAUT',advStats.l2]].map(function(item,idx){
               var lv=item[0],col=item[1],bg=item[2],label=item[3],count=item[4];
               var active=advFilter.has(lv);
-              return <div key={lv} className={'adv-tog'+(active?'':' off')} onClick={function(){setAdvFilter(function(prev){var next=new Set(prev);if(next.has(lv))next.delete(lv);else next.add(lv);return next;});}} style={{flex:1,padding:'6px 8px',textAlign:'center',background:active?bg:'transparent',borderRight:idx<2?'1px solid var(--bdr)':'none',cursor:'pointer'}}>
-                <div style={{font:'700 16px var(--mono)',color:active?col:'var(--t3)'}}>{count}</div>
-                <div style={{font:'500 7px var(--mono)',color:active?'var(--t2)':'var(--t3)',letterSpacing:'.5px'}}>{label}</div>
+              return <div key={lv} className={'adv-tog'+(active?' on':' off')} onClick={function(){setAdvFilter(function(prev){var next=new Set(prev);if(next.has(lv))next.delete(lv);else next.add(lv);return next;});}} style={{flex:1,padding:'8px 8px 10px',textAlign:'center',background:active?bg:'transparent',borderRight:idx<2?'1px solid var(--bdr)':'none',cursor:'pointer',color:col}}>
+                <div style={{font:'700 18px var(--mono)',color:active?col:'var(--t3)'}}>{count}</div>
+                <div style={{font:'600 7px var(--mono)',color:active?col:'var(--t3)',letterSpacing:'.5px',opacity:active?0.8:0.4}}>{label}</div>
+                <div style={{font:'500 6px var(--mono)',color:active?col:'var(--t3)',marginTop:2,opacity:0.5}}>{active?'ON':'OFF'}</div>
               </div>;
             })}
           </div>}
