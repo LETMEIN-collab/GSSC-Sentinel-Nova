@@ -473,6 +473,55 @@ const RSS_FEEDS=[
   {q:'terrorism+intelligence+ISIS+security+threat+espionage',cat:'INTEL'},
 ];
 const PROXY='https://api.rss2json.com/v1/api.json?rss_url=';
+// Multi-proxy RSS fetch — tries rss2json first, then allorigins+DOMParser fallback
+async function rssFetch(feedUrl){
+  // Method 1: rss2json (returns JSON directly)
+  try{
+    var res=await fetch(PROXY+encodeURIComponent(feedUrl),{signal:AbortSignal.timeout(8000)});
+    if(res.ok){var data=await res.json();if(data.items&&data.items.length>0)return data;}
+  }catch(e){}
+  // Method 2: allorigins raw XML → parse with DOMParser
+  try{
+    var res2=await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(feedUrl),{signal:AbortSignal.timeout(8000)});
+    if(res2.ok){
+      var xml=await res2.text();
+      var doc=new DOMParser().parseFromString(xml,'text/xml');
+      var entries=doc.querySelectorAll('item, entry');
+      if(entries.length>0){
+        var items=[];
+        entries.forEach(function(el){
+          var title=el.querySelector('title')?el.querySelector('title').textContent:'';
+          var link=el.querySelector('link')?el.querySelector('link').textContent||el.querySelector('link').getAttribute('href'):'';
+          var pubDate=el.querySelector('pubDate, published, updated')?el.querySelector('pubDate, published, updated').textContent:'';
+          var desc=el.querySelector('description, summary, content')?el.querySelector('description, summary, content').textContent:'';
+          items.push({title:title,link:link,pubDate:pubDate,description:desc,guid:link});
+        });
+        return{items:items};
+      }
+    }
+  }catch(e){}
+  // Method 3: corsproxy.org raw XML
+  try{
+    var res3=await fetch('https://corsproxy.org/?'+encodeURIComponent(feedUrl),{signal:AbortSignal.timeout(8000)});
+    if(res3.ok){
+      var xml3=await res3.text();
+      var doc3=new DOMParser().parseFromString(xml3,'text/xml');
+      var entries3=doc3.querySelectorAll('item, entry');
+      if(entries3.length>0){
+        var items3=[];
+        entries3.forEach(function(el){
+          var title=el.querySelector('title')?el.querySelector('title').textContent:'';
+          var link=el.querySelector('link')?el.querySelector('link').textContent||el.querySelector('link').getAttribute('href'):'';
+          var pubDate=el.querySelector('pubDate, published, updated')?el.querySelector('pubDate, published, updated').textContent:'';
+          var desc=el.querySelector('description, summary, content')?el.querySelector('description, summary, content').textContent:'';
+          items3.push({title:title,link:link,pubDate:pubDate,description:desc,guid:link});
+        });
+        return{items:items3};
+      }
+    }
+  }catch(e){}
+  return{items:[]};
+}
 const catKeywords={
   CONFLICT:['war','military','nato','conflict','troops','missile','attack','invasion','defense','army','weapon','strike','ukraine','russia','frontline','battalion','airstrike','drone strike','ceasefire','escalation','iran','hezbollah','hamas','gaza','israel','taiwan','korea','artillery','casualties'],
   CLIMATE:['climate','flood','wildfire','hurricane','drought','emissions','carbon','warming','sea level','storm','heat','ice','snow','blizzard','cyclone','typhoon','earthquake','tornado','fire','weather'],
@@ -507,7 +556,7 @@ function timeAgo(dateStr){
   else d=new Date(dateStr);
   if(!d||isNaN(d.getTime()))return 'Active';
   var now=new Date();var mins=Math.floor((now-d)/60000);
-  if(mins<0)return 'Upcoming';
+  if(mins<0)return 'Just now';
   if(mins<60)return mins+'m ago';
   var hrs=Math.floor(mins/60);if(hrs<24)return hrs+'h ago';
   return Math.floor(hrs/24)+'d ago';
@@ -612,9 +661,7 @@ function App(){
     setAdvisories(function(prev){return prev.length>0?prev:ADV_FALLBACK;});
     // Try State Dept travel advisory RSS via proxy
     try{
-      var rssUrl=encodeURIComponent('https://travel.state.gov/_res/rss/TAsTWs.xml');
-      var res=await fetch(PROXY+rssUrl);
-      var data=await res.json();
+      var data=await rssFetch('https://travel.state.gov/_res/rss/TAsTWs.xml');
       if(data.items&&data.items.length>5){
         var parsed=data.items.map(function(item){
           var _tit=decEnt(item.title||'');
@@ -851,9 +898,7 @@ function App(){
       const results=[];
       for(const q of SPGI_RSS_QUERIES){
         try{
-          const rssUrl=encodeURIComponent(`https://news.google.com/rss/search?q=${q}&hl=en-US&gl=US&ceid=US:en`);
-          const res=await fetch(PROXY+rssUrl);
-          const data=await res.json();
+          const data=await rssFetch(`https://news.google.com/rss/search?q=${q}&hl=en-US&gl=US&ceid=US:en`);
           if(data.items){
             data.items.slice(0,4).forEach(item=>{
               var _t=decEnt(item.title||'');
@@ -876,10 +921,8 @@ function App(){
     try{
       const results=[];
       for(const feed of RSS_FEEDS){
-        const rssUrl=encodeURIComponent(`https://news.google.com/rss/search?q=${feed.q}&hl=en-US&gl=US&ceid=US:en`);
         try{
-          const res=await fetch(PROXY+rssUrl);
-          const data=await res.json();
+          const data=await rssFetch(`https://news.google.com/rss/search?q=${feed.q}&hl=en-US&gl=US&ceid=US:en`);
           if(data.items){
             data.items.slice(0,4).forEach(item=>{
               var _ti=decEnt(item.title||'');
@@ -981,7 +1024,7 @@ function App(){
     try{
       var faaUrl='https://notams.aim.faa.gov/notamSearch/search';
       var body='searchType=0&designatorsForLocation='+NOTAM_LOCATIONS;
-      var proxies=['https://corsproxy.io/?','https://api.allorigins.win/raw?url='];
+      var proxies=['https://corsproxy.io/?','https://api.allorigins.win/raw?url=','https://corsproxy.org/?'];
       var resp=null;
       for(var pi=0;pi<proxies.length;pi++){
         try{
@@ -1047,9 +1090,7 @@ function App(){
 
     // Source 3: Aviation Herald (incidents/safety) via RSS
     try{
-      const avhUrl=encodeURIComponent('https://avherald.com/h?rss=1');
-      const res=await fetch(PROXY+avhUrl);
-      const data=await res.json();
+      const data=await rssFetch('https://avherald.com/h?rss=1');
       if(data.items&&data.items.length>0){
         data.items.slice(0,4).forEach(item=>{
           const t=decEnt(item.title||'');
@@ -1065,9 +1106,7 @@ function App(){
     try{
       const queries=['NOTAM+airspace+closure+flight+restriction','TFR+temporary+flight+restriction+FAA'];
       for(const q of queries){
-        const rssUrl=encodeURIComponent('https://news.google.com/rss/search?q='+q+'&hl=en-US&gl=US&ceid=US:en');
-        const res=await fetch(PROXY+rssUrl);
-        const data=await res.json();
+        const data=await rssFetch('https://news.google.com/rss/search?q='+q+'&hl=en-US&gl=US&ceid=US:en');
         if(data.items){
           data.items.slice(0,3).forEach(item=>{
             var _ti=decEnt(item.title||'');
@@ -1150,7 +1189,7 @@ function App(){
     try{
       var candidates=[];
       var rssPromises=BREAKING_RSS.map(function(feed){
-        return fetch(PROXY+encodeURIComponent(feed.url),{signal:AbortSignal.timeout(8000)}).then(function(r){return r.json();}).then(function(data){
+        return rssFetch(feed.url).then(function(data){
           if(!data.items)return;
           // Check items published in the last 60 minutes
           var cutoff=Date.now()-60*60*1000;
