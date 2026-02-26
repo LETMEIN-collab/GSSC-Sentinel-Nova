@@ -1295,6 +1295,105 @@ function App(){
   // Advisories + ratings: 10 min (rarely change)
   useEffect(()=>{fetchAdvisories();fetchPolymarkets();const i=setInterval(()=>{fetchAdvisories();fetchPolymarkets()},10*60*1000);return()=>clearInterval(i)},[]);
 
+  // Advisory data (component-level so JSX + map useEffect can both access)
+  var ADV_COUNTRIES={
+    'Afghanistan':4,'Ukraine':4,'Russia':4,'Syria':4,'Iran':4,'Iraq':4,
+    'Yemen':4,'Somalia':4,'Sudan':4,'South Sudan':4,'Libya':4,'Mali':4,
+    'Haiti':4,'North Korea':4,'Venezuela':4,'Myanmar':4,'Burkina Faso':4,
+    'Niger':4,'Central African Republic':4,'Belarus':4,'Lebanon':4,
+    'Pakistan':3,'Nigeria':3,'Honduras':3,'Israel':3,'Ethiopia':3,
+    'Democratic Republic of the Congo':3,'Chad':3,'Mauritania':3,
+    'Colombia':3,'Bangladesh':3,'Guatemala':3,'Uganda':3,
+    'Guinea-Bissau':3,'Cameroon':3,'Nicaragua':3,'Kenya':3,
+    'Mexico':2,'Brazil':2,'Egypt':2,'Turkey':2,'India':2,
+    'Guinea':2,'Philippines':2,'South Africa':2,'Jamaica':2,'China':2
+  };
+  var ADV_ALIASES={
+    'Burma':'Myanmar','Republic of the Congo':'DR Congo',
+    'Dem. Rep. Congo':'Democratic Republic of the Congo',
+    'Congo':'Democratic Republic of the Congo',
+    'Korea, Dem. Rep.':'North Korea','Korea':'North Korea',
+    'Korea, Rep.':'South Korea',
+    'Lao PDR':'Laos','Syrian Arab Republic':'Syria',
+    'Iran (Islamic Republic of)':'Iran','Iran, Islamic Rep.':'Iran',
+    'Côte d\'Ivoire':'Ivory Coast','Cote d\'Ivoire':'Ivory Coast',
+    'Russian Federation':'Russia',
+    'Venezuela (Bolivarian Republic of)':'Venezuela',
+    'Republic of Guinea':'Guinea',
+    'Palestine':'Gaza','West Bank and Gaza':'Gaza',
+    'Türkiye':'Turkey','Turkiye':'Turkey'
+  };
+  function getAdvLevel(name){
+    if(ADV_COUNTRIES[name])return ADV_COUNTRIES[name];
+    var alias=ADV_ALIASES[name];
+    if(alias&&ADV_COUNTRIES[alias])return ADV_COUNTRIES[alias];
+    var ks=Object.keys(ADV_COUNTRIES);
+    for(var k=0;k<ks.length;k++){
+      if(name.indexOf(ks[k])!==-1||ks[k].indexOf(name)!==-1)return ADV_COUNTRIES[ks[k]];
+    }
+    return 0;
+  }
+  // State Dept travel advisory URLs (component-level so JSX can access)
+  var ADV_URLS={
+    'Afghanistan':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/afghanistan-travel-advisory.html',
+    'Ukraine':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/ukraine-travel-advisory.html',
+    'Russia':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/russia-travel-advisory.html',
+    'Syria':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/syria-travel-advisory.html',
+    'Iran':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/iran-travel-advisory.html',
+    'Iraq':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/iraq-travel-advisory.html',
+    'Yemen':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/yemen-travel-advisory.html',
+    'Somalia':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/somalia-travel-advisory.html',
+    'Sudan':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/sudan-travel-advisory.html',
+    'South Sudan':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/south-sudan-travel-advisory.html',
+    'Libya':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/libya-travel-advisory.html',
+    'Mali':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/mali-travel-advisory.html',
+    'Haiti':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/haiti-travel-advisory.html',
+    'North Korea':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/north-korea-travel-advisory.html',
+    'Venezuela':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/venezuela-travel-advisory.html',
+    'Myanmar':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/burma-travel-advisory.html',
+    'Burkina Faso':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/burkina-faso-travel-advisory.html',
+    'Niger':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/niger-travel-advisory.html',
+    'Central African Republic':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/central-african-republic-travel-advisory.html',
+    'Belarus':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/belarus-travel-advisory.html',
+    'Lebanon':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/lebanon-travel-advisory.html',
+    'Pakistan':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/pakistan-travel-advisory.html',
+    'Nigeria':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/nigeria-travel-advisory.html',
+    'Honduras':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/honduras-travel-advisory.html',
+    'Israel':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/israel-the-west-bank-and-gaza-travel-advisory.html',
+    'Ethiopia':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/ethiopia-travel-advisory.html',
+    'Democratic Republic of the Congo':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/democratic-republic-of-the-congo-travel-advisory.html',
+    'Chad':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/chad-travel-advisory.html',
+    'Mauritania':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/mauritania-travel-advisory.html',
+    'Colombia':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/colombia-travel-advisory.html',
+    'Bangladesh':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/bangladesh-travel-advisory.html',
+    'Guatemala':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/guatemala-travel-advisory.html',
+    'Uganda':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/uganda-travel-advisory.html',
+    'Guinea-Bissau':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/guinea-bissau-travel-advisory.html',
+    'Cameroon':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/cameroon-travel-advisory.html',
+    'Nicaragua':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/nicaragua-travel-advisory.html',
+    'Kenya':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/kenya-travel-advisory.html',
+    'Mexico':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/mexico-travel-advisory.html',
+    'Brazil':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/brazil-travel-advisory.html',
+    'Egypt':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/egypt-travel-advisory.html',
+    'Turkey':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/turkey-travel-advisory.html',
+    'India':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/india-travel-advisory.html',
+    'Guinea':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/guinea-travel-advisory.html',
+    'Philippines':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/philippines-travel-advisory.html',
+    'South Africa':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/south-africa-travel-advisory.html',
+    'Jamaica':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/jamaica-travel-advisory.html',
+    'China':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/china-travel-advisory.html'
+  };
+  function getAdvUrl(name){
+    if(ADV_URLS[name])return ADV_URLS[name];
+    var alias=ADV_ALIASES[name];
+    if(alias&&ADV_URLS[alias])return ADV_URLS[alias];
+    var keys=Object.keys(ADV_URLS);
+    for(var k=0;k<keys.length;k++){
+      if(name.indexOf(keys[k])!==-1||keys[k].indexOf(name)!==-1)return ADV_URLS[keys[k]];
+    }
+    return 'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories.html/';
+  }
+
   // Initialize Leaflet map
   useEffect(()=>{
     if(mapRef.current)return;
@@ -1315,112 +1414,9 @@ function App(){
     mapRef.current=map;
 
     // ═══ ADVISORY SHADING — GeoJSON country fill ═══
-    var ADV_COUNTRIES={
-      // Level 4 — Do Not Travel
-      'Afghanistan':4,'Ukraine':4,'Russia':4,'Syria':4,'Iran':4,'Iraq':4,
-      'Yemen':4,'Somalia':4,'Sudan':4,'South Sudan':4,'Libya':4,'Mali':4,
-      'Haiti':4,'North Korea':4,'Venezuela':4,'Myanmar':4,'Burkina Faso':4,
-      'Niger':4,'Central African Republic':4,'Belarus':4,'Lebanon':4,
-      // Level 3 — Reconsider Travel
-      'Pakistan':3,'Nigeria':3,'Honduras':3,'Israel':3,'Ethiopia':3,
-      'Democratic Republic of the Congo':3,'Chad':3,'Mauritania':3,
-      'Colombia':3,'Bangladesh':3,'Guatemala':3,'Uganda':3,
-      'Guinea-Bissau':3,'Cameroon':3,'Nicaragua':3,'Kenya':3,
-      // Level 2 — Exercise Increased Caution
-      'Mexico':2,'Brazil':2,'Egypt':2,'Turkey':2,'India':2,
-      'Guinea':2,'Philippines':2,'South Africa':2,'Jamaica':2,'China':2
-    };
-    // Name aliases for GeoJSON matching (GeoJSON uses different names for some countries)
-    var ADV_ALIASES={
-      'Burma':'Myanmar','Republic of the Congo':'DR Congo',
-      'Dem. Rep. Congo':'Democratic Republic of the Congo',
-      'Congo':'Democratic Republic of the Congo',
-      'Korea, Dem. Rep.':'North Korea','Korea':'North Korea',
-      'Korea, Rep.':'South Korea',
-      'Lao PDR':'Laos','Syrian Arab Republic':'Syria',
-      'Iran (Islamic Republic of)':'Iran','Iran, Islamic Rep.':'Iran',
-      'Côte d\'Ivoire':'Ivory Coast','Cote d\'Ivoire':'Ivory Coast',
-      'Russian Federation':'Russia',
-      'Venezuela (Bolivarian Republic of)':'Venezuela',
-      'Republic of Guinea':'Guinea',
-      'Palestine':'Gaza','West Bank and Gaza':'Gaza',
-      'Türkiye':'Turkey','Turkiye':'Turkey'
-    };
-    // State Dept travel advisory URLs
-    var ADV_URLS={
-      'Afghanistan':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/afghanistan-travel-advisory.html',
-      'Ukraine':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/ukraine-travel-advisory.html',
-      'Russia':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/russia-travel-advisory.html',
-      'Syria':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/syria-travel-advisory.html',
-      'Iran':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/iran-travel-advisory.html',
-      'Iraq':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/iraq-travel-advisory.html',
-      'Yemen':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/yemen-travel-advisory.html',
-      'Somalia':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/somalia-travel-advisory.html',
-      'Sudan':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/sudan-travel-advisory.html',
-      'South Sudan':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/south-sudan-travel-advisory.html',
-      'Libya':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/libya-travel-advisory.html',
-      'Mali':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/mali-travel-advisory.html',
-      'Haiti':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/haiti-travel-advisory.html',
-      'North Korea':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/north-korea-travel-advisory.html',
-      'Venezuela':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/venezuela-travel-advisory.html',
-      'Myanmar':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/burma-travel-advisory.html',
-      'Burkina Faso':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/burkina-faso-travel-advisory.html',
-      'Niger':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/niger-travel-advisory.html',
-      'Central African Republic':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/central-african-republic-travel-advisory.html',
-      'Belarus':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/belarus-travel-advisory.html',
-      'Lebanon':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/lebanon-travel-advisory.html',
-      'Pakistan':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/pakistan-travel-advisory.html',
-      'Nigeria':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/nigeria-travel-advisory.html',
-      'Honduras':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/honduras-travel-advisory.html',
-      'Israel':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/israel-the-west-bank-and-gaza-travel-advisory.html',
-      'Ethiopia':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/ethiopia-travel-advisory.html',
-      'Democratic Republic of the Congo':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/democratic-republic-of-the-congo-travel-advisory.html',
-      'Chad':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/chad-travel-advisory.html',
-      'Mauritania':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/mauritania-travel-advisory.html',
-      'Colombia':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/colombia-travel-advisory.html',
-      'Bangladesh':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/bangladesh-travel-advisory.html',
-      'Guatemala':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/guatemala-travel-advisory.html',
-      'Uganda':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/uganda-travel-advisory.html',
-      'Guinea-Bissau':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/guinea-bissau-travel-advisory.html',
-      'Cameroon':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/cameroon-travel-advisory.html',
-      'Nicaragua':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/nicaragua-travel-advisory.html',
-      'Kenya':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/kenya-travel-advisory.html',
-      'Mexico':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/mexico-travel-advisory.html',
-      'Brazil':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/brazil-travel-advisory.html',
-      'Egypt':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/egypt-travel-advisory.html',
-      'Turkey':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/turkey-travel-advisory.html',
-      'India':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/india-travel-advisory.html',
-      'Guinea':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/guinea-travel-advisory.html',
-      'Philippines':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/philippines-travel-advisory.html',
-      'South Africa':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/south-africa-travel-advisory.html',
-      'Jamaica':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/jamaica-travel-advisory.html',
-      'China':'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/china-travel-advisory.html'
-    };
-    function getAdvUrl(name){
-      if(ADV_URLS[name])return ADV_URLS[name];
-      var alias=ADV_ALIASES[name];
-      if(alias&&ADV_URLS[alias])return ADV_URLS[alias];
-      var keys=Object.keys(ADV_URLS);
-      for(var k=0;k<keys.length;k++){
-        if(name.indexOf(keys[k])!==-1||keys[k].indexOf(name)!==-1)return ADV_URLS[keys[k]];
-      }
-      return 'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories.html/';
-    }
     var advFillColors={4:'rgba(255,59,48,0.35)',3:'rgba(255,149,0,0.25)',2:'rgba(255,214,10,0.18)'};
     var advStrokeColors={4:'rgba(255,59,48,0.6)',3:'rgba(255,149,0,0.5)',2:'rgba(255,214,10,0.4)'};
     var lvlLabels={4:'LEVEL 4 — DO NOT TRAVEL',3:'LEVEL 3 — RECONSIDER TRAVEL',2:'LEVEL 2 — EXERCISE INCREASED CAUTION'};
-
-    function getAdvLevel(name){
-      if(ADV_COUNTRIES[name])return ADV_COUNTRIES[name];
-      var alias=ADV_ALIASES[name];
-      if(alias&&ADV_COUNTRIES[alias])return ADV_COUNTRIES[alias];
-      // Fuzzy: check if GeoJSON name contains or is contained in any advisory country
-      var keys=Object.keys(ADV_COUNTRIES);
-      for(var k=0;k<keys.length;k++){
-        if(name.indexOf(keys[k])!==-1||keys[k].indexOf(name)!==-1)return ADV_COUNTRIES[keys[k]];
-      }
-      return 0;
-    }
 
     // Fetch GeoJSON and render
     fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
@@ -1479,18 +1475,12 @@ function App(){
   // Update advisory GeoJSON shading when filter changes
   useEffect(()=>{
     if(!geoLayerRef.current)return;
+    var fillColors={4:'rgba(255,59,48,0.35)',3:'rgba(255,149,0,0.25)',2:'rgba(255,214,10,0.18)'};
+    var strokeColors={4:'rgba(255,59,48,0.6)',3:'rgba(255,149,0,0.5)',2:'rgba(255,214,10,0.4)'};
     geoLayerRef.current.eachLayer(function(layer){
       var name=(layer.feature&&layer.feature.properties&&layer.feature.properties.name)||'';
-      var lv=0;
-      // Recompute level using same logic
-      var ADV_C={'Afghanistan':4,'Ukraine':4,'Russia':4,'Syria':4,'Iran':4,'Iraq':4,'Yemen':4,'Somalia':4,'Sudan':4,'South Sudan':4,'Libya':4,'Mali':4,'Haiti':4,'North Korea':4,'Venezuela':4,'Myanmar':4,'Burkina Faso':4,'Niger':4,'Central African Republic':4,'Belarus':4,'Lebanon':4,'Pakistan':3,'Nigeria':3,'Honduras':3,'Israel':3,'Ethiopia':3,'Democratic Republic of the Congo':3,'Chad':3,'Mauritania':3,'Colombia':3,'Bangladesh':3,'Guatemala':3,'Uganda':3,'Guinea-Bissau':3,'Cameroon':3,'Nicaragua':3,'Kenya':3,'Mexico':2,'Brazil':2,'Egypt':2,'Turkey':2,'India':2,'Guinea':2,'Philippines':2,'South Africa':2,'Jamaica':2,'China':2};
-      var ALIASES={'Burma':'Myanmar','Dem. Rep. Congo':'Democratic Republic of the Congo','Congo':'Democratic Republic of the Congo','Russian Federation':'Russia','Syrian Arab Republic':'Syria','Iran (Islamic Republic of)':'Iran','Venezuela (Bolivarian Republic of)':'Venezuela','Türkiye':'Turkey','Turkiye':'Turkey','Republic of Guinea':'Guinea','Palestine':'Gaza','Korea':'North Korea'};
-      if(ADV_C[name])lv=ADV_C[name];
-      else if(ALIASES[name]&&ADV_C[ALIASES[name]])lv=ADV_C[ALIASES[name]];
-      else{var ks=Object.keys(ADV_C);for(var k=0;k<ks.length;k++){if(name.indexOf(ks[k])!==-1||ks[k].indexOf(name)!==-1){lv=ADV_C[ks[k]];break;}}}
+      var lv=getAdvLevel(name);
       if(lv>0){
-        var fillColors={4:'rgba(255,59,48,0.35)',3:'rgba(255,149,0,0.25)',2:'rgba(255,214,10,0.18)'};
-        var strokeColors={4:'rgba(255,59,48,0.6)',3:'rgba(255,149,0,0.5)',2:'rgba(255,214,10,0.4)'};
         if(advFilter.has(lv)){
           layer.setStyle({fillColor:fillColors[lv],fillOpacity:1,color:strokeColors[lv],weight:1.5,opacity:1});
         }else{
@@ -1804,9 +1794,7 @@ function App(){
                           found=true;
                           var bounds=layer.getBounds();
                           mapRef.current.flyToBounds(bounds,{padding:[50,50],duration:1.2});
-                          var lv=0;
-                          var ADV_C2={'Afghanistan':4,'Ukraine':4,'Russia':4,'Syria':4,'Iran':4,'Iraq':4,'Yemen':4,'Somalia':4,'Sudan':4,'South Sudan':4,'Libya':4,'Mali':4,'Haiti':4,'North Korea':4,'Venezuela':4,'Myanmar':4,'Burkina Faso':4,'Niger':4,'Central African Republic':4,'Belarus':4,'Lebanon':4,'Pakistan':3,'Nigeria':3,'Honduras':3,'Israel':3,'Ethiopia':3,'Democratic Republic of the Congo':3,'Chad':3,'Mauritania':3,'Colombia':3,'Bangladesh':3,'Guatemala':3,'Uganda':3,'Guinea-Bissau':3,'Cameroon':3,'Nicaragua':3,'Kenya':3,'Mexico':2,'Brazil':2,'Egypt':2,'Turkey':2,'India':2,'Guinea':2,'Philippines':2,'South Africa':2,'Jamaica':2,'China':2};
-                          if(ADV_C2[name])lv=ADV_C2[name];
+                          var lv=getAdvLevel(name);
                           var center=bounds.getCenter();
                           setCountryBrief({name:name,level:lv,lat:center.lat,lon:center.lng});
                         }
