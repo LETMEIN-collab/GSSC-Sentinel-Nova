@@ -183,6 +183,9 @@ body{font-family:'Inter',sans-serif;background:#000;color:#d4d4d4;overflow-x:hid
 /* THEME TOGGLE */
 .theme-toggle{background:transparent;border:1px solid var(--bdr);color:var(--t2);padding:3px 8px;border-radius:3px;cursor:pointer;font:500 11px var(--mono);transition:all .2s;margin-left:8px}
 .theme-toggle:hover{border-color:var(--bdrh);color:var(--t1)}
+.adv-tog{display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;user-select:none;border-radius:2px}
+.adv-tog:hover{filter:brightness(1.3)}
+.adv-tog.off{opacity:0.3;filter:grayscale(0.7)}
 .brief-btn{background:rgba(10,132,255,.12);border:1px solid rgba(10,132,255,.4);color:#0a84ff;padding:3px 8px;border-radius:3px;cursor:pointer;font:600 9px var(--mono);letter-spacing:.5px;transition:all .2s;white-space:nowrap;flex-shrink:0}
 .brief-btn:hover{background:rgba(10,132,255,.25);color:#4da6ff}
 .brief-btn:disabled{opacity:.5;cursor:wait}
@@ -578,7 +581,9 @@ function App(){
   const[countryBrief,setCountryBrief]=useState(null);
   const[alertQueue,setAlertQueue]=useState([]);
   const[darkMode,setDarkMode]=useState(true);
+  const[advFilter,setAdvFilter]=useState(new Set([3,4]));
   const geoLayerRef=useRef(null);
+  const advMarkersRef=useRef([]);
 
   // Fetch US State Dept Travel Advisories
   const fetchAdvisories=async()=>{
@@ -1309,23 +1314,24 @@ function App(){
       {n:'Philippines',lat:12.9,lon:121.8,sz:26,lv:2},{n:'South Africa',lat:-30.6,lon:22.9,sz:34,lv:2},
       {n:'Jamaica',lat:18.1,lon:-77.3,sz:8,lv:2},{n:'China',lat:35.9,lon:104.2,sz:60,lv:2}
     ];
-    var advColors={4:'rgba(255,59,48,0.45)',3:'rgba(255,149,0,0.35)',2:'rgba(255,214,10,0.25)'};
-    var advBorders={4:'rgba(255,59,48,0.7)',3:'rgba(255,149,0,0.6)',2:'rgba(255,214,10,0.5)'};
+    var advColors={4:'rgba(255,59,48,0.15)',3:'rgba(255,149,0,0.10)',2:'rgba(255,214,10,0.08)'};
+    var advBorders={4:'rgba(255,59,48,0.4)',3:'rgba(255,149,0,0.3)',2:'rgba(255,214,10,0.25)'};
     var lvlLabels={4:'LEVEL 4 — DO NOT TRAVEL',3:'LEVEL 3 — RECONSIDER TRAVEL',2:'LEVEL 2 — EXERCISE INCREASED CAUTION'};
     var advCount=0;
     try{
       ADV_DATA.forEach(function(c){
-        var s=c.sz;
+        var s=Math.min(Math.round(c.sz*0.55),30);
         var icon=L.divIcon({
           className:'',
           iconSize:[s,s],
           iconAnchor:[s/2,s/2],
-          html:'<div style="width:'+s+'px;height:'+s+'px;border-radius:50%;background:'+advColors[c.lv]+';border:1.5px solid '+advBorders[c.lv]+';pointer-events:auto;cursor:pointer" title="'+c.n+' — '+lvlLabels[c.lv]+'"></div>'
+          html:'<div style="width:'+s+'px;height:'+s+'px;border-radius:50%;background:'+advColors[c.lv]+';border:1px solid '+advBorders[c.lv]+';pointer-events:auto;cursor:pointer;opacity:0.85" title="'+c.n+' — '+lvlLabels[c.lv]+'"></div>'
         });
-        L.marker([c.lat,c.lon],{icon:icon,interactive:true}).addTo(map).on('click',function(){setCountryBrief({name:c.n,level:c.lv,lat:c.lat,lon:c.lon});});
+        var marker=L.marker([c.lat,c.lon],{icon:icon,interactive:true}).on('click',function(){setCountryBrief({name:c.n,level:c.lv,lat:c.lat,lon:c.lon});});
+        advMarkersRef.current.push({marker:marker,level:c.lv});
         advCount++;
       });
-      console.log('SENTINEL NOVA v7: '+advCount+' advisory markers painted OK');
+      console.log('SENTINEL NOVA v7: '+advCount+' advisory markers stored OK');
     }catch(err){console.error('ADV MARKER ERROR:',err);}
 
     // Add connection lines
@@ -1338,6 +1344,19 @@ function App(){
       linesRef.current.push(line);
     });
   },[]);
+
+  // Update advisory shading markers when filter changes
+  useEffect(()=>{
+    if(!mapRef.current)return;
+    var map=mapRef.current;
+    advMarkersRef.current.forEach(function(item){
+      if(advFilter.has(item.level)){
+        if(!map.hasLayer(item.marker))item.marker.addTo(map);
+      }else{
+        if(map.hasLayer(item.marker))map.removeLayer(item.marker);
+      }
+    });
+  },[advFilter]);
 
   // Update markers when filter changes
   useEffect(()=>{
@@ -1554,21 +1573,17 @@ function App(){
           <div className="ph"><div className="pt">◆ US Travel Advisories</div><span className="pb" style={{background:advLive?'var(--grnbg)':'rgba(102,102,102,.15)',color:advLive?'var(--grn)':'var(--t3)'}}>{advLive?'● STATE DEPT LIVE':'LOADING'}</span></div>
           {/* Summary bar */}
           {advLive&&<div style={{display:'flex',gap:0,borderBottom:'1px solid var(--bdr)'}}>
-            <div style={{flex:1,padding:'6px 8px',textAlign:'center',background:'rgba(255,59,48,0.08)',borderRight:'1px solid var(--bdr)'}}>
-              <div style={{font:'700 16px var(--mono)',color:'#ff3b30'}}>{advStats.l4}</div>
-              <div style={{font:'500 7px var(--mono)',color:'var(--t3)',letterSpacing:'.5px'}}>L4 — DNT</div>
-            </div>
-            <div style={{flex:1,padding:'6px 8px',textAlign:'center',background:'rgba(255,149,0,0.06)',borderRight:'1px solid var(--bdr)'}}>
-              <div style={{font:'700 16px var(--mono)',color:'#ff9500'}}>{advStats.l3}</div>
-              <div style={{font:'500 7px var(--mono)',color:'var(--t3)',letterSpacing:'.5px'}}>L3 — RECON</div>
-            </div>
-            <div style={{flex:1,padding:'6px 8px',textAlign:'center',background:'rgba(255,214,10,0.05)'}}>
-              <div style={{font:'700 16px var(--mono)',color:'#ffd60a'}}>{advStats.l2}</div>
-              <div style={{font:'500 7px var(--mono)',color:'var(--t3)',letterSpacing:'.5px'}}>L2 — CAUT</div>
-            </div>
+            {[[4,'#ff3b30','rgba(255,59,48,0.08)','L4 — DNT',advStats.l4],[3,'#ff9500','rgba(255,149,0,0.06)','L3 — RECON',advStats.l3],[2,'#ffd60a','rgba(255,214,10,0.05)','L2 — CAUT',advStats.l2]].map(function(item,idx){
+              var lv=item[0],col=item[1],bg=item[2],label=item[3],count=item[4];
+              var active=advFilter.has(lv);
+              return <div key={lv} className={'adv-tog'+(active?'':' off')} onClick={function(){setAdvFilter(function(prev){var next=new Set(prev);if(next.has(lv))next.delete(lv);else next.add(lv);return next;});}} style={{flex:1,padding:'6px 8px',textAlign:'center',background:active?bg:'transparent',borderRight:idx<2?'1px solid var(--bdr)':'none',cursor:'pointer'}}>
+                <div style={{font:'700 16px var(--mono)',color:active?col:'var(--t3)'}}>{count}</div>
+                <div style={{font:'500 7px var(--mono)',color:active?'var(--t2)':'var(--t3)',letterSpacing:'.5px'}}>{label}</div>
+              </div>;
+            })}
           </div>}
           <div className="pbd" style={{padding:'6px 12px'}}>
-            {advisories.length>0?advisories.map((adv,i)=>{
+            {advisories.length>0?advisories.filter(adv=>advFilter.has(adv.level)).map((adv,i)=>{
               const inner=<div key={i} style={{padding:'5px 0',borderBottom:i<advisories.length-1?'1px solid var(--bdr)':'none',overflow:'hidden'}}>
                 <div style={{display:'flex',alignItems:'center',gap:5,marginBottom:2,overflow:'hidden'}}>
                   <span style={{font:'600 7px var(--mono)',color:ADV_COLORS[adv.level],padding:'1px 4px',borderRadius:2,background:ADV_COLORS[adv.level]+'18',border:'1px solid '+ADV_COLORS[adv.level]+'35',letterSpacing:'.5px',flexShrink:0,whiteSpace:'nowrap'}}>{ADV_SHORT[adv.level]||'L'+adv.level}</span>
