@@ -1670,96 +1670,133 @@ function App(){
         top10.push({headline:decEnt(n.t||n.title||'').slice(0,120),tag:(n.cat||'SECURITY').toUpperCase(),source:decEnt(n.src||n.reg||''),time:n.tm||''});
       });
     }
-    // Group developments by category for narrative flow
-    var catGroups={};
+    // ═══ REGION-BASED NARRATIVE CONSTRUCTION ═══
+    // Classify each headline into a geographic region using keyword matching
+    var regionRules=[
+      {name:'Middle East & North Africa',rx:/\b(iraq|iran|syria|yemen|gaza|palestine|israel|hezbollah|houthi|lebanon|jordan|saudi|bahrain|qatar|oman|uae|emirates|egypt|libya|tunisia|algeria|morocco|sinai|golan|west bank|rafah|beirut|tehran|baghdad|damascus|sanaa|riyadh|cairo|tripoli)\b/i},
+      {name:'Russia \u2013 Ukraine',rx:/\b(ukraine|russia|russian|kremlin|kyiv|kiev|moscow|donbas|donetsk|luhansk|crimea|zaporizhzhia|kharkiv|kherson|odesa|putin|zelensky|wagner|bakhmut|avdiivka|kursk|belgorod|drone.*russia|russia.*drone|nato.*ukr|ukr.*nato)\b/i},
+      {name:'Indo-Pacific',rx:/\b(china|chinese|beijing|taiwan|strait|south china sea|philippines|manila|japan|tokyo|north korea|pyongyang|DPRK|korea|india|pakistan|kashmir|bangladesh|myanmar|burma|rohingya|indonesia|bali|vietnam|thailand|australia|pacific|ASEAN|sri lanka|cambodia|laos|aukus|quad)\b/i},
+      {name:'Sub-Saharan Africa',rx:/\b(nigeria|niger|mali|burkina faso|chad|sudan|south sudan|khartoum|RSF|ethiopia|tigray|somalia|mogadishu|al.shabaab|congo|DRC|mozambique|sahel|boko haram|kenya|uganda|cameroon|senegal|ghana|tanzania|zimbabwe|south africa|rwanda|junta.*africa|africa.*junta)\b/i},
+      {name:'Europe & Transatlantic',rx:/\b(NATO|eu |european union|brussels|london|paris|berlin|germany|france|britain|UK |poland|romania|baltic|finland|sweden|norway|denmark|spain|italy|greece|turkey|ankara|istanbul|balkans|serbia|kosovo|moldova|georgia|tbilisi|arctic|north sea)\b/i},
+      {name:'Americas',rx:/\b(mexico|cartel|sinaloa|colombia|bogota|venezuela|maduro|brazil|ecuador|peru|argentina|chile|honduras|guatemala|el salvador|haiti|cuba|canada|fentanyl|border.*US|US.*border|latin america|central america|caribbean)\b/i},
+      {name:'Cyber & Technology',rx:/\b(cyber|ransomware|hack|breach|malware|phishing|zero.day|APT|deepfake|AI.generated|disinformation|misinformation|influence operation|botnet|critical infrastructure|SCADA|DDoS)\b/i}
+    ];
+    function classifyRegion(headline,tag){
+      for(var ri=0;ri<regionRules.length;ri++){if(regionRules[ri].rx.test(headline))return regionRules[ri].name;}
+      // Fallback by tag
+      if(tag==='CYBER THREAT'||tag==='SYNTHETIC MEDIA')return 'Cyber & Technology';
+      if(tag==='ORGANIZED CRIME')return 'Americas';
+      return 'Global';
+    }
+    // Group by region
+    var regionGroups={};
     top10.forEach(function(d){
-      if(!catGroups[d.tag])catGroups[d.tag]=[];
-      catGroups[d.tag].push(d);
+      var reg=classifyRegion(d.headline,d.tag);
+      if(!regionGroups[reg])regionGroups[reg]=[];
+      regionGroups[reg].push(d);
     });
-    var catKeys=Object.keys(catGroups);
-    // Build BLUF — high-level one-paragraph summary
-    var blufParts=[];
-    catKeys.forEach(function(cat){
-      var items=catGroups[cat];
-      if(items.length===1)blufParts.push(items[0].headline);
-      else blufParts.push(cat.charAt(0)+cat.slice(1).toLowerCase()+' developments including '+items[0].headline.split(',')[0].split(':')[0]);
-    });
-    var blufText='Over the preceding 24-hour reporting period, open-source collection has identified approximately '+top10.length+' assessed security developments across '+catKeys.length+' threat categories. The overall threat posture is assessed as elevated with moderate-to-high confidence. ';
-    if(blufParts.length<=3)blufText+='Priority developments assessed with highest confidence include: '+blufParts.join('; ')+'.';
-    else blufText+='The most significant assessed developments appear concentrated in '+blufParts.slice(0,3).join('; ')+', among other active threat vectors.';
-    // Build "What Happened" narrative paragraphs — one per category, using probabilistic/analytical language
-    var whatHappenedParas=[];
-    var catTransitions={'ARMED CONFLICT':'In the armed conflict domain, reporting indicates ','TERRORISM':'On the terrorism front, available reporting suggests ','KIDNAP & RANSOM':'With regard to kidnapping and ransom activity, open-source indicators suggest ','NATURAL DISASTER':'Concerning natural disaster events, multiple sources report ','CYBER THREAT':'In the cyber threat domain, assessed indicators point to ','DETENTION / ARREST':'With respect to political detention activity, reporting indicates ','SYNTHETIC MEDIA':'In the information environment, assessed indicators suggest ','ORGANIZED CRIME':'Regarding organized criminal activity, available intelligence suggests ','POLITICAL INSTABILITY':'On the political stability front, open-source reporting indicates ','WMD / PROLIFERATION':'In the WMD and proliferation space, assessed reporting suggests '};
-    catKeys.forEach(function(cat){
-      var items=catGroups[cat];
-      var transition=catTransitions[cat]||('Regarding '+cat.toLowerCase()+', available reporting indicates ');
-      var sentences=items.map(function(d,si){
-        var srcNote=d.source?' ('+d.source.replace('www.','')+(d.time?', '+d.time:'')+')':'';
-        var connector=si===0?'':si===1?' Separately, reporting also indicates ':' Further assessed activity includes ';
-        return connector+d.headline+srcNote;
+    // Preferred region ordering
+    var regionOrder=['Middle East & North Africa','Russia \u2013 Ukraine','Indo-Pacific','Sub-Saharan Africa','Europe & Transatlantic','Americas','Cyber & Technology','Global'];
+    var activeRegions=regionOrder.filter(function(r){return regionGroups[r]&&regionGroups[r].length>0;});
+
+    // ═══ ANALYTICAL NARRATIVE BUILDERS ═══
+    // Implication phrases keyed by tag — woven inline, not a separate section
+    var tagInsight={
+      'ARMED CONFLICT':'We judge this carries escalation risk and may draw in regional actors.',
+      'TERRORISM':'We assess the threat environment remains fluid, with potential for retaliatory action in the near term.',
+      'KIDNAP & RANSOM':'This pattern is consistent with deteriorating local security conditions and expanding criminal reach.',
+      'NATURAL DISASTER':'Humanitarian response capacity is likely to be strained, with cascading effects on displacement and infrastructure.',
+      'CYBER THREAT':'We assess affected systems face sustained disruption; the incident underscores persistent critical-infrastructure vulnerabilities.',
+      'DETENTION / ARREST':'We judge these actions are likely to draw international scrutiny and may signal a broader crackdown.',
+      'SYNTHETIC MEDIA':'We assess the information environment remains contested, warranting enhanced monitoring.',
+      'ORGANIZED CRIME':'We judge territorial disputes continue to pose a persistent threat to governance in affected regions.',
+      'POLITICAL INSTABILITY':'We assess governance continuity is at risk, with potential for cascading political and security effects.',
+      'WMD / PROLIFERATION':'We judge this represents a material concern for regional security architecture and deterrence postures.'
+    };
+    // Analytical sentence connectors that vary across the narrative
+    var connectors=['Reporting indicates ','Available intelligence suggests ','Open-source collection points to ','Multiple sources report ','Assessed reporting reflects ','We note that '];
+    var connIdx=0;
+    function nextConn(){var c=connectors[connIdx%connectors.length];connIdx++;return c;}
+
+    // Build flowing prose per region — each region gets a subheading + 1–2 paragraphs
+    var regionNarratives=[];
+    activeRegions.forEach(function(reg){
+      var items=regionGroups[reg];
+      var prose='';
+      items.forEach(function(d,di){
+        var src=d.source?d.source.replace('www.',''):'';
+        if(di===0){prose+=nextConn()+d.headline+(src?' ('+src+')':'')+'. ';}
+        else if(di===1){prose+='Separately, '+d.headline.charAt(0).toLowerCase()+d.headline.slice(1)+(src?' ('+src+')':'')+'. ';}
+        else{prose+='Additionally, '+d.headline.charAt(0).toLowerCase()+d.headline.slice(1)+(src?' ('+src+')':'')+'. ';}
+        // Weave in an inline analytical assessment after the first item per region
+        if(di===0&&tagInsight[d.tag]){prose+=tagInsight[d.tag]+' ';}
       });
-      whatHappenedParas.push(transition+sentences.join('.')+'.');
+      regionNarratives.push({region:reg,text:prose.trim()});
     });
-    // Build "Why It Matters" — analytical assessment
-    var catImplications={'ARMED CONFLICT':'escalation risk remains elevated and may draw in regional actors or prompt shifts in alliance postures','TERRORISM':'the threat environment remains fluid, with potential for retaliatory or copycat actions in the near term','KIDNAP & RANSOM':'this activity pattern is consistent with deteriorating local security conditions and may indicate expanding criminal operational reach','NATURAL DISASTER':'humanitarian response capacity is likely to be strained, with potential cascading effects on displacement, infrastructure, and regional stability','CYBER THREAT':'affected systems may face sustained operational disruption; the incident underscores persistent vulnerabilities in critical infrastructure','DETENTION / ARREST':'these actions are likely to draw international scrutiny and may signal a broader crackdown on civil liberties','SYNTHETIC MEDIA':'the information environment remains contested, warranting enhanced monitoring for coordinated amplification efforts','ORGANIZED CRIME':'territorial and operational disputes continue to pose a persistent threat to governance and public safety in affected regions','POLITICAL INSTABILITY':'governance continuity is at risk, with potential for cascading political and security effects including civil unrest','WMD / PROLIFERATION':'this represents a material concern for regional security architecture and may prompt recalibration of deterrence postures'};
-    var whyParts=[];
-    catKeys.forEach(function(cat){
-      var impl=catImplications[cat]||'the assessed trajectory warrants continued collection and monitoring as the situation develops';
-      whyParts.push('With respect to '+cat.toLowerCase().replace(' / ','/').replace(' & ',' and ')+', '+impl+'.');
-    });
-    // Build "Key Events & Dates" — extract upcoming watchpoints
-    var keyEvents=[];
-    keyEvents.push(dateStr+' \u2014 Reporting period for this assessed intelligence summary.');
-    top10.slice(0,5).forEach(function(d){
-      keyEvents.push('['+d.tag+'] '+d.headline.slice(0,80)+(d.headline.length>80?'\u2026':''));
-    });
-    keyEvents.push('Next scheduled assessment: '+new Date(now.getTime()+86400000).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}));
+
+    // Build BLUF — single synthesized paragraph about overall threat posture
+    var threatCount=top10.length;
+    var regionCount=activeRegions.length;
+    // Pick two most significant regions (most items)
+    var sortedRegs=activeRegions.slice().sort(function(a,b){return regionGroups[b].length-regionGroups[a].length;});
+    var topRegs=sortedRegs.slice(0,Math.min(3,sortedRegs.length));
+    var blufText='The global threat environment over the past 24 hours is assessed as elevated, with '+threatCount+' significant developments identified across '+regionCount+' geographic regions. ';
+    blufText+='The most pronounced activity was observed in '+topRegs.join(', ')+'. ';
+    // Add a synthesized line about what we judge
+    var hasConflict=top10.some(function(d){return d.tag==='ARMED CONFLICT'||d.tag==='WMD / PROLIFERATION';});
+    var hasCyber=top10.some(function(d){return d.tag==='CYBER THREAT'||d.tag==='SYNTHETIC MEDIA';});
+    var hasTerror=top10.some(function(d){return d.tag==='TERRORISM';});
+    if(hasConflict)blufText+='We judge escalation risk in active conflict zones remains the primary driver of the current threat posture. ';
+    if(hasTerror)blufText+='The terrorism threat picture warrants continued close monitoring given recent operational activity. ';
+    if(hasCyber)blufText+='Persistent cyber and information threats continue to challenge critical infrastructure resilience. ';
+    blufText+='This assessment is derived from open-source collection and is rendered with moderate-to-high confidence. We recommend sustained monitoring across all identified vectors.';
+
     // ═══ BUILD DOCUMENT ═══ sizes in HALF-POINTS, spacing in twips, line in 240ths (240=single,360=1.5x)
     var children=[];
     // Header
-    children.push(new D.Paragraph({spacing:{after:40},children:[
+    children.push(new D.Paragraph({spacing:{after:60},children:[
       new D.TextRun({text:'SENTINEL NOVA',font:'Arial',size:32,bold:true,color:'cc0000'}),
       new D.TextRun({text:'  Global Security Brief',font:'Arial',size:22,color:'555555'}),
     ]}));
-    children.push(new D.Paragraph({spacing:{after:180},border:{bottom:{style:D.BorderStyle.SINGLE,size:3,color:'cc0000',space:4}},children:[
+    children.push(new D.Paragraph({spacing:{after:200},border:{bottom:{style:D.BorderStyle.SINGLE,size:3,color:'cc0000',space:4}},children:[
       new D.TextRun({text:'24-Hour Intelligence Summary  |  '+dateStr+'  |  '+timeStr,font:'Arial',size:16,color:'999999'}),
     ]}));
     // BLUF
-    children.push(new D.Paragraph({spacing:{before:60,after:40},children:[
+    children.push(new D.Paragraph({spacing:{before:80,after:60},children:[
       new D.TextRun({text:'BOTTOM LINE UP FRONT (BLUF)',font:'Arial',size:19,bold:true,color:'1a1a1a'}),
     ]}));
-    children.push(new D.Paragraph({spacing:{after:160,line:300},children:[
+    children.push(new D.Paragraph({spacing:{after:200,line:312},children:[
       new D.TextRun({text:blufText,font:'Arial',size:18,color:'333333'}),
     ]}));
-    // WHAT HAPPENED
-    children.push(new D.Paragraph({spacing:{before:60,after:40},border:{bottom:{style:D.BorderStyle.SINGLE,size:1,color:'DDDDDD',space:2}},children:[
-      new D.TextRun({text:'WHAT HAPPENED',font:'Arial',size:19,bold:true,color:'1a1a1a'}),
+    // WHAT HAS HAPPENED — regional subheadings with flowing narrative
+    children.push(new D.Paragraph({spacing:{before:80,after:80},border:{bottom:{style:D.BorderStyle.SINGLE,size:1,color:'DDDDDD',space:3}},children:[
+      new D.TextRun({text:'WHAT HAS HAPPENED',font:'Arial',size:19,bold:true,color:'1a1a1a'}),
     ]}));
-    whatHappenedParas.forEach(function(para){
-      children.push(new D.Paragraph({spacing:{after:120,line:280},children:[
-        new D.TextRun({text:para,font:'Arial',size:18,color:'333333'}),
+    regionNarratives.forEach(function(rn){
+      // Region subheading
+      children.push(new D.Paragraph({spacing:{before:120,after:60},children:[
+        new D.TextRun({text:rn.region,font:'Arial',size:18,bold:true,color:'222222'}),
+      ]}));
+      // Narrative paragraph
+      children.push(new D.Paragraph({spacing:{after:160,line:312},children:[
+        new D.TextRun({text:rn.text,font:'Arial',size:18,color:'333333'}),
       ]}));
     });
-    // WHY IT MATTERS
-    children.push(new D.Paragraph({spacing:{before:100,after:40},border:{bottom:{style:D.BorderStyle.SINGLE,size:1,color:'DDDDDD',space:2}},children:[
-      new D.TextRun({text:'WHY IT MATTERS',font:'Arial',size:19,bold:true,color:'1a1a1a'}),
+    // LOOKING AHEAD — brief forward-looking watchpoints replacing "Key Events & Dates"
+    children.push(new D.Paragraph({spacing:{before:100,after:60},border:{bottom:{style:D.BorderStyle.SINGLE,size:1,color:'DDDDDD',space:3}},children:[
+      new D.TextRun({text:'LOOKING AHEAD',font:'Arial',size:19,bold:true,color:'1a1a1a'}),
     ]}));
-    whyParts.forEach(function(para){
-      children.push(new D.Paragraph({spacing:{after:100,line:280},children:[
-        new D.TextRun({text:para,font:'Arial',size:18,color:'333333'}),
-      ]}));
-    });
-    // KEY EVENTS & DATES
-    children.push(new D.Paragraph({spacing:{before:100,after:40},border:{bottom:{style:D.BorderStyle.SINGLE,size:1,color:'DDDDDD',space:2}},children:[
-      new D.TextRun({text:'KEY EVENTS & DATES',font:'Arial',size:19,bold:true,color:'1a1a1a'}),
+    var lookAheadText='Over the next 24\u201348 hours, we assess that ';
+    if(hasConflict)lookAheadText+='active conflict zones — particularly '+topRegs[0]+' — carry the highest probability of further escalation. ';
+    else lookAheadText+='the threat environment is likely to remain at current levels, though conditions remain fluid across multiple regions. ';
+    lookAheadText+='We recommend sustained collection on all identified vectors and note that developments in ';
+    lookAheadText+=sortedRegs.length>1?sortedRegs[0]+' and '+sortedRegs[1]:sortedRegs[0];
+    lookAheadText+=' have the greatest potential for near-term impact on organisational security posture. Next assessment scheduled: '+new Date(now.getTime()+86400000).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})+'.';
+    children.push(new D.Paragraph({spacing:{after:180,line:312},children:[
+      new D.TextRun({text:lookAheadText,font:'Arial',size:18,color:'333333'}),
     ]}));
-    keyEvents.forEach(function(evt){
-      children.push(new D.Paragraph({spacing:{after:60,line:280},indent:{left:200},children:[
-        new D.TextRun({text:'\u2022  '+evt,font:'Arial',size:17,color:'444444'}),
-      ]}));
-    });
-    // Disclaimer
-    children.push(new D.Paragraph({spacing:{before:200,line:260},border:{top:{style:D.BorderStyle.SINGLE,size:1,color:'DDDDDD',space:4}},children:[
+    // Methodology footer
+    children.push(new D.Paragraph({spacing:{before:200,line:276},border:{top:{style:D.BorderStyle.SINGLE,size:1,color:'DDDDDD',space:4}},children:[
       new D.TextRun({text:'METHODOLOGY: ',font:'Arial',size:14,bold:true,color:'AAAAAA'}),
       new D.TextRun({text:'This brief is compiled from open-source intelligence (OSINT) feeds, including GDELT, RSS aggregation from major international outlets, and structured data from government advisories. Probabilistic language reflects assessed confidence based on source reliability and multi-source corroboration. All items require independent human verification prior to operational use. Classification: UNCLASSIFIED / FOUO.',font:'Arial',size:14,color:'BBBBBB',italics:true}),
     ]}));
