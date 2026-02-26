@@ -2037,6 +2037,7 @@ function App(){
             <div className="cb-section-title">Travel Advisory</div>
             <div className="cb-desc">{ADV_LABELS[countryBrief.level]}</div>
             {advisories.find(a=>a.country===countryBrief.name)?.desc&&<div className="cb-item" style={{marginTop:6}}>{advisories.find(a=>a.country===countryBrief.name).desc}</div>}
+            {countryBrief.level>0&&<a href={getAdvUrl(countryBrief.name)} target="_blank" rel="noopener" style={{display:'inline-block',marginTop:8,font:'500 9px var(--mono)',color:'#0a84ff',textDecoration:'none',padding:'3px 8px',border:'1px solid rgba(10,132,255,0.3)',borderRadius:3,background:'rgba(10,132,255,0.08)',letterSpacing:'.3px'}}>View State Dept Advisory ↗</a>}
           </div>
 
           {/* Matching NOTAMs */}
