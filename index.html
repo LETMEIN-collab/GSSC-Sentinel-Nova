@@ -6,15 +6,11 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>SENTINEL NOVA — Global Security Terminal</title>
+<title>SENTINEL NOVA — US-Iran-Israel War Terminal</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+<!-- Leaflet map removed - replaced with Airspace Impact Tracker -->
 <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
@@ -64,20 +60,26 @@ body{font-family:'Inter',sans-serif;background:#000;color:#d4d4d4;overflow-x:hid
 .rg-m{font:400 9px var(--mono);color:var(--t3);display:flex;justify-content:space-between}
 
 /* MAP */
-.mwrap{position:relative;width:100%;height:100%;min-height:300px;background:var(--bg0)}
+.mwrap{position:relative;width:100%;height:100%;min-height:300px;background:var(--bg0);display:flex;flex-direction:column}
 .mwrap svg{width:100%;height:100%}
-#leaflet-map{width:100%;height:100%;background:#000;z-index:0}
-.leaflet-container{background:#000!important}
-.leaflet-control-zoom{border:1px solid var(--bdr)!important;border-radius:3px!important}
-.leaflet-control-zoom a{background:var(--bg2)!important;color:var(--t2)!important;border-color:var(--bdr)!important;width:26px!important;height:26px!important;line-height:26px!important;font-size:13px!important}
-.leaflet-control-zoom a:hover{background:var(--bg3)!important;color:var(--t1)!important}
-.leaflet-control-attribution{display:none!important}
-.pulse-marker{border-radius:50%;animation:pmark 2s infinite}
-@keyframes pmark{0%{box-shadow:0 0 0 0 rgba(255,59,48,.5)}70%{box-shadow:0 0 0 12px rgba(255,59,48,0)}100%{box-shadow:0 0 0 0 rgba(255,59,48,0)}}
-.leaflet-popup-content-wrapper{background:var(--bg2)!important;color:var(--t1)!important;border:1px solid var(--bdrh)!important;border-radius:6px!important;box-shadow:0 4px 20px rgba(0,0,0,.6)!important;font-family:'Inter',sans-serif!important;font-size:11px!important}
-.leaflet-popup-tip{background:var(--bg2)!important;border:1px solid var(--bdrh)!important}
-.leaflet-popup-close-button{color:var(--t3)!important;font-size:16px!important}
-.leaflet-popup-close-button:hover{color:var(--t1)!important}
+#airspace-tracker{width:100%;height:100%;display:flex;flex-direction:column;background:var(--bg0)}
+.airspace-header{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--bdr);background:var(--bg1)}
+.airspace-title{font:700 13px var(--mono);color:var(--t1);flex:1}
+.airspace-live{display:inline-flex;align-items:center;gap:4px;font:500 9px var(--mono);color:#30d158;padding:3px 6px;background:rgba(48,209,88,0.15);border-radius:2px;border:1px solid rgba(48,209,88,0.3);text-transform:uppercase;letter-spacing:.5px}
+.airspace-live::before{content:'●';animation:livepulse 1s infinite}
+@keyframes livepulse{0%,100%{opacity:1}50%{opacity:.5}}
+.airspace-grid{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px}
+.airspace-row{display:grid;grid-template-columns:100px 60px 80px 1fr;gap:8px;padding:8px;margin-bottom:4px;border-radius:3px;background:var(--bg2);border:1px solid var(--bdr);align-items:center;cursor:pointer;transition:all .2s;font-size:9px}
+.airspace-row:hover{background:var(--bg3);border-color:var(--bdrh)}
+.airspace-zone{font:600 10px var(--mono);color:var(--t1)}
+.airspace-fir{font:500 8px var(--mono);color:var(--t3)}
+.airspace-status{font:600 8px var(--mono);padding:3px 6px;border-radius:2px;text-transform:uppercase;letter-spacing:.4px;text-align:center;background:rgba(0,0,0,0.3)}
+.airspace-status.closed{color:#ff3b30;border:1px solid rgba(255,59,48,0.4);background:rgba(255,59,48,0.1)}
+.airspace-status.restricted{color:#ff9500;border:1px solid rgba(255,149,0,0.4);background:rgba(255,149,0,0.1)}
+.airspace-status.caution{color:#ffd60a;border:1px solid rgba(255,214,10,0.4);background:rgba(255,214,10,0.1)}
+.airspace-status.monitoring{color:#64d2ff;border:1px solid rgba(100,210,255,0.4);background:rgba(100,210,255,0.1)}
+.airspace-status.open{color:#30d158;border:1px solid rgba(48,209,88,0.4);background:rgba(48,209,88,0.1)}
+.airspace-detail{font:400 8px var(--mono);color:var(--t3);grid-column:1/-1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .conn-arc{stroke-dasharray:6,4;animation:arcflow 3s linear infinite}
 @keyframes arcflow{0%{stroke-dashoffset:0}100%{stroke-dashoffset:-30}}
 .mfilt{position:absolute;top:8px;left:8px;display:flex;gap:4px;flex-wrap:wrap;z-index:1000}
@@ -186,6 +188,21 @@ body{font-family:'Inter',sans-serif;background:#000;color:#d4d4d4;overflow-x:hid
 .cb-item{font:400 9px Inter,sans-serif;color:var(--t2);line-height:1.5;margin-bottom:4px}
 .cb-item:last-child{margin-bottom:0}
 .cb-desc{font:400 10px Inter,sans-serif;color:var(--t1);line-height:1.4}
+
+/* AIRSPACE DETAIL PANEL */
+.airspace-detail-panel{position:fixed;right:12px;top:80px;width:360px;max-height:calc(100vh - 100px);background:var(--bg2);border:1px solid var(--bdr);border-radius:6px;box-shadow:0 8px 32px rgba(0,0,0,.6);overflow-y:auto;z-index:140;animation:briefSlide .3s ease-out;font-family:Inter,sans-serif}
+.airspace-detail-panel-header{display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:1px solid var(--bdr);gap:8px}
+.airspace-detail-title{font:700 13px var(--mono);color:var(--t1)}
+.airspace-detail-status{font:700 9px var(--mono);padding:3px 8px;border-radius:2px;text-transform:uppercase;letter-spacing:.5px}
+.airspace-detail-close{background:none;border:none;color:var(--t3);cursor:pointer;font:700 16px var(--mono);padding:0}
+.airspace-detail-close:hover{color:var(--t1)}
+.airspace-detail-content{padding:12px}
+.ad-section{margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--bdr)}
+.ad-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.ad-section-title{font:600 10px var(--mono);color:#ff9500;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.ad-item{font:400 9px Inter,sans-serif;color:var(--t2);line-height:1.5;margin-bottom:4px}
+.ad-item:last-child{margin-bottom:0}
+.ad-detail{font:400 10px Inter,sans-serif;color:var(--t1);line-height:1.4}
 
 /* THEME TOGGLE */
 .theme-toggle{background:transparent;border:1px solid var(--bdr);color:var(--t2);padding:3px 8px;border-radius:3px;cursor:pointer;font:500 11px var(--mono);transition:all .2s;margin-left:8px}
@@ -347,71 +364,70 @@ const ADV_FALLBACK=[
   {country:'Guinea',level:2,title:'Guinea — Level 2: Exercise Increased Caution',date:new Date('2026-01-09'),url:'https://travel.state.gov',desc:'Civil unrest, crime'},
 ];
 
-/* Polymarket geopolitical search terms — used to find relevant markets */
-const POLY_GEO_TERMS=['war','conflict','military','nuclear','invasion','ceasefire','nato','sanctions','coup','assassination','missile','iran','russia','ukraine','china','taiwan','korea','middle east','terrorism','troops','election','president','prime minister','parliament','tariff','embargo','drone','strike','border','refugee','diplomat','treaty','security','geopolit','protest','uprising','regime','dictator','authoritarian','democrat','republic','congress','senate','legislation','indictment','impeach','arrest','detain','hostage','kidnap','cartel','insurgent','rebel','separatist','annexation','occupation','airstrike','casualt','deploy','weapon','cyber','hack','breach','espionage','intelligence','surveillance','climate','hurricane','earthquake','tsunami','pandemic','outbreak','famine'];
-const POLY_EXCLUDE=/\b(nba|nfl|mlb|nhl|nascar|ufc|mma|boxing|soccer|football match|premier league|la liga|bundesliga|serie a|ligue 1|champions league|world cup|super bowl|march madness|wimbledon|us open tennis|f1 grand prix|oscar|grammy|emmy|tony award|golden globe|billboard|box office|fashion|vogue|met gala|kardashian|celebrity|influencer|tiktok|youtube|twitch|spotify|netflix|hulu|disney\+|bachelor|bachelorette|love island|survivor|big brother|american idol|crypto price|bitcoin price|bitcoin etf|ethereum price|solana price|memecoin|dogecoin|shiba|pepe coin|nft|defi|airdrop|token launch|ipo price|stock price|earnings beat|revenue target|will .+ win the|who will win|mvp|rookie|playoff|championship|draft pick|transfer fee|album|song|movie|tv show|release date|game of the year|console|playstation|xbox|nintendo|streamer|podcast|book sales|bestseller|real estate|home price|mortgage rate|weather forecast|temperature|rain|snow)\b/i;
-const POLY_EXCLUDE_CATS=/^(sports|entertainment|pop culture|music|gaming|crypto|business|science|technology)$/i;
-/* Fallback markets if API is unavailable */
-const POLY_FALLBACK=[
-  {question:'Russia-Ukraine ceasefire in 2026?',yes:0.18,volume:'$12.4M',slug:'russia-ukraine-ceasefire-2026',category:'Geopolitics'},
-  {question:'US-Iran military conflict in 2026?',yes:0.14,volume:'$8.2M',slug:'us-iran-military-conflict-2026',category:'Geopolitics'},
-  {question:'China military action against Taiwan by 2027?',yes:0.06,volume:'$15.1M',slug:'china-taiwan-military-2027',category:'Geopolitics'},
-  {question:'North Korea nuclear test in 2026?',yes:0.22,volume:'$3.8M',slug:'north-korea-nuclear-test-2026',category:'Geopolitics'},
-  {question:'NATO Article 5 invoked by 2027?',yes:0.04,volume:'$5.6M',slug:'nato-article-5-2027',category:'Geopolitics'},
-  {question:'Israel-Hezbollah ceasefire holds through 2026?',yes:0.42,volume:'$6.9M',slug:'israel-hezbollah-ceasefire-2026',category:'Geopolitics'},
-  {question:'New US sanctions on China in 2026?',yes:0.71,volume:'$4.3M',slug:'us-china-sanctions-2026',category:'Geopolitics'},
-  {question:'Venezuela military intervention by 2027?',yes:0.05,volume:'$2.1M',slug:'venezuela-intervention-2027',category:'Geopolitics'},
+/* ═══ U.S. FORCE POSTURE — CENTCOM AOR Assets ═══ */
+const FORCE_POSTURE=[
+  {asset:'USS Abraham Lincoln (CVN-72)',type:'CSG',loc:'Arabian Sea',status:'DEPLOYED',detail:'Carrier Strike Group 3 — F/A-18E/F, EA-18G, E-2D. ~7,500 personnel. Operating in support of CENTCOM deterrence ops.',icon:'🚢',sev:'active'},
+  {asset:'USS Bataan (LHD-5) ARG/MEU',type:'ARG',loc:'Eastern Mediterranean',status:'DEPLOYED',detail:'26th Marine Expeditionary Unit embarked. AV-8B, MV-22, AH-1Z. Rapid response posture for Lebanon/Israel contingencies.',icon:'🚢',sev:'active'},
+  {asset:'USS Florida (SSGN-728)',type:'SSGN',loc:'Persian Gulf (est.)',status:'DEPLOYED',detail:'Ohio-class guided-missile submarine. 154 Tomahawk cruise missiles. Undersea deterrent in CENTCOM AOR.',icon:'🔱',sev:'active'},
+  {asset:'B-52H Stratofortress Deployment',type:'BOMBER',loc:'Al Udeid AB, Qatar',status:'ACTIVE',detail:'USAF bombers forward-deployed to Al Udeid. Long-range strike capability with JDAM, JASSM-ER. 24/7 sortie readiness.',icon:'✈️',sev:'active'},
+  {asset:'F-35A Lightning II Squadron',type:'FIGHTER',loc:'Al Dhafra AB, UAE',status:'ACTIVE',detail:'388th FW detachment. 5th-gen stealth air superiority + strike. ISR integration with E-3 AWACS.',icon:'🛩️',sev:'active'},
+  {asset:'MQ-9 Reaper UAS Wing',type:'ISR',loc:'Multiple CENTCOM bases',status:'ACTIVE',detail:'Persistent ISR and precision strike. Deployed across Iraq, Syria, Djibouti. Real-time intelligence feed to CENTCOM.',icon:'🛸',sev:'active'},
+  {asset:'THAAD Battery',type:'AMD',loc:'Israel / UAE',status:'DEPLOYED',detail:'Terminal High-Altitude Area Defense. Ballistic missile defense against Iranian MRBM/IRBM threats. Integrated with Arrow-3.',icon:'🛡️',sev:'active'},
+  {asset:'Patriot PAC-3 Batteries',type:'AMD',loc:'Saudi Arabia / Kuwait / Iraq',status:'ACTIVE',detail:'Multiple PAC-3 MSE batteries protecting critical infrastructure and forward bases from cruise missile and drone threats.',icon:'🛡️',sev:'active'},
+  {asset:'U.S. Fifth Fleet',type:'NAVAL',loc:'Bahrain (NSA Bahrain)',status:'HQ',detail:'Naval Forces Central Command. Combined Maritime Forces HQ. CTF-150, CTF-152, CTF-153 operating across AOR.',icon:'⚓',sev:'standing'},
+  {asset:'Camp Arifjan / Al-Asad / Al-Tanf',type:'BASE',loc:'Kuwait / Iraq / Syria',status:'ACTIVE',detail:'~3,500 U.S. troops across forward operating bases. Combined Joint Task Force - Operation Inherent Resolve.',icon:'🏗️',sev:'standing'},
+  {asset:'82nd Airborne QRF Element',type:'QRF',loc:'Fort Liberty → CENTCOM',status:'STANDBY',detail:'Immediate Response Force. 18-hour deployment window. Brigade combat team on Global Response Force rotation.',icon:'🪖',sev:'standby'},
+  {asset:'Eisenhower CSG (Rotation)',type:'CSG',loc:'En route / CONUS',status:'ROTATING',detail:'Carrier rotation cycle. Next CSG deployment to CENTCOM AOR expected within 30 days.',icon:'🚢',sev:'standby'},
 ];
+const FORCE_STATUS_COLORS={active:'#ff3b30',standing:'#ff9500',standby:'#ffd60a',rotating:'#64d2ff'};
+const FORCE_TYPE_COLORS={CSG:'#0a84ff',ARG:'#5ac8fa',SSGN:'#bf5af2',BOMBER:'#ff3b30',FIGHTER:'#ff9500',ISR:'#64d2ff',AMD:'#30d158',NAVAL:'#0a84ff',BASE:'#ffd60a',QRF:'#ff375f'};
 
 const INCIDENTS=[
-  {id:19,t:'Mexico — "El Mencho" CJNG Leader Killed, Nationwide Cartel Violence Erupts',sv:'critical',cat:'CONFLICT',reg:'N. America',tm:'NOW',lat:20.3,lon:-103.3,imp:'25 National Guard killed, 250+ roadblocks, 20 states, tourists stranded, Puerto Vallarta airport shut',ty:'Cartel'},
-  {id:1,t:'Russian Naval Buildup in Black Sea — NATO Alert Level Raised',sv:'critical',cat:'CONFLICT',reg:'E. Europe',tm:'12m',lat:44,lon:34,imp:'NATO Article 5 consultation triggered',ty:'Military'},
-  {id:2,t:'Cat-5 Cyclone Bearing Down on Bay of Bengal — 2.4M at Risk',sv:'critical',cat:'CLIMATE',reg:'S. Asia',tm:'28m',lat:16,lon:87,imp:'$8.2B estimated damage',ty:'Weather'},
-  {id:3,t:'Major Ransomware Attack on European Energy Grid Operator',sv:'critical',cat:'CYBER',reg:'W. Europe',tm:'1h',lat:50,lon:8,imp:'3 nations, grid at 60%',ty:'Cyber'},
-  {id:4,t:'Taiwan Strait — PLA Air Incursions Reach 52 Sorties in 24h',sv:'critical',cat:'CONFLICT',reg:'E. Asia',tm:'2h',lat:24,lon:121,imp:'Semiconductor supply risk',ty:'Military'},
-  {id:5,t:'Strait of Hormuz — Tanker Seized by IRGC Navy',sv:'critical',cat:'ENERGY',reg:'M. East',tm:'3h',lat:26.5,lon:56,imp:'Oil +4.2%, $2.1B/day trade risk',ty:'Maritime'},
-  {id:6,t:'Sahel Region — Wagner Group Expands Into 3 New Countries',sv:'high',cat:'CONFLICT',reg:'W. Africa',tm:'4h',lat:14,lon:-2,imp:'Democratic transitions destabilized',ty:'Military'},
-  {id:7,t:'Mediterranean Wildfire Season — 340K Ha Across 5 Nations',sv:'high',cat:'CLIMATE',reg:'S. Europe',tm:'5h',lat:38,lon:23,imp:'$3.1B economic impact',ty:'Wildfire'},
-  {id:8,t:'North Korea ICBM Test — Trajectory Over Sea of Japan',sv:'critical',cat:'CONFLICT',reg:'E. Asia',tm:'6h',lat:39,lon:127,imp:'UN emergency session called',ty:'WMD'},
-  {id:9,t:'Amazon Deforestation Surge — 40% Above 5-Year Average',sv:'high',cat:'CLIMATE',reg:'S. America',tm:'6h',lat:-5,lon:-60,imp:'Carbon sink -12%',ty:'Deforestation'},
-  {id:10,t:'US-China Semiconductor Export Controls Expanded',sv:'high',cat:'ECONOMIC',reg:'Global',tm:'8h',lat:39,lon:-77,imp:'$45B bilateral trade affected',ty:'Trade'},
-  {id:11,t:'Arctic Permafrost Methane Release Exceeds Models by 40%',sv:'high',cat:'CLIMATE',reg:'Arctic',tm:'10h',lat:72,lon:125,imp:'Tipping point risk elevated',ty:'Emissions'},
-  {id:12,t:'Sudan Civil Conflict — 2M New Displacements',sv:'high',cat:'CONFLICT',reg:'E. Africa',tm:'12h',lat:15,lon:32,imp:'Humanitarian crisis, spillover',ty:'Civil War'},
-  {id:13,t:'EU Carbon Border Tax Phase 2 — 8 Sectors Added',sv:'medium',cat:'REGULATORY',reg:'Europe',tm:'1d',lat:50,lon:4,imp:'€45B cross-border trade',ty:'Regulatory'},
-  {id:14,t:'India-Pakistan Indus Treaty Renegotiation Stalls',sv:'high',cat:'CONFLICT',reg:'S. Asia',tm:'1d',lat:30,lon:72,imp:'300M affected, agriculture risk',ty:'Water'},
-  {id:15,t:'Pacific Islands Climate Emergency — Sea Level +18cm',sv:'high',cat:'CLIMATE',reg:'Oceania',tm:'1d',lat:-8,lon:160,imp:'$420M relocation costs',ty:'Sea Level'},
-  {id:16,t:'Venezuelan Migration Crisis — 800K Cross to Colombia',sv:'medium',cat:'SOCIAL',reg:'S. America',tm:'1d',lat:7,lon:-72,imp:'$1.2B aid needed',ty:'Migration'},
-  {id:17,t:'Chinese Spy Balloon Incursions — 3 Nations Report',sv:'medium',cat:'INTEL',reg:'Global',tm:'2d',lat:45,lon:-100,imp:'Sovereignty concern',ty:'Espionage'},
-  {id:18,t:'Gulf of Guinea Piracy — 12 Incidents in 30 Days',sv:'medium',cat:'MARITIME',reg:'W. Africa',tm:'2d',lat:4,lon:3,imp:'$800M insurance spike',ty:'Maritime'},
+  {id:1,t:'IRGC Naval Exercises in Strait of Hormuz — Fast-Attack Craft & Anti-Ship Missiles',sv:'critical',cat:'CONFLICT',reg:'M. East',tm:'NOW',lat:26.5,lon:56.3,imp:'21% global oil transit at risk, U.S. Fifth Fleet on alert',ty:'Military'},
+  {id:2,t:'Iran Enriching Uranium to 60% — Near Weapons-Grade Threshold',sv:'critical',cat:'CONFLICT',reg:'M. East',tm:'Active',lat:33.7,lon:51.4,imp:'IAEA reports 100+ kg stockpile, breakout time estimated 2-3 weeks',ty:'Nuclear'},
+  {id:3,t:'Houthi Anti-Ship Ballistic Missile Strike on Red Sea Vessel',sv:'critical',cat:'CONFLICT',reg:'M. East',tm:'12m',lat:13.5,lon:42.5,imp:'Bab el-Mandeb transit down 60%, rerouting via Cape of Good Hope',ty:'Proxy'},
+  {id:4,t:'Israel IDF Strikes on Hezbollah Targets in Southern Lebanon',sv:'critical',cat:'CONFLICT',reg:'M. East',tm:'1h',lat:33.3,lon:35.5,imp:'Cross-border escalation, 130K+ rockets in Hezbollah arsenal',ty:'Military'},
+  {id:5,t:'U.S. Deploys Second Carrier Strike Group to Eastern Mediterranean',sv:'critical',cat:'CONFLICT',reg:'M. East',tm:'2h',lat:34.5,lon:33.0,imp:'USS Bataan ARG + 26th MEU, deterrence signal to Iran',ty:'Military'},
+  {id:6,t:'Iran-Backed Militia Drone Attack on Al-Asad Airbase, Iraq',sv:'high',cat:'CONFLICT',reg:'M. East',tm:'3h',lat:33.8,lon:42.4,imp:'U.S. personnel shelter in place, C-RAM engagement confirmed',ty:'Proxy'},
+  {id:7,t:'THAAD Battery Deployment to Israel — Ballistic Missile Defense',sv:'high',cat:'CONFLICT',reg:'M. East',tm:'4h',lat:31.8,lon:34.7,imp:'Terminal defense layer vs. Iranian MRBM/IRBM threat',ty:'Defense'},
+  {id:8,t:'Brent Crude Surges on Hormuz Closure Fears — Conflict Premium',sv:'high',cat:'ENERGY',reg:'M. East',tm:'5h',lat:26.0,lon:56.0,imp:'Oil +$8/bbl, $2.1B/day trade risk, insurance rates spike',ty:'Energy'},
+  {id:9,t:'Iran Cyber Operations Target U.S. Military Infrastructure',sv:'high',cat:'CYBER',reg:'M. East',tm:'6h',lat:35.7,lon:51.4,imp:'APT33/Shamoon variants detected, CISA advisory issued',ty:'Cyber'},
+  {id:10,t:'JCPOA Revival Talks Collapse — Tehran Demands Sanctions Relief',sv:'high',cat:'CONFLICT',reg:'M. East',tm:'8h',lat:48.2,lon:16.4,imp:'Diplomatic off-ramp closing, UNSC emergency session possible',ty:'Diplomacy'},
+  {id:11,t:'B-52H Bombers Forward-Deployed to Al Udeid AB, Qatar',sv:'high',cat:'CONFLICT',reg:'M. East',tm:'10h',lat:25.1,lon:51.3,imp:'Long-range strike capability, JASSM-ER loadout confirmed',ty:'Military'},
+  {id:12,t:'Iran Sanctions Expansion — OFAC Designates 15 IRGC Entities',sv:'medium',cat:'ECONOMIC',reg:'M. East',tm:'12h',lat:38.9,lon:-77.0,imp:'Oil export enforcement tightened, Chinese intermediaries targeted',ty:'Sanctions'},
+  {id:13,t:'Red Sea Shipping Reroutes — Suez Canal Traffic Down 40%',sv:'high',cat:'ENERGY',reg:'M. East',tm:'1d',lat:30.0,lon:32.3,imp:'Global supply chain disruption, container rates +280%',ty:'Maritime'},
+  {id:14,t:'Israel Iron Dome Intercepts Barrage from Southern Lebanon',sv:'critical',cat:'CONFLICT',reg:'M. East',tm:'1d',lat:33.0,lon:35.1,imp:'Northern Israel evacuations ongoing, Arrow-3 on standby',ty:'Defense'},
+  {id:15,t:'U.S. CENTCOM Raises Force Protection Level to FPCON Charlie',sv:'high',cat:'CONFLICT',reg:'M. East',tm:'1d',lat:25.9,lon:50.6,imp:'All CENTCOM installations on heightened alert',ty:'Military'},
+  {id:16,t:'Patriot PAC-3 Engages Cruise Missile Over Saudi Airspace',sv:'high',cat:'CONFLICT',reg:'M. East',tm:'2d',lat:24.7,lon:46.7,imp:'Houthi cruise missile intercepted, Aramco facilities secured',ty:'Defense'},
 ];
 
-const CC={CONFLICT:'#ff3b30',CLIMATE:'#ff9500',CYBER:'#bf5af2',ECONOMIC:'#0a84ff',ENERGY:'#ffd60a',REGULATORY:'#64d2ff',SOCIAL:'#30d158',INTEL:'#ff375f',MARITIME:'#5ac8fa',HEALTH:'#30d158'};
+const CC={CONFLICT:'#ff3b30',CYBER:'#bf5af2',ECONOMIC:'#0a84ff',ENERGY:'#ffd60a',INTEL:'#ff375f',MARITIME:'#5ac8fa'};
 const SC={critical:'#ff3b30',high:'#ff9500',medium:'#ffd60a',low:'#30d158'};
 
-/* Connection lines between related incidents [fromId, toId, label, color] */
+/* Escalation connections between incidents */
 const CONNS=[
-  [5,1,'Energy supply chain disruption','#ffd60a'],   // Hormuz → Black Sea
-  [4,8,'East Asia escalation corridor','#ff3b30'],     // Taiwan → DPRK
-  [1,3,'Hybrid warfare vector','#bf5af2'],             // Black Sea → Cyber EU
-  [10,4,'Trade decoupling','#0a84ff'],                 // US-China → Taiwan
-  [5,14,'Water-energy nexus','#64d2ff'],               // Hormuz → Indus
-  [6,12,'Sahel-Sudan conflict arc','#ff3b30'],         // Sahel → Sudan
+  [1,8,'Hormuz closure → oil price spike','#ffd60a'],
+  [2,10,'Nuclear threat → diplomatic collapse','#ff3b30'],
+  [3,13,'Houthi attacks → Red Sea shipping crisis','#ff9500'],
+  [4,7,'Lebanon front → THAAD deployment','#0a84ff'],
+  [6,11,'Proxy attacks → U.S. force buildup','#bf5af2'],
+  [9,12,'Cyber ops → sanctions escalation','#64d2ff'],
 ];
 
-/* News headlines for live ticker */
+/* News headlines for live ticker — US-Iran-Israel War Focus */
 const NEWS=[
-  {t:'NATO deploys additional carrier group to Eastern Mediterranean amid rising tensions',s:'Reuters',c:'#ff3b30'},
-  {t:'Global reinsurance rates surge 18% on back of record climate losses',s:'FT',c:'#ff9500'},
-  {t:'CISA warns of critical infrastructure vulnerability in energy sector SCADA systems',s:'CyberScoop',c:'#bf5af2'},
-  {t:'World Bank revises global GDP growth forecast down to 2.4% citing geopolitical risk',s:'Bloomberg',c:'#0a84ff'},
-  {t:'China conducts live-fire naval exercises in South China Sea for third consecutive week',s:'SCMP',c:'#ff3b30'},
-  {t:'European gas storage levels fall below 5-year average ahead of winter season',s:'Platts',c:'#ffd60a'},
-  {t:'UN Security Council emergency session on Sahel security deterioration',s:'AP',c:'#ff3b30'},
+  {t:'IRGC conducts large-scale naval exercises near Strait of Hormuz — U.S. Fifth Fleet responds',s:'CENTCOM',c:'#ff3b30'},
+  {t:'Iran uranium enrichment at 60% threshold — IAEA reports stockpile growth',s:'Reuters',c:'#ff3b30'},
+  {t:'Houthi anti-ship missile strikes commercial vessel in Red Sea — Bab el-Mandeb disrupted',s:'UKMTO',c:'#ff9500'},
+  {t:'Israel IDF launches strikes on Hezbollah positions in southern Lebanon',s:'IDF',c:'#ff3b30'},
+  {t:'U.S. deploys THAAD battery to Israel for ballistic missile defense',s:'DoD',c:'#0a84ff'},
+  {t:'Brent crude surges $8/bbl on Hormuz closure fears — conflict premium widening',s:'Bloomberg',c:'#ffd60a'},
+  {t:'Iran-backed militia conducts drone strike on Al-Asad Airbase, Iraq',s:'CENTCOM',c:'#ff3b30'},
   {t:'IMF warns sovereign debt risks compounding climate vulnerability in 40 nations',s:'FT',c:'#ff9500'},
-  {t:'US Treasury sanctions 12 entities linked to ransomware-as-a-service operations',s:'WSJ',c:'#bf5af2'},
-  {t:'Arctic shipping routes see 300% increase in commercial traffic year-over-year',s:'Reuters',c:'#64d2ff'},
-  {t:'OPEC+ signals potential output cut extension as demand outlook weakens',s:'Bloomberg',c:'#ffd60a'},
-  {t:'IRGC deploys fast-attack craft near Strait of Hormuz — U.S. Fifth Fleet responds',s:'CENTCOM',c:'#ff3b30'},
+  {t:'OFAC designates 15 IRGC entities in expanded Iran sanctions package',s:'Treasury',c:'#bf5af2'},
+  {t:'Red Sea shipping reroutes via Cape of Good Hope — container rates up 280%',s:'Platts',c:'#ffd60a'},
+  {t:'CENTCOM raises force protection to FPCON Charlie across all installations',s:'DoD',c:'#ff3b30'},
+  {t:'B-52H bombers forward-deployed to Al Udeid AB, Qatar — JASSM-ER loadout',s:'USAF',c:'#ff3b30'},
 ];
 
 const MKTS={
@@ -449,28 +465,30 @@ const TREND={
 
 /* (Regional risk now computed from live advisories) */
 
-/* ═══ RSS FEED CONFIG ═══ */
+/* ═══ RSS FEED CONFIG — US-Iran-Israel War Focus ═══ */
 const RSS_FEEDS=[
-  // Conflict & military
-  {q:'Russia+Ukraine+war+military+frontline',cat:'CONFLICT'},
-  {q:'Iran+US+tensions+military+strikes+nuclear',cat:'CONFLICT'},
-  {q:'China+Taiwan+military+South+China+Sea',cat:'CONFLICT'},
-  {q:'Israel+Gaza+Hamas+Hezbollah+Middle+East+war',cat:'CONFLICT'},
-  {q:'NATO+military+defense+troops+deployment',cat:'CONFLICT'},
-  {q:'North+Korea+missile+nuclear+ICBM',cat:'CONFLICT'},
-  // Climate & disasters
-  {q:'climate+disaster+extreme+weather+hurricane+wildfire',cat:'CLIMATE'},
-  // Cyber
-  {q:'cybersecurity+ransomware+hack+breach+critical+infrastructure',cat:'CYBER'},
-  // Economic & sanctions
-  {q:'global+economy+sanctions+trade+war+tariff+recession',cat:'ECONOMIC'},
-  {q:'US+China+trade+decoupling+semiconductor+sanctions',cat:'ECONOMIC'},
-  // Energy
-  {q:'oil+energy+crisis+OPEC+pipeline+gas+prices',cat:'ENERGY'},
-  // Health / Pandemic
-  {q:'pandemic+virus+outbreak+WHO+bird+flu+H5N1+epidemic',cat:'HEALTH'},
-  // Terrorism & intel
-  {q:'terrorism+intelligence+ISIS+security+threat+espionage',cat:'INTEL'},
+  // Iran military & nuclear
+  {q:'Iran+military+IRGC+strike+attack+retaliation',cat:'CONFLICT'},
+  {q:'Iran+nuclear+uranium+enrichment+IAEA+JCPOA',cat:'CONFLICT'},
+  {q:'Iran+Israel+war+conflict+strike+attack',cat:'CONFLICT'},
+  // Israel operations
+  {q:'Israel+IDF+military+Gaza+Lebanon+Hezbollah',cat:'CONFLICT'},
+  {q:'Israel+Iron+Dome+Arrow+missile+defense',cat:'CONFLICT'},
+  // Proxy forces
+  {q:'Houthi+Red+Sea+attack+ship+missile+Yemen',cat:'CONFLICT'},
+  {q:'Hezbollah+Lebanon+rockets+Israel+border',cat:'CONFLICT'},
+  {q:'Iraq+militia+Iran+proxy+al-Asad+attack',cat:'CONFLICT'},
+  // U.S. military
+  {q:'CENTCOM+US+military+Iran+Middle+East+deployment',cat:'CONFLICT'},
+  {q:'US+Navy+Fifth+Fleet+carrier+Persian+Gulf',cat:'CONFLICT'},
+  // Sanctions & diplomacy
+  {q:'Iran+sanctions+OFAC+nuclear+deal+diplomacy',cat:'ECONOMIC'},
+  // Energy & chokepoints
+  {q:'Strait+Hormuz+oil+tanker+Persian+Gulf+energy+disruption',cat:'ENERGY'},
+  // Cyber & intel (Iran-focused)
+  {q:'Iran+cyber+attack+hack+infrastructure+espionage',cat:'CYBER'},
+  // Airspace & shipping
+  {q:'Iran+airspace+NOTAM+flight+restriction+FAA+SFAR',cat:'CONFLICT'},
 ];
 const PROXY='https://api.rss2json.com/v1/api.json?rss_url=';
 // Multi-proxy RSS fetch — tries rss2json first, then allorigins+DOMParser fallback
@@ -594,8 +612,8 @@ function App(){
   const[menaWireLive,setMenaWireLive]=useState(false);
   const[advisories,setAdvisories]=useState(ADV_FALLBACK);
   const[advLive,setAdvLive]=useState(false);
-  const[polyMarkets,setPolyMarkets]=useState([]);
-  const[polyLive,setPolyLive]=useState(false);
+  const[forcePosture,setForcePosture]=useState(FORCE_POSTURE);
+  const[forceLive,setForceLive]=useState(true);
   const[iranMilLive,setIranMilLive]=useState(false);
   const[searchQuery,setSearchQuery]=useState('');
   const[searchResults,setSearchResults]=useState([]);
@@ -604,13 +622,13 @@ function App(){
   const[bannerDismissed,setBannerDismissed]=useState(null);
   const[livePrices,setLivePrices]=useState({});
   const[menaEscHistory,setMenaEscHistory]=useState([]);
-  const[geoData,setGeoData]=useState(null);
-  const[countryBrief,setCountryBrief]=useState(null);
+  const[airspaceData,setAirspaceData]=useState([{zone:'Iran',fir:'OIIX FIR',status:'CLOSED',detail:'FAA SFAR 117 - US civil aviation prohibited',color:'#ff3b30'},{zone:'Iraq',fir:'ORBB FIR',status:'RESTRICTED',detail:'Restricted below FL320',color:'#ff9500'},{zone:'Syria',fir:'',status:'CLOSED',detail:'Active conflict zone',color:'#ff3b30'},{zone:'Lebanon',fir:'',status:'RESTRICTED',detail:'NOTAM active - limited operations',color:'#ff9500'},{zone:'Yemen',fir:'OYSC',status:'CLOSED',detail:'Houthi threat - no civil aviation',color:'#ff3b30'},{zone:'Red Sea',fir:'',status:'CAUTION',detail:'High risk corridor - active diversions',color:'#ffd60a'},{zone:'E. Mediterranean',fir:'',status:'CAUTION',detail:'Increased military activity',color:'#ffd60a'},{zone:'Persian Gulf',fir:'',status:'CAUTION',detail:'IRGC naval exercises - elevated risk',color:'#ffd60a'},{zone:'Israel',fir:'LLLL FIR',status:'CAUTION',detail:'Active military operations',color:'#ffd60a'},{zone:'Jordan',fir:'',status:'MONITORING',detail:'Overflight restrictions possible',color:'#64d2ff'},{zone:'S. Arabia',fir:'OEEC',status:'MONITORING',detail:'Eastern regions - elevated caution',color:'#64d2ff'},{zone:'Afghanistan',fir:'OAKX',status:'CLOSED',detail:'No ATC services available',color:'#ff3b30'}]);
+  const[airspaceDetail,setAirspaceDetail]=useState(null);
   const[alertQueue,setAlertQueue]=useState([]);
   const[darkMode,setDarkMode]=useState(true);
   const[advFilter,setAdvFilter]=useState(new Set([3,4]));
-  const geoLayerRef=useRef(null);
-  const advMarkersRef=useRef([]);
+  const airspaceLayerRef=useRef(null);
+  const airspaceMarkersRef=useRef([]);
 
   // Fetch US State Dept Travel Advisories
   const fetchAdvisories=async()=>{
@@ -639,77 +657,27 @@ function App(){
     setAdvisories(ADV_FALLBACK);setAdvLive(true);
   };
 
-  // Fetch sovereign credit rating changes
-  // Fetch Polymarket geopolitical prediction markets
-  const fetchPolymarkets=async()=>{
-    if(polyMarkets.length===0)setPolyMarkets(POLY_FALLBACK);
-    try{
-      // Gamma API — public, no auth needed. Try direct first (has CORS), then proxy.
-      // Use /events endpoint — event slugs work in polymarket.com/event/{slug} URLs
-      var baseUrl='https://gamma-api.polymarket.com/events?active=true&closed=false&limit=80&order=volume&ascending=false';
-      var resp=null;
-      try{
-        var controller=new AbortController();
-        var tm=setTimeout(function(){controller.abort();},8000);
-        resp=await fetch(baseUrl,{signal:controller.signal});
-        clearTimeout(tm);
-        if(!resp.ok)resp=null;
-      }catch(e){resp=null;}
-      if(!resp){
-        try{
-          var proxyUrl='https://corsproxy.io/?'+encodeURIComponent(baseUrl);
-          var controller2=new AbortController();
-          var tm2=setTimeout(function(){controller2.abort();},8000);
-          resp=await fetch(proxyUrl,{signal:controller2.signal});
-          clearTimeout(tm2);
-          if(!resp.ok)resp=null;
-        }catch(e){resp=null;}
-      }
-      if(!resp){setPolyMarkets(POLY_FALLBACK);setPolyLive(true);return;}
-      var allEvents=await resp.json();
-      if(!Array.isArray(allEvents)||allEvents.length===0){setPolyMarkets(POLY_FALLBACK);setPolyLive(true);return;}
-      // Filter for geopolitical/security/politics events
-      var geoEvents=allEvents.filter(function(ev){
-        var title=(ev.title||ev.question||'');
-        var desc=(ev.description||'');
-        var cat=(ev.category||'').trim();
-        var q=title+' '+desc;
-        if(POLY_EXCLUDE_CATS.test(cat))return false;
-        if(POLY_EXCLUDE.test(q))return false;
-        var ql=q.toLowerCase()+' '+cat.toLowerCase();
-        if(POLY_GEO_TERMS.some(function(term){return ql.indexOf(term)!==-1;}))return true;
-        var catl=cat.toLowerCase();
-        if(catl==='politics'||catl==='world'||catl==='geopolitics'||catl==='climate')return true;
+  // Update U.S. Force Posture — enrich with live Iran event data
+  const updateForcePosture=async()=>{
+    // Cross-reference iranEvents to update force posture status
+    var updated=FORCE_POSTURE.map(function(fp){
+      var relatedCount=iranEvents.filter(function(ev){
+        var t=(ev.title||'').toLowerCase();
+        var loc=fp.loc.toLowerCase();
+        // Match if event mentions the asset's location or type
+        if(loc.includes('gulf')&&(t.includes('hormuz')||t.includes('gulf')||t.includes('naval')))return true;
+        if(loc.includes('mediterranean')&&(t.includes('mediterranean')||t.includes('lebanon')||t.includes('israel')))return true;
+        if(loc.includes('qatar')&&t.includes('al udeid'))return true;
+        if(loc.includes('iraq')&&(t.includes('iraq')||t.includes('al-asad')))return true;
+        if(loc.includes('syria')&&(t.includes('syria')||t.includes('al-tanf')))return true;
+        if(fp.type==='AMD'&&(t.includes('missile')||t.includes('ballistic')||t.includes('thaad')||t.includes('patriot')))return true;
+        if(fp.type==='BOMBER'&&(t.includes('b-52')||t.includes('bomber')||t.includes('strike')))return true;
         return false;
-      });
-      // Parse events — extract top market from each event for the probability
-      var items=geoEvents.slice(0,12).map(function(ev){
-        var markets=ev.markets||[];
-        var topMarket=markets[0]||{};
-        var prices=[];
-        try{prices=JSON.parse(topMarket.outcomePrices||'[]');}catch(e){}
-        var yesPrice=prices[0]?parseFloat(prices[0]):0;
-        var vol=parseFloat(ev.volume||topMarket.volume||0);
-        var volStr=vol>=1000000?'$'+(vol/1000000).toFixed(1)+'M':vol>=1000?'$'+(vol/1000).toFixed(0)+'K':'$'+vol.toFixed(0);
-        return{
-          question:(ev.title||topMarket.question||'').slice(0,80),
-          yes:yesPrice,
-          volume:volStr,
-          slug:ev.slug||'',
-          category:ev.category||'Geopolitics',
-          endDate:ev.endDate||topMarket.endDate||''
-        };
-      });
-      items.sort(function(a,b){
-        var aV=parseFloat(a.volume.replace(/[$MK,]/g,''))||0;
-        var bV=parseFloat(b.volume.replace(/[$MK,]/g,''))||0;
-        if(a.volume.includes('M'))aV*=1000;
-        if(b.volume.includes('M'))bV*=1000;
-        return bV-aV;
-      });
-      if(items.length>=2){setPolyMarkets(items);setPolyLive(true);return;}
-    }catch(e){}
-    setPolyMarkets(POLY_FALLBACK);setPolyLive(true);
+      }).length;
+      return Object.assign({},fp,{relatedEvents:relatedCount});
+    });
+    setForcePosture(updated);
+    setForceLive(true);
   };
 
   // ═══ LIVE STOCK PRICES — Multi-proxy Yahoo Finance + Finnhub fallback ═══
@@ -1173,7 +1141,7 @@ function App(){
   // Iran-U.S. War Tracker + Live Impact: 60s real-time
   useEffect(()=>{fetchIranTracker();const i=setInterval(fetchIranTracker,60*1000);return()=>clearInterval(i)},[]);
   // Advisories + ratings: 10 min (rarely change)
-  useEffect(()=>{fetchAdvisories();fetchPolymarkets();const i=setInterval(()=>{fetchAdvisories();fetchPolymarkets()},10*60*1000);return()=>clearInterval(i)},[]);
+  useEffect(()=>{fetchAdvisories();updateForcePosture();const i=setInterval(()=>{fetchAdvisories();updateForcePosture()},10*60*1000);return()=>clearInterval(i)},[]);
 
   // Advisory data (component-level so JSX + map useEffect can both access)
   var ADV_COUNTRIES={
@@ -1274,144 +1242,25 @@ function App(){
     return 'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories.html/';
   }
 
-  // Initialize Leaflet map
+  // Initialize Airspace Impact Tracker
   useEffect(()=>{
-    if(mapRef.current)return;
-    const map=L.map('leaflet-map',{
-      center:[20,15],zoom:2,minZoom:2,maxZoom:8,
-      zoomControl:false,attributionControl:false,
-      worldCopyJump:true
+    // Update airspace data from iranEvents threat level
+    const updated=airspaceData.map(zone=>{
+      const count=iranEvents.filter(e=>(e.title||'').toLowerCase().includes(zone.zone.toLowerCase())||(e.detail||'').toLowerCase().includes(zone.zone.toLowerCase())).length;
+      return {...zone,threatCount:count};
     });
-    const tileUrl=darkMode?'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png':'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png';
-    const labelUrl=darkMode?'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png':'https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png';
-    L.tileLayer(tileUrl,{
-      subdomains:'abcd',maxZoom:19
-    }).addTo(map);
-    // Labels layer — CartoDB labels (English for major features)
-    L.tileLayer(labelUrl,{
-      subdomains:'abcd',maxZoom:19,pane:'shadowPane'
-    }).addTo(map);
-    L.control.zoom({position:'bottomright'}).addTo(map);
-    mapRef.current=map;
+    setAirspaceData(updated);
+    console.log('SENTINEL NOVA: Airspace Impact Tracker initialized');
+  },[iranEvents]);
 
-    // ═══ ADVISORY SHADING — GeoJSON country fill ═══
-    var advFillColors={4:'rgba(255,59,48,0.35)',3:'rgba(255,149,0,0.25)',2:'rgba(255,214,10,0.18)'};
-    var advStrokeColors={4:'rgba(255,59,48,0.6)',3:'rgba(255,149,0,0.5)',2:'rgba(255,214,10,0.4)'};
-    var lvlLabels={4:'LEVEL 4 — DO NOT TRAVEL',3:'LEVEL 3 — RECONSIDER TRAVEL',2:'LEVEL 2 — EXERCISE INCREASED CAUTION'};
-
-    // Fetch GeoJSON and render
-    fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
-      .then(function(r){return r.json();})
-      .then(function(geo){
-        var layer=L.geoJSON(geo,{
-          style:function(feature){
-            var name=feature.properties.name||'';
-            var lv=getAdvLevel(name);
-            if(lv>0){
-              return{fillColor:advFillColors[lv],fillOpacity:1,color:advStrokeColors[lv],weight:1.5,opacity:1};
-            }
-            return{fillColor:'transparent',fillOpacity:0,color:'transparent',weight:0,opacity:0};
-          },
-          onEachFeature:function(feature,layer){
-            var name=feature.properties.name||'';
-            var lv=getAdvLevel(name);
-            if(lv>0){
-              var url=getAdvUrl(name);
-              layer.bindTooltip('<div style="pointer-events:auto;cursor:default">'+name+' — '+lvlLabels[lv]+'<br><a href="'+url+'" target="_blank" rel="noopener" style="color:#0a84ff;font-size:9px;pointer-events:auto;cursor:pointer">View State Dept Advisory ↗</a></div>',{sticky:false,className:'adv-tooltip',interactive:true,direction:'top',offset:L.point(0,-10)});
-              layer.on('click',function(){
-                var bounds=layer.getBounds();
-                var center=bounds.getCenter();
-                setCountryBrief({name:name,level:lv,lat:center.lat,lon:center.lng});
-              });
-              layer.on('mouseover',function(){
-                layer.setStyle({fillOpacity:1,weight:2.5});
-              });
-              layer.on('mouseout',function(){
-                layer.setStyle({fillOpacity:1,weight:1.5});
-              });
-            }
-          },
-          filter:function(feature){
-            // Only render countries that have an advisory level
-            var name=feature.properties.name||'';
-            return getAdvLevel(name)>0;
-          }
-        }).addTo(map);
-        geoLayerRef.current=layer;
-        console.log('SENTINEL NOVA: GeoJSON advisory shading loaded');
-      })
-      .catch(function(err){console.error('GeoJSON load error:',err);});
-
-    // Add connection lines
-    CONNS.forEach(([fromId,toId,label,color])=>{
-      const f=INCIDENTS.find(i=>i.id===fromId);const t=INCIDENTS.find(i=>i.id===toId);
-      if(!f||!t)return;
-      const line=L.polyline([[f.lat,f.lon],[t.lat,t.lon]],{
-        color,weight:1.5,opacity:0.35,dashArray:'6,4',className:'conn-arc'
-      }).addTo(map);
-      linesRef.current.push(line);
-    });
-  },[]);
-
-  // Update advisory GeoJSON shading when filter changes
+  // Update airspace filter when advFilter changes
   useEffect(()=>{
-    if(!geoLayerRef.current)return;
-    var fillColors={4:'rgba(255,59,48,0.35)',3:'rgba(255,149,0,0.25)',2:'rgba(255,214,10,0.18)'};
-    var strokeColors={4:'rgba(255,59,48,0.6)',3:'rgba(255,149,0,0.5)',2:'rgba(255,214,10,0.4)'};
-    geoLayerRef.current.eachLayer(function(layer){
-      var name=(layer.feature&&layer.feature.properties&&layer.feature.properties.name)||'';
-      var lv=getAdvLevel(name);
-      if(lv>0){
-        if(advFilter.has(lv)){
-          layer.setStyle({fillColor:fillColors[lv],fillOpacity:1,color:strokeColors[lv],weight:1.5,opacity:1});
-        }else{
-          layer.setStyle({fillColor:'transparent',fillOpacity:0,color:'transparent',weight:0,opacity:0});
-        }
-      }
-    });
+    // Airspace zones are not filtered by advFilter - advFilter applies to travel advisories map only
   },[advFilter]);
 
-  // Update markers when filter changes — use MarkerClusterGroup if available, else plain markers
+  // Update airspace markers when mf changes — kept for hook order but airspace display is independent
   useEffect(()=>{
-    if(!mapRef.current)return;
-    const map=mapRef.current;
-    // Remove old markers/cluster group
-    markersRef.current.forEach(m=>map.removeLayer(m));
-    markersRef.current=[];
-    const filtered=mf==='ALL'?INCIDENTS:INCIDENTS.filter(i=>i.cat===mf);
-    var useCluster=typeof L.markerClusterGroup==='function';
-    var group=useCluster?L.markerClusterGroup({
-      maxClusterRadius:40,
-      spiderfyOnMaxZoom:true,
-      showCoverageOnHover:false,
-      zoomToBoundsOnClick:true,
-      iconCreateFunction:function(cluster){
-        var count=cluster.getChildCount();
-        var sz=count<5?'small':count<15?'medium':'large';
-        return L.divIcon({html:'<div><span>'+count+'</span></div>',className:'marker-cluster marker-cluster-'+sz,iconSize:L.point(36,36)});
-      }
-    }):null;
-    filtered.forEach(inc=>{
-      const col=SC[inc.sv];
-      const size=inc.sv==='critical'?10:8;
-      const pulseClass=inc.sv==='critical'?'pulse-marker':'';
-      const icon=L.divIcon({
-        className:'',
-        html:`<div style="width:${size}px;height:${size}px;background:${col};border-radius:50%;border:2px solid rgba(0,0,0,0.6);box-shadow:0 0 ${inc.sv==='critical'?'12':'6'}px ${col}80;cursor:pointer" class="${pulseClass}"></div>`,
-        iconSize:[size,size],iconAnchor:[size/2,size/2]
-      });
-      const marker=L.marker([inc.lat,inc.lon],{icon});
-      const popup=`<div style="font-family:Inter,sans-serif">
-        <div style="font:600 10px 'JetBrains Mono';color:${col};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">${inc.cat} — ${inc.sv.toUpperCase()}</div>
-        <div style="font:500 12px/1.4 Inter;color:#e5e5e5;margin-bottom:4px">${inc.t}</div>
-        <div style="font:400 10px 'JetBrains Mono';color:#999">${inc.reg} · ${inc.tm} ago</div>
-        <div style="font:500 10px 'JetBrains Mono';color:#999;margin-top:4px">${inc.imp}</div>
-      </div>`;
-      marker.bindPopup(popup,{maxWidth:280,closeButton:true});
-      marker.on('mouseover',function(){this.openPopup()});
-      if(group){group.addLayer(marker);}else{marker.addTo(map);markersRef.current.push(marker);}
-    });
-    if(group){map.addLayer(group);markersRef.current=[group];}
+    // Airspace zones are displayed independently via the tracker grid
   },[mf]);
 
   // Advisory shading is now painted directly via L.circle in map init (zero external deps)
@@ -1733,7 +1582,7 @@ function App(){
 
       {/* Header */}
       <div className="hdr">
-        <div className="hdr-l"><div className="logo">SENTINEL NOVA<span>GLOBAL SECURITY TERMINAL</span></div><span style={{font:'600 8px var(--mono)',color:'#30d158',padding:'2px 8px',borderRadius:2,border:'1px solid rgba(48,209,88,.4)',background:'rgba(48,209,88,.1)',letterSpacing:'1.5px',marginLeft:12}}>v2.1</span></div>
+        <div className="hdr-l"><div className="logo">SENTINEL NOVA<span>US-IRAN-ISRAEL WAR TERMINAL</span></div><span style={{font:'600 8px var(--mono)',color:'#ff3b30',padding:'2px 8px',borderRadius:2,border:'1px solid rgba(255,59,48,.4)',background:'rgba(255,59,48,.1)',letterSpacing:'1.5px',marginLeft:12}}>v3.0</span></div>
         <div className="hdr-r">
           {(function(){var crit=iranEvents.filter(function(e){return e.sev==='critical'}).length;var hi=iranEvents.filter(function(e){return e.sev==='high'}).length;var sc=Math.min(100,crit*15+hi*8+iranEvents.length*2);var cl=sc>=75?'#ff3b30':sc>=50?'#ff9500':sc>=25?'#ffd60a':'#30d158';var lb=sc>=75?'CRITICAL':sc>=50?'HIGH':sc>=25?'ELEVATED':'LOW';return <div className="hdr-spgi"><span style={{font:'600 9px var(--mono)',color:'var(--t2)'}}>MENA</span><span style={{font:'700 11px var(--mono)',color:cl}}>{lb}</span><div style={{width:40,height:6,background:'rgba(255,255,255,.12)',borderRadius:3,overflow:'hidden'}}><div style={{width:sc+'%',height:'100%',background:cl,borderRadius:3}}></div></div><span style={{font:'500 9px var(--mono)',color:cl}}>{sc}/100</span></div>})()}
           <span className="threat">⚠ {advStats.l4>0?'L4 ADVISORIES: '+advStats.l4:'THREAT LEVEL: ELEVATED'}</span>
@@ -1776,79 +1625,62 @@ function App(){
             }):<div style={{font:'400 10px var(--mono)',color:'var(--t3)',padding:'8px 0'}}>Loading advisories...</div>}
           </div>
 
-          {/* POLYMARKET — GEOPOLITICAL RISK */}
-          <div className="ph"><div className="pt">◆ Polymarket Geopolitical Risk</div><span className="pb" style={{background:polyLive?'var(--grnbg)':'rgba(102,102,102,.15)',color:polyLive?'var(--grn)':'var(--t3)'}}>{polyLive?'● LIVE':'LOADING'}</span></div>
-          <div className="pbd" style={{padding:'6px 12px'}}>
-            {polyMarkets.length>0?polyMarkets.map((m,i)=>{
-              var pct=Math.round(m.yes*100);
-              var barColor=pct>=60?'#ff3b30':pct>=35?'#ff9500':'#30d158';
-              var inner=<div key={i} style={{padding:'6px 0',borderBottom:i<polyMarkets.length-1?'1px solid var(--bdr)':'none'}}>
-                <div style={{font:'500 10px/1.3 Inter,sans-serif',color:'var(--t1)',marginBottom:4}}>{m.question}</div>
-                <div style={{display:'flex',alignItems:'center',gap:8}}>
-                  <div style={{flex:1,height:6,background:'var(--bg0)',borderRadius:3,overflow:'hidden'}}>
-                    <div style={{width:pct+'%',height:'100%',background:barColor,borderRadius:3,transition:'width 1s ease'}}></div>
-                  </div>
-                  <span style={{font:'700 11px var(--mono)',color:barColor,minWidth:36,textAlign:'right'}}>{pct}%</span>
-                  <span style={{font:'400 8px var(--mono)',color:'var(--t3)',minWidth:44,textAlign:'right'}}>{m.volume}</span>
+          {/* U.S. FORCE POSTURE — CENTCOM AOR */}
+          <div className="ph"><div className="pt">◆ U.S. Force Posture — CENTCOM AOR</div><span className="pb" style={{background:forceLive?'var(--redbg)':'rgba(102,102,102,.15)',color:forceLive?'var(--red)':'var(--t3)'}}>{forceLive?'● ACTIVE':'LOADING'}</span></div>
+          <div className="pbd" style={{padding:'6px 12px',maxHeight:380,overflowY:'auto'}}>
+            {/* Force summary bar */}
+            <div style={{display:'flex',gap:8,marginBottom:8,flexWrap:'wrap'}}>
+              {['CSG','ARG','SSGN','BOMBER','FIGHTER','AMD','ISR','QRF'].map(function(ty){
+                var ct=forcePosture.filter(function(f){return f.type===ty}).length;
+                if(ct===0)return null;
+                return <div key={ty} style={{background:(FORCE_TYPE_COLORS[ty]||'#666')+'18',border:'1px solid '+(FORCE_TYPE_COLORS[ty]||'#666')+'44',borderRadius:3,padding:'2px 6px',font:'600 8px var(--mono)',color:FORCE_TYPE_COLORS[ty]||'#aaa'}}>{ty} ×{ct}</div>;
+              })}
+            </div>
+            {forcePosture.map(function(fp,i){
+              var statusColor=FORCE_STATUS_COLORS[fp.sev]||'#aaa';
+              return <div key={i} style={{padding:'5px 0',borderBottom:i<forcePosture.length-1?'1px solid var(--bdr)':'none'}}>
+                <div style={{display:'flex',alignItems:'center',gap:6}}>
+                  <span style={{fontSize:13,flexShrink:0}}>{fp.icon}</span>
+                  <span style={{font:'600 7px var(--mono)',color:FORCE_TYPE_COLORS[fp.type]||'#aaa',padding:'1px 5px',borderRadius:2,background:(FORCE_TYPE_COLORS[fp.type]||'#666')+'18',flexShrink:0}}>{fp.type}</span>
+                  <span style={{font:'500 9.5px/1.3 Inter,sans-serif',color:'var(--t1)',flex:1}}>{fp.asset}</span>
+                  <span style={{font:'600 7px var(--mono)',color:statusColor,padding:'1px 5px',borderRadius:2,background:statusColor+'18',flexShrink:0}}>{fp.status}</span>
                 </div>
+                <div style={{display:'flex',justifyContent:'space-between',marginTop:2,paddingLeft:22}}>
+                  <span style={{font:'400 8px/1.3 Inter,sans-serif',color:'var(--t3)',flex:1}}>{fp.loc}</span>
+                  {fp.relatedEvents>0&&<span style={{font:'600 8px var(--mono)',color:'#ff3b30'}}>{fp.relatedEvents} threats</span>}
+                </div>
+                <div style={{font:'400 8px/1.3 Inter,sans-serif',color:'var(--t3)',marginTop:1,paddingLeft:22}}>{fp.detail.slice(0,120)}</div>
               </div>;
-              var pmUrl='https://polymarket.com/search?query='+encodeURIComponent(m.question);
-              return <a key={i} href={pmUrl} target="_blank" rel="noopener noreferrer" style={{textDecoration:'none',color:'inherit',display:'block'}}>{inner}</a>;
-            }):<div style={{font:'400 10px var(--mono)',color:'var(--t3)',padding:'8px 0'}}>Loading markets...</div>}
+            })}
           </div>
         </div>
 
         {/* CENTER */}
         <div className="center">
-          {/* MAP */}
+          {/* AIRSPACE IMPACT TRACKER */}
           <div style={{flex:'1 1 55%',minHeight:0,borderBottom:'1px solid var(--bdr)'}}>
             <div className="mwrap">
-              <div id="leaflet-map"></div>
-              <div className="mfilt" style={{zIndex:1000}}>
-                {['ALL','CONFLICT','CLIMATE','CYBER','ENERGY','ECONOMIC'].map(f=>(
-                  <button key={f} className={`mfb ${mf===f?'a':''}`} onClick={()=>setMf(f)}>{f}</button>
-                ))}
+              <div id="airspace-tracker">
+                <div className="airspace-header">
+                  <div className="airspace-title">AIRSPACE IMPACT TRACKER</div>
+                  <div className="airspace-live">● LIVE</div>
+                </div>
+                <div className="airspace-grid">
+                  {airspaceData.map((zone,i)=>(
+                    <div key={i} className="airspace-row" onClick={()=>setAirspaceDetail(zone)} style={{cursor:'pointer'}}>
+                      <div>
+                        <div className="airspace-zone">{zone.zone}</div>
+                        <div className="airspace-fir">{zone.fir}</div>
+                      </div>
+                      <div className={`airspace-status ${zone.status.toLowerCase()}`}>{zone.status}</div>
+                      <div style={{fontSize:'11px',color:zone.color,fontWeight:700}}>{zone.threatCount||0} 🔴</div>
+                      <div className="airspace-detail">{zone.detail}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="map-search">
-                <input type="text" placeholder="Search country..." onKeyDown={function(e){
-                  if(e.key==='Enter'){
-                    var query=e.target.value.trim().toLowerCase();
-                    if(!query)return;
-                    // Search in GeoJSON layer
-                    var found=false;
-                    if(geoLayerRef.current){
-                      geoLayerRef.current.eachLayer(function(layer){
-                        if(found)return;
-                        var name=(layer.feature&&layer.feature.properties&&layer.feature.properties.name)||'';
-                        if(name.toLowerCase().indexOf(query)!==-1){
-                          found=true;
-                          var bounds=layer.getBounds();
-                          mapRef.current.flyToBounds(bounds,{padding:[50,50],duration:1.2});
-                          var lv=getAdvLevel(name);
-                          var center=bounds.getCenter();
-                          setCountryBrief({name:name,level:lv,lat:center.lat,lon:center.lng});
-                        }
-                      });
-                    }
-                    // If not found in advisory countries, try geocoding via Nominatim
-                    if(!found&&mapRef.current){
-                      fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(e.target.value.trim())+'&limit=1')
-                        .then(function(r){return r.json();})
-                        .then(function(data){
-                          if(data&&data[0]){
-                            var lat=parseFloat(data[0].lat);
-                            var lon=parseFloat(data[0].lon);
-                            mapRef.current.flyTo([lat,lon],5,{duration:1.2});
-                            setCountryBrief({name:data[0].display_name.split(',')[0],level:0,lat:lat,lon:lon});
-                          }
-                        }).catch(function(){});
-                    }
-                    e.target.value='';
-                  }
-                }}/>
-              </div>
-              <div className="mleg" style={{zIndex:1000}}>
-                {Object.entries(CC).slice(0,6).map(([k,v])=><span key={k} className="ml"><span className="mld" style={{background:v}}></span>{k}</span>)}
+              <div className="map-search" style={{display:'none'}}>
+                <input type="text" placeholder="Search zone..." />
               </div>
             </div>
           </div>
@@ -2069,40 +1901,40 @@ function App(){
         <p style={{marginTop:2,color:'var(--t2)'}}>{tt.i.imp}</p>
       </div>}
 
-      {/* Country Brief Panel */}
-      {countryBrief&&<div className="country-brief">
-        <div className="country-brief-header">
+      {/* Airspace Detail Panel */}
+      {airspaceDetail&&<div className="airspace-detail-panel">
+        <div className="airspace-detail-panel-header">
           <div style={{display:'flex',alignItems:'center',gap:8,flex:1}}>
-            <span className="country-brief-title">{countryBrief.name}</span>
-            <span className="country-brief-level" style={{background:ADV_COLORS[countryBrief.level]+'18',border:'1px solid '+ADV_COLORS[countryBrief.level]+'35',color:ADV_COLORS[countryBrief.level]}}>L{countryBrief.level}</span>
+            <span className="airspace-detail-title">{airspaceDetail.zone}</span>
+            <span className="airspace-detail-status" style={{background:airspaceDetail.color+'18',border:'1px solid '+airspaceDetail.color+'35',color:airspaceDetail.color}}>{airspaceDetail.status}</span>
           </div>
-          <button className="country-brief-close" onClick={function(){setCountryBrief(null);}}>✕</button>
+          <button className="airspace-detail-close" onClick={function(){setAirspaceDetail(null);}}>✕</button>
         </div>
-        <div className="country-brief-content">
-          {/* Advisory Description */}
-          <div className="cb-section">
-            <div className="cb-section-title">Travel Advisory</div>
-            <div className="cb-desc">{ADV_LABELS[countryBrief.level]}</div>
-            {advisories.find(a=>a.country===countryBrief.name)?.desc&&<div className="cb-item" style={{marginTop:6}}>{advisories.find(a=>a.country===countryBrief.name).desc}</div>}
-            {countryBrief.level>0&&<a href={getAdvUrl(countryBrief.name)} target="_blank" rel="noopener" style={{display:'inline-block',marginTop:8,font:'500 9px var(--mono)',color:'#0a84ff',textDecoration:'none',padding:'3px 8px',border:'1px solid rgba(10,132,255,0.3)',borderRadius:3,background:'rgba(10,132,255,0.08)',letterSpacing:'.3px'}}>View State Dept Advisory ↗</a>}
+        <div className="airspace-detail-content">
+          {/* Zone Status */}
+          <div className="ad-section">
+            <div className="ad-section-title">FIR / Zone Information</div>
+            {airspaceDetail.fir&&<div className="ad-item"><span style={{fontWeight:600}}>FIR:</span> {airspaceDetail.fir}</div>}
+            <div className="ad-item"><span style={{fontWeight:600}}>Status:</span> {airspaceDetail.status}</div>
+            <div className="ad-item" style={{marginTop:6}}><span style={{fontWeight:600}}>Detail:</span> {airspaceDetail.detail}</div>
           </div>
 
-          {/* Iran / MENA Threat Items */}
-          {iranEvents.filter(n=>(n.title||'').toLowerCase().includes(countryBrief.name.toLowerCase())||(n.detail||'').toLowerCase().includes(countryBrief.name.toLowerCase())).length>0&&<div className="cb-section">
-            <div className="cb-section-title">Iran / MENA Threats</div>
-            {iranEvents.filter(n=>(n.title||'').toLowerCase().includes(countryBrief.name.toLowerCase())||(n.detail||'').toLowerCase().includes(countryBrief.name.toLowerCase())).slice(0,4).map((n,i)=><div key={i} className="cb-item"><span style={{color:IRAN_SEV_COLORS[n.sev]||'#ccc',fontWeight:700}}>{n.icon} {n.domain}</span>: {n.title.slice(0,60)}</div>)}
+          {/* Related Iran / MENA Events */}
+          {iranEvents.filter(n=>(n.title||'').toLowerCase().includes(airspaceDetail.zone.toLowerCase())||(n.detail||'').toLowerCase().includes(airspaceDetail.zone.toLowerCase())).length>0&&<div className="ad-section">
+            <div className="ad-section-title">Related Airspace Threats</div>
+            {iranEvents.filter(n=>(n.title||'').toLowerCase().includes(airspaceDetail.zone.toLowerCase())||(n.detail||'').toLowerCase().includes(airspaceDetail.zone.toLowerCase())).slice(0,5).map((n,i)=><div key={i} className="ad-item"><span style={{color:IRAN_SEV_COLORS[n.sev]||'#ccc',fontWeight:700}}>{n.icon} {n.domain}</span>: {n.title.slice(0,55)}</div>)}
           </div>}
 
-          {/* Matching Headlines */}
-          {(liveNews.length>0?liveNews:NEWS).filter(n=>(n.t||n.title||'').toLowerCase().includes(countryBrief.name.toLowerCase())||(n.reg||'').toLowerCase().includes(countryBrief.name.toLowerCase())).length>0&&<div className="cb-section">
-            <div className="cb-section-title">Headlines</div>
-            {(liveNews.length>0?liveNews:NEWS).filter(n=>(n.t||n.title||'').toLowerCase().includes(countryBrief.name.toLowerCase())||(n.reg||'').toLowerCase().includes(countryBrief.name.toLowerCase())).slice(0,3).map((n,i)=><div key={i} className="cb-item">{n.t||n.title}</div>)}
+          {/* Matching News */}
+          {(liveNews.length>0?liveNews:NEWS).filter(n=>(n.t||n.title||'').toLowerCase().includes(airspaceDetail.zone.toLowerCase())||(n.reg||'').toLowerCase().includes(airspaceDetail.zone.toLowerCase())).length>0&&<div className="ad-section">
+            <div className="ad-section-title">News Updates</div>
+            {(liveNews.length>0?liveNews:NEWS).filter(n=>(n.t||n.title||'').toLowerCase().includes(airspaceDetail.zone.toLowerCase())||(n.reg||'').toLowerCase().includes(airspaceDetail.zone.toLowerCase())).slice(0,3).map((n,i)=><div key={i} className="ad-item">{n.t||n.title}</div>)}
           </div>}
 
-          {/* Matching Prediction Markets */}
-          {polyMarkets.filter(m=>m.question.toLowerCase().includes(countryBrief.name.toLowerCase())).length>0&&<div className="cb-section">
-            <div className="cb-section-title">Prediction Markets</div>
-            {polyMarkets.filter(m=>m.question.toLowerCase().includes(countryBrief.name.toLowerCase())).slice(0,2).map((m,i)=><div key={i} className="cb-item"><span style={{color:Math.round(m.yes*100)>=50?'#ff3b30':'#30d158',fontWeight:700}}>{Math.round(m.yes*100)}%</span> — {m.question.slice(0,55)}</div>)}
+          {/* Advisory Info if available */}
+          {advisories.find(a=>a.country===airspaceDetail.zone)&&<div className="ad-section">
+            <div className="ad-section-title">Travel Advisory</div>
+            <div className="ad-item">{advisories.find(a=>a.country===airspaceDetail.zone).desc}</div>
           </div>}
         </div>
       </div>}
