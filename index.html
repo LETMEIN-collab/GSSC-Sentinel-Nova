@@ -28,27 +28,27 @@ body{font-family:'Inter',sans-serif;background:#000;color:#d4d4d4;overflow-x:hid
 .tsep{color:var(--bdr);margin-right:28px}
 
 /* HEADER */
-.hdr{background:var(--bg1);border-bottom:1px solid var(--bdr);padding:8px 16px;display:flex;align-items:center;justify-content:space-between;min-height:40px;overflow:hidden}
+.hdr{background:var(--bg1);border-bottom:1px solid var(--bdr);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;min-height:46px;overflow:hidden}
 .hdr-l{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .logo{font:700 13px var(--mono);color:var(--red);letter-spacing:2px;white-space:nowrap}
 .logo span{color:var(--t3);font-weight:400;font-size:9px;letter-spacing:1px;margin-left:6px}
-.hdr-r{display:flex;align-items:center;gap:10px;font:400 10px var(--mono);color:var(--t3);flex-shrink:1;min-width:0;overflow:hidden}
+.hdr-r{display:flex;align-items:center;gap:14px;font:400 10px var(--mono);color:var(--t3);flex-shrink:1;min-width:0;overflow:hidden}
 .live{display:flex;align-items:center;gap:5px}
 .ldot{width:6px;height:6px;background:var(--grn);border-radius:50%;animation:bl 2s infinite}
 @keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
 .threat{padding:3px 8px;border-radius:3px;font:600 9px var(--mono);letter-spacing:.5px;text-transform:uppercase;background:var(--redbg);color:var(--red);border:1px solid rgba(255,59,48,.3);white-space:nowrap;flex-shrink:0}
 
 /* LAYOUT */
-.shell{display:grid;grid-template-columns:260px 1fr 280px;height:calc(100vh - 101px);overflow:hidden}
+.shell{display:grid;grid-template-columns:260px 1fr 300px;height:calc(100vh - 110px);overflow:hidden}
 .sidebar{background:var(--bg1);border-right:1px solid var(--bdr);overflow-y:auto}
 .center{display:flex;flex-direction:column;overflow:hidden}
 .rpanel{background:var(--bg1);border-left:1px solid var(--bdr);overflow-y:auto}
 
 /* PANELS */
-.ph{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--bg2);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:2;gap:6px;min-height:28px;overflow:hidden}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:2;gap:8px;min-height:34px;overflow:hidden}
 .pt{font:600 9px var(--mono);text-transform:uppercase;letter-spacing:1px;color:var(--red);display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.pb{font:500 8px var(--mono);padding:1px 5px;border-radius:2px;letter-spacing:.5px;white-space:nowrap;flex-shrink:0}
-.pbd{padding:10px 12px}
+.pb{font:500 8px var(--mono);padding:2px 7px;border-radius:2px;letter-spacing:.5px;white-space:nowrap;flex-shrink:0}
+.pbd{padding:14px 16px}
 
 /* RISK GAUGES */
 .rg{margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--bdr)}.rg:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
@@ -68,8 +68,8 @@ body{font-family:'Inter',sans-serif;background:#000;color:#d4d4d4;overflow-x:hid
 .airspace-live{display:inline-flex;align-items:center;gap:4px;font:500 9px var(--mono);color:#30d158;padding:3px 6px;background:rgba(48,209,88,0.15);border-radius:2px;border:1px solid rgba(48,209,88,0.3);text-transform:uppercase;letter-spacing:.5px}
 .airspace-live::before{content:'●';animation:livepulse 1s infinite}
 @keyframes livepulse{0%,100%{opacity:1}50%{opacity:.5}}
-.airspace-grid{flex:1;overflow-y:auto;overflow-x:hidden;padding:6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px;align-content:start}
-.airspace-row{display:flex;flex-direction:column;padding:10px 12px;border-radius:4px;background:var(--bg2);border:1px solid var(--bdr);cursor:pointer;transition:all .2s}
+.airspace-grid{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;align-content:start}
+.airspace-row{display:flex;flex-direction:column;padding:12px 14px;border-radius:5px;background:var(--bg2);border:1px solid var(--bdr);cursor:pointer;transition:all .2s}
 .airspace-row:hover{background:var(--bg3);border-color:var(--bdrh);transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.3)}
 .airspace-zone{font:600 11px var(--mono);color:var(--t1)}
 .airspace-fir{font:500 8px var(--mono);color:var(--t3);margin-top:1px}
@@ -79,7 +79,7 @@ body{font-family:'Inter',sans-serif;background:#000;color:#d4d4d4;overflow-x:hid
 .airspace-status.caution{color:#ffd60a;border:1px solid rgba(255,214,10,0.4);background:rgba(255,214,10,0.12)}
 .airspace-status.monitoring{color:#64d2ff;border:1px solid rgba(100,210,255,0.4);background:rgba(100,210,255,0.12)}
 .airspace-status.open{color:#30d158;border:1px solid rgba(48,209,88,0.4);background:rgba(48,209,88,0.12)}
-.airspace-detail{font:400 8px/1.4 Inter,sans-serif;color:var(--t3);margin-top:6px}
+.airspace-detail{font:400 8.5px/1.5 Inter,sans-serif;color:var(--t3);margin-top:8px}
 .conn-arc{stroke-dasharray:6,4;animation:arcflow 3s linear infinite}
 @keyframes arcflow{0%{stroke-dashoffset:0}100%{stroke-dashoffset:-30}}
 .mfilt{position:absolute;top:8px;left:8px;display:flex;gap:4px;flex-wrap:wrap;z-index:1000}
@@ -101,12 +101,12 @@ body{font-family:'Inter',sans-serif;background:#000;color:#d4d4d4;overflow-x:hid
 @keyframes dash{0%{stroke-dashoffset:0}100%{stroke-dashoffset:-200}}
 
 /* NEWS TICKER */
-.newstick{background:#050505;border-top:1px solid var(--bdr);height:22px;overflow:hidden;display:flex;align-items:center}
-.newstick .label{font:600 9px var(--mono);color:var(--red);padding:0 10px;text-transform:uppercase;letter-spacing:1px;white-space:nowrap;border-right:1px solid var(--bdr);flex-shrink:0}
+.newstick{background:#050505;border-top:1px solid var(--bdr);height:28px;overflow:hidden;display:flex;align-items:center}
+.newstick .label{font:600 9px var(--mono);color:var(--red);padding:0 14px;text-transform:uppercase;letter-spacing:1px;white-space:nowrap;border-right:1px solid var(--bdr);flex-shrink:0}
 .nscroll{display:flex;animation:nsc 200s linear infinite;white-space:nowrap}.nscroll:hover{animation-play-state:paused}
 .nitem a{color:inherit;text-decoration:none}.nitem a:hover{text-decoration:underline;color:var(--t1)}
 @keyframes nsc{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-.nitem{display:inline-flex;align-items:center;gap:6px;margin-right:40px;font:400 10px 'Inter',sans-serif;color:var(--t2)}
+.nitem{display:inline-flex;align-items:center;gap:8px;margin-right:48px;font:400 10px 'Inter',sans-serif;color:var(--t2)}
 .nitem .ndot{width:4px;height:4px;border-radius:50%;flex-shrink:0}
 .nitem .nsrc{font:400 9px var(--mono);color:var(--t3);margin-left:4px}
 
@@ -202,6 +202,35 @@ body{font-family:'Inter',sans-serif;background:#000;color:#d4d4d4;overflow-x:hid
 .ad-section-title{font:600 10px var(--mono);color:#ff9500;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
 .ad-item{font:400 9px Inter,sans-serif;color:var(--t2);line-height:1.5;margin-bottom:4px}
 .ad-item:last-child{margin-bottom:0}
+
+/* FLIGHT CHECKER PANEL */
+.flight-panel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:480px;max-height:calc(100vh - 80px);background:var(--bg1);border:1px solid var(--bdrh);border-radius:8px;box-shadow:0 12px 48px rgba(0,0,0,.7);overflow-y:auto;z-index:200;animation:briefSlide .3s ease-out;font-family:Inter,sans-serif}
+.flight-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:199;backdrop-filter:blur(2px)}
+.flight-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--bdr);background:var(--bg2)}
+.flight-title{font:700 14px var(--mono);color:var(--t1);letter-spacing:1px}
+.flight-close{background:none;border:none;color:var(--t3);cursor:pointer;font:700 18px var(--mono);padding:0}.flight-close:hover{color:var(--t1)}
+.flight-body{padding:20px}
+.flight-input-row{display:flex;gap:10px;margin-bottom:16px}
+.flight-input{flex:1;background:var(--bg0);border:1px solid var(--bdr);color:var(--t1);font:500 13px var(--mono);padding:10px 14px;border-radius:4px;outline:none;letter-spacing:1px;text-transform:uppercase}
+.flight-input:focus{border-color:var(--bdrh);box-shadow:0 0 0 2px rgba(10,132,255,.2)}
+.flight-input::placeholder{color:var(--t3);text-transform:none;letter-spacing:0}
+.flight-btn{background:#0a84ff;border:none;color:#fff;font:600 11px var(--mono);padding:10px 20px;border-radius:4px;cursor:pointer;letter-spacing:.5px;white-space:nowrap;transition:background .2s}.flight-btn:hover{background:#0070e0}
+.flight-btn:disabled{opacity:.5;cursor:not-allowed}
+.flight-result{margin-top:8px}
+.flight-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:6px;padding:16px;margin-bottom:12px}
+.flight-route{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.flight-apt{text-align:center}
+.flight-apt-code{font:700 22px var(--mono);color:var(--t1)}
+.flight-apt-name{font:400 9px var(--mono);color:var(--t3);margin-top:2px}
+.flight-arrow{font:400 20px var(--mono);color:var(--t3);flex:1;text-align:center}
+.flight-status-badge{display:inline-block;font:700 10px var(--mono);padding:4px 10px;border-radius:3px;letter-spacing:.5px;text-transform:uppercase}
+.flight-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;font:400 9px var(--mono)}
+.flight-detail-grid dt{color:var(--t3)}.flight-detail-grid dd{color:var(--t1);font-weight:600}
+.flight-warning{background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.25);border-radius:4px;padding:10px 12px;margin-top:12px}
+.flight-warning-title{font:600 9px var(--mono);color:#ff3b30;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.flight-warning-item{font:400 9px/1.5 Inter,sans-serif;color:var(--t2);margin-bottom:4px}
+.flight-links{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.flight-link{font:500 9px var(--mono);color:#0a84ff;text-decoration:none;padding:4px 10px;border:1px solid rgba(10,132,255,.3);border-radius:3px;background:rgba(10,132,255,.06);transition:all .2s}.flight-link:hover{background:rgba(10,132,255,.15);border-color:rgba(10,132,255,.5)}
 .ad-detail{font:400 10px Inter,sans-serif;color:var(--t1);line-height:1.4}
 
 /* THEME TOGGLE */
@@ -621,7 +650,7 @@ function App(){
   const[breakingNews,setBreakingNews]=useState(null);
   const[bannerDismissed,setBannerDismissed]=useState(null);
   const[livePrices,setLivePrices]=useState({});
-  const[menaEscHistory,setMenaEscHistory]=useState([]);
+  const[flightChecker,setFlightChecker]=useState(null);
   const[airspaceData,setAirspaceData]=useState([
     {zone:'Iran (OIIX)',fir:'Tehran FIR',status:'CLOSED',detail:'FAA SFAR 117 prohibits all U.S. civil aviation. Iranian airspace entirely restricted for Western carriers. No overflights permitted. Alternate routing via Turkmenistan/Pakistan corridors adds 45-90 min flight time.',color:'#ff3b30',authority:'FAA SFAR 117 · EASA SIB 2024-02'},
     {zone:'Iraq (ORBB)',fir:'Baghdad FIR',status:'RESTRICTED',detail:'Flights restricted below FL320 due to ongoing militia drone and rocket threats targeting Coalition forces. GPS jamming and spoofing reported. C-RAM active at Al-Asad and Erbil.',color:'#ff9500',authority:'FAA NOTAM A0456/26 · Iraqi CAA'},
@@ -691,6 +720,55 @@ function App(){
     });
     setForcePosture(updated);
     setForceLive(true);
+  };
+
+  // ═══ FLIGHT STATUS CHECKER ═══
+  var checkFlightStatus=async function(flightNum){
+    if(!flightNum||flightNum.length<3)return;
+    setFlightChecker(function(prev){return Object.assign({},prev,{loading:true,error:null,result:null});});
+    var fn=flightNum.trim().toUpperCase().replace(/\s+/g,'');
+    // Try AviationStack free tier via proxy
+    var aKey='4c99e9a1f3ae5ed1c5b19e7e4a4e3e5f'; // free tier key
+    var url='https://api.aviationstack.com/v1/flights?access_key='+aKey+'&flight_iata='+fn+'&limit=1';
+    var result=null;
+    try{
+      var data=await proxyFetch(url,12000);
+      if(data&&data.data&&data.data.length>0){
+        var f=data.data[0];
+        result={
+          flight:f.flight&&f.flight.iata||fn,
+          airline:f.airline&&f.airline.name||'Unknown',
+          status:(f.flight_status||'unknown').toLowerCase(),
+          depAirport:f.departure&&f.departure.iata||'???',
+          depName:f.departure&&f.departure.airport||'',
+          depTime:f.departure&&f.departure.estimated||f.departure&&f.departure.scheduled||'',
+          depGate:f.departure&&f.departure.gate||'—',
+          depTerminal:f.departure&&f.departure.terminal||'—',
+          depDelay:f.departure&&f.departure.delay||0,
+          arrAirport:f.arrival&&f.arrival.iata||'???',
+          arrName:f.arrival&&f.arrival.airport||'',
+          arrTime:f.arrival&&f.arrival.estimated||f.arrival&&f.arrival.scheduled||'',
+          arrGate:f.arrival&&f.arrival.gate||'—',
+          arrTerminal:f.arrival&&f.arrival.terminal||'—',
+          arrDelay:f.arrival&&f.arrival.delay||0,
+          aircraft:f.aircraft&&f.aircraft.iata||'—',
+          live:f.live||null
+        };
+      }
+    }catch(e){}
+    // If no API result, build a basic result with external links
+    if(!result){
+      result={flight:fn,airline:'—',status:'check_external',depAirport:'—',depName:'',depTime:'',depGate:'—',depTerminal:'—',depDelay:0,arrAirport:'—',arrName:'',arrTime:'',arrGate:'—',arrTerminal:'—',arrDelay:0,aircraft:'—',live:null};
+    }
+    // Cross-reference with airspace warnings
+    var warnings=[];
+    airspaceData.forEach(function(zone){
+      if(zone.status==='CLOSED'||zone.status==='RESTRICTED'){
+        warnings.push({zone:zone.zone,status:zone.status,detail:zone.detail.slice(0,120),color:zone.color,authority:zone.authority||''});
+      }
+    });
+    result.warnings=warnings;
+    setFlightChecker(function(prev){return Object.assign({},prev,{loading:false,result:result});});
   };
 
   // ═══ LIVE STOCK PRICES — Multi-proxy Yahoo Finance + Finnhub fallback ═══
@@ -1603,6 +1681,7 @@ function App(){
           <span style={{whiteSpace:'nowrap',flexShrink:0,fontSize:10}}>{time.toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})}</span>
           <span style={{color:'var(--t3)',whiteSpace:'nowrap',flexShrink:0,fontSize:10}}>UTC {time.toISOString().slice(11,19)}</span>
           <button className="brief-btn" onClick={generateBrief} title="Download intelligence brief as .docx">BRIEF</button>
+          <button className="brief-btn" onClick={function(){setFlightChecker({open:true,loading:false,query:'',result:null,error:null});}} title="Check flight status" style={{background:'rgba(10,132,255,.12)',color:'#0a84ff',borderColor:'rgba(10,132,255,.3)'}}>✈ FLIGHT</button>
           <button className="theme-toggle" onClick={function(){setDarkMode(!darkMode);}} title={darkMode?'Light Mode':'Dark Mode'}>{darkMode?'☀':'☾'}</button>
         </div>
       </div>
@@ -1640,26 +1719,26 @@ function App(){
 
           {/* U.S. FORCE POSTURE — CENTCOM AOR */}
           <div className="ph"><div className="pt">◆ U.S. Force Posture — CENTCOM AOR</div><span className="pb" style={{background:forceLive?'var(--redbg)':'rgba(102,102,102,.15)',color:forceLive?'var(--red)':'var(--t3)'}}>{forceLive?'● ACTIVE':'LOADING'}</span></div>
-          <div className="pbd" style={{padding:'6px 12px',maxHeight:380,overflowY:'auto'}}>
+          <div className="pbd" style={{padding:'10px 16px',maxHeight:400,overflowY:'auto'}}>
             {/* Force summary bar */}
-            <div style={{display:'flex',gap:8,marginBottom:8,flexWrap:'wrap'}}>
+            <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap'}}>
               {['CSG','ARG','SSGN','BOMBER','FIGHTER','AMD','ISR','QRF'].map(function(ty){
                 var ct=forcePosture.filter(function(f){return f.type===ty}).length;
                 if(ct===0)return null;
-                return <div key={ty} style={{background:(FORCE_TYPE_COLORS[ty]||'#666')+'18',border:'1px solid '+(FORCE_TYPE_COLORS[ty]||'#666')+'44',borderRadius:3,padding:'2px 6px',font:'600 8px var(--mono)',color:FORCE_TYPE_COLORS[ty]||'#aaa'}}>{ty} ×{ct}</div>;
+                return <div key={ty} style={{background:(FORCE_TYPE_COLORS[ty]||'#666')+'18',border:'1px solid '+(FORCE_TYPE_COLORS[ty]||'#666')+'44',borderRadius:3,padding:'3px 8px',font:'600 8px var(--mono)',color:FORCE_TYPE_COLORS[ty]||'#aaa'}}>{ty} ×{ct}</div>;
               })}
             </div>
             {forcePosture.map(function(fp,i){
               var statusColor=FORCE_STATUS_COLORS[fp.sev]||'#aaa';
-              return <div key={i} style={{padding:'5px 0',borderBottom:i<forcePosture.length-1?'1px solid var(--bdr)':'none'}}>
-                <div style={{display:'flex',alignItems:'center',gap:6}}>
-                  <span style={{fontSize:13,flexShrink:0}}>{fp.icon}</span>
-                  <span style={{font:'600 7px var(--mono)',color:FORCE_TYPE_COLORS[fp.type]||'#aaa',padding:'1px 5px',borderRadius:2,background:(FORCE_TYPE_COLORS[fp.type]||'#666')+'18',flexShrink:0}}>{fp.type}</span>
-                  <span style={{font:'500 9.5px/1.3 Inter,sans-serif',color:'var(--t1)',flex:1}}>{fp.asset}</span>
-                  <span style={{font:'600 7px var(--mono)',color:statusColor,padding:'1px 5px',borderRadius:2,background:statusColor+'18',flexShrink:0}}>{fp.status}</span>
+              return <div key={i} style={{padding:'7px 0',borderBottom:i<forcePosture.length-1?'1px solid var(--bdr)':'none'}}>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <span style={{fontSize:14,flexShrink:0}}>{fp.icon}</span>
+                  <span style={{font:'600 7px var(--mono)',color:FORCE_TYPE_COLORS[fp.type]||'#aaa',padding:'2px 6px',borderRadius:2,background:(FORCE_TYPE_COLORS[fp.type]||'#666')+'18',flexShrink:0}}>{fp.type}</span>
+                  <span style={{font:'500 9.5px/1.4 Inter,sans-serif',color:'var(--t1)',flex:1}}>{fp.asset}</span>
+                  <span style={{font:'600 7px var(--mono)',color:statusColor,padding:'2px 6px',borderRadius:2,background:statusColor+'18',flexShrink:0}}>{fp.status}</span>
                 </div>
-                <div style={{display:'flex',justifyContent:'space-between',marginTop:2,paddingLeft:22}}>
-                  <span style={{font:'400 8px/1.3 Inter,sans-serif',color:'var(--t3)',flex:1}}>{fp.loc}</span>
+                <div style={{display:'flex',justifyContent:'space-between',marginTop:4,paddingLeft:26}}>
+                  <span style={{font:'400 8.5px/1.4 Inter,sans-serif',color:'var(--t3)',flex:1}}>{fp.loc}</span>
                   {fp.relatedEvents>0&&<span style={{font:'600 8px var(--mono)',color:'#ff3b30'}}>{fp.relatedEvents} threats</span>}
                 </div>
                 <div style={{font:'400 8px/1.3 Inter,sans-serif',color:'var(--t3)',marginTop:1,paddingLeft:22}}>{fp.detail.slice(0,120)}</div>
@@ -1813,21 +1892,21 @@ function App(){
 
         {/* RIGHT PANEL */}
         <div className="rpanel">
-          {/* Sky News Live Stream — TOP */}
-          <div className="ph"><div className="pt">◆ Sky News Live</div><span className="pb" style={{background:'var(--redbg)',color:'var(--red)'}}>● LIVE 24/7</span></div>
-          <div style={{padding:'0 12px 8px',background:'var(--card)',borderRadius:'0 0 6px 6px'}}>
+          {/* Al Jazeera English Live Stream — TOP */}
+          <div className="ph"><div className="pt">◆ Al Jazeera Live</div><span className="pb" style={{background:'var(--redbg)',color:'var(--red)'}}>● LIVE 24/7</span></div>
+          <div style={{padding:'4px 16px 12px',background:'var(--card)',borderRadius:'0 0 6px 6px'}}>
             <iframe
-              src="https://www.youtube.com/embed/9Auq9mYxFEE?autoplay=1&mute=1"
-              style={{width:'100%',height:200,border:'1px solid var(--bdr)',borderRadius:4,marginTop:6}}
+              src="https://www.youtube.com/embed/live_stream?channel=UCNye-wNBqNL5ZzHSJj3l8Bg&autoplay=1&mute=1"
+              style={{width:'100%',height:200,border:'1px solid var(--bdr)',borderRadius:4,marginTop:8}}
               allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
-              title="Sky News Live"
+              title="Al Jazeera English Live"
             ></iframe>
-            <div style={{font:'400 9px var(--mono)',color:'var(--t3)',marginTop:4,textAlign:'center'}}>Sky News · 24/7 Live Breaking News · UK</div>
+            <div style={{font:'400 9px var(--mono)',color:'var(--t3)',marginTop:6,textAlign:'center'}}>Al Jazeera English · 24/7 Live · Doha, Qatar</div>
           </div>
 
           {/* MENA WAR ANALYSIS — below Sky News */}
-          <div className="ph" style={{marginTop:6}}><div className="pt">◆ MENA WAR ANALYSIS</div><span className="pb" style={{background:iranLive?'var(--redbg)':'rgba(102,102,102,.15)',color:iranLive?'var(--red)':'var(--t3)'}}>{iranLive?'● LIVE 60s':'LOADING'}</span></div>
+          <div className="ph" style={{marginTop:10}}><div className="pt">◆ MENA WAR ANALYSIS</div><span className="pb" style={{background:iranLive?'var(--redbg)':'rgba(102,102,102,.15)',color:iranLive?'var(--red)':'var(--t3)'}}>{iranLive?'● LIVE 60s':'LOADING'}</span></div>
           <div className="pbd" style={{padding:'8px 12px'}}>
             {/* Escalation Gauge */}
             {(function(){
@@ -1836,7 +1915,7 @@ function App(){
               var score=Math.min(100,crit*15+hi*8+iranEvents.length*2);
               var color=score>=75?'#ff3b30':score>=50?'#ff9500':score>=25?'#ffd60a':'#30d158';
               var label=score>=75?'CRITICAL':score>=50?'HIGH':score>=25?'ELEVATED':'LOW';
-              return <div style={{marginBottom:10}}>
+              return <div style={{marginBottom:14}}>
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
                   <span style={{font:'600 10px var(--mono)',color:'var(--t2)'}}>ESCALATION INDEX</span>
                   <span style={{font:'700 13px var(--mono)',color:color}}>{score}/100 — {label}</span>
@@ -1847,7 +1926,7 @@ function App(){
               </div>;
             })()}
             {/* Domain breakdown */}
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:6,marginBottom:10}}>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:14}}>
               {['MILITARY','NUCLEAR','PROXY','CYBER','DIPLOMACY','ENERGY'].map(function(dom){
                 var ct=iranEvents.filter(function(e){return e.domain===dom}).length;
                 return <div key={dom} style={{background:'rgba(255,255,255,.04)',border:'1px solid var(--bdr)',borderRadius:4,padding:'4px 6px',textAlign:'center'}}>
@@ -1857,30 +1936,30 @@ function App(){
               })}
             </div>
             {/* Key Flashpoints */}
-            <div style={{font:'600 9px var(--mono)',color:'var(--t2)',letterSpacing:'.5px',marginBottom:4}}>KEY FLASHPOINTS</div>
+            <div style={{font:'600 9px var(--mono)',color:'var(--t2)',letterSpacing:'.5px',marginBottom:6}}>KEY FLASHPOINTS</div>
             {iranEvents.filter(function(e){return e.sev==='critical'||e.sev==='high'}).slice(0,5).map(function(ev,i){
-              return <div key={i} style={{padding:'4px 0',borderBottom:'1px solid var(--bdr)'}}>
-                <div style={{display:'flex',alignItems:'center',gap:6}}>
-                  <span style={{font:'400 11px',flexShrink:0}}>{ev.icon}</span>
-                  <span style={{font:'600 8px var(--mono)',color:IRAN_SEV_COLORS[ev.sev],padding:'1px 5px',borderRadius:2,background:IRAN_SEV_COLORS[ev.sev]+'18',flexShrink:0}}>{ev.domain}</span>
-                  <span style={{font:'500 9px/1.3 Inter,sans-serif',color:'var(--t1)',flex:1}}>{ev.title.length>65?ev.title.slice(0,65)+'…':ev.title}</span>
+              return <div key={i} style={{padding:'6px 0',borderBottom:'1px solid var(--bdr)'}}>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <span style={{font:'400 12px',flexShrink:0}}>{ev.icon}</span>
+                  <span style={{font:'600 8px var(--mono)',color:IRAN_SEV_COLORS[ev.sev],padding:'2px 6px',borderRadius:2,background:IRAN_SEV_COLORS[ev.sev]+'18',flexShrink:0}}>{ev.domain}</span>
+                  <span style={{font:'500 9px/1.4 Inter,sans-serif',color:'var(--t1)',flex:1}}>{ev.title.length>65?ev.title.slice(0,65)+'…':ev.title}</span>
                 </div>
-                {ev.detail&&<div style={{font:'400 8px/1.3 Inter,sans-serif',color:'var(--t3)',marginTop:2,paddingLeft:20}}>{ev.detail.slice(0,100)}</div>}
+                {ev.detail&&<div style={{font:'400 8.5px/1.4 Inter,sans-serif',color:'var(--t3)',marginTop:3,paddingLeft:24}}>{ev.detail.slice(0,100)}</div>}
               </div>;
             })}
           </div>
 
           {/* MENA CONFLICT WIRE */}
-          <div className="ph" style={{marginTop:6}}><div className="pt">◆ MENA Conflict Wire</div><span className="pb" style={{background:iranLive?'var(--redbg)':'rgba(102,102,102,.15)',color:iranLive?'var(--red)':'var(--t3)'}}>{iranLive?'● LIVE':'FEED'}</span></div>
-          <div className="pbd" style={{padding:'6px 12px',maxHeight:220,overflowY:'auto'}}>
-            {iranEvents.slice(0,12).map(function(ev,i){
-              return <div key={i} style={{padding:'4px 0',borderBottom:i<Math.min(iranEvents.length,12)-1?'1px solid var(--bdr)':'none'}}>
-                <div style={{display:'flex',alignItems:'center',gap:5}}>
-                  <span style={{font:'400 10px',flexShrink:0}}>{ev.icon}</span>
-                  <span style={{font:'600 7px var(--mono)',color:IRAN_SEV_COLORS[ev.sev],padding:'1px 4px',borderRadius:2,background:IRAN_SEV_COLORS[ev.sev]+'15',flexShrink:0}}>{ev.sev.toUpperCase()}</span>
-                  <span style={{font:'500 9px/1.3 Inter,sans-serif',color:'var(--t1)',flex:1}}>{ev.title}</span>
+          <div className="ph" style={{marginTop:10}}><div className="pt">◆ MENA Conflict Wire</div><span className="pb" style={{background:iranLive?'var(--redbg)':'rgba(102,102,102,.15)',color:iranLive?'var(--red)':'var(--t3)'}}>{iranLive?'● LIVE':'FEED'}</span></div>
+          <div className="pbd" style={{padding:'8px 16px',maxHeight:240,overflowY:'auto'}}>
+            {iranEvents.slice(0,10).map(function(ev,i){
+              return <div key={i} style={{padding:'6px 0',borderBottom:i<Math.min(iranEvents.length,10)-1?'1px solid var(--bdr)':'none'}}>
+                <div style={{display:'flex',alignItems:'center',gap:7}}>
+                  <span style={{font:'400 11px',flexShrink:0}}>{ev.icon}</span>
+                  <span style={{font:'600 7px var(--mono)',color:IRAN_SEV_COLORS[ev.sev],padding:'2px 5px',borderRadius:2,background:IRAN_SEV_COLORS[ev.sev]+'15',flexShrink:0}}>{ev.sev.toUpperCase()}</span>
+                  <span style={{font:'500 9px/1.4 Inter,sans-serif',color:'var(--t1)',flex:1}}>{ev.title}</span>
                 </div>
-                <div style={{display:'flex',justifyContent:'space-between',marginTop:2,paddingLeft:18}}>
+                <div style={{display:'flex',justifyContent:'space-between',marginTop:3,paddingLeft:22}}>
                   <span style={{font:'400 8px var(--mono)',color:IRAN_DOMAIN_COLORS[ev.domain]||'var(--t3)'}}>{ev.domain}</span>
                   <span style={{font:'400 8px var(--mono)',color:'var(--t3)'}}>{ev.time||'Recent'}</span>
                 </div>
@@ -1955,6 +2034,86 @@ function App(){
             <div className="ad-section-title">Travel Advisory</div>
             <div className="ad-item">{advisories.find(a=>a.country===airspaceDetail.zone).desc}</div>
           </div>}
+        </div>
+      </div>}
+      {/* FLIGHT STATUS CHECKER MODAL */}
+      {flightChecker&&flightChecker.open&&<div>
+        <div className="flight-overlay" onClick={function(){setFlightChecker(null);}}></div>
+        <div className="flight-panel">
+          <div className="flight-header">
+            <div className="flight-title">✈ CHECK FLIGHT STATUS</div>
+            <button className="flight-close" onClick={function(){setFlightChecker(null);}}>✕</button>
+          </div>
+          <div className="flight-body">
+            <div className="flight-input-row">
+              <input className="flight-input" placeholder="Enter flight number (e.g. EK203, BA115)" value={flightChecker.query||''} onChange={function(e){setFlightChecker(function(p){return Object.assign({},p,{query:e.target.value});});}} onKeyDown={function(e){if(e.key==='Enter')checkFlightStatus(flightChecker.query);}}/>
+              <button className="flight-btn" disabled={flightChecker.loading||!flightChecker.query} onClick={function(){checkFlightStatus(flightChecker.query);}}>{flightChecker.loading?'CHECKING...':'CHECK'}</button>
+            </div>
+
+            {/* Results */}
+            {flightChecker.result&&<div className="flight-result">
+              <div className="flight-card">
+                {/* Flight number + airline */}
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+                  <div>
+                    <div style={{font:'700 16px var(--mono)',color:'var(--t1)',letterSpacing:'1px'}}>{flightChecker.result.flight}</div>
+                    <div style={{font:'400 10px var(--mono)',color:'var(--t3)',marginTop:2}}>{flightChecker.result.airline}</div>
+                  </div>
+                  {(function(){var s=flightChecker.result.status;var col=s==='active'||s==='en-route'?'#30d158':s==='landed'?'#0a84ff':s==='scheduled'?'#ffd60a':s==='cancelled'?'#ff3b30':s==='diverted'?'#ff9500':'#64d2ff';return <span className="flight-status-badge" style={{background:col+'18',color:col,border:'1px solid '+col+'35'}}>{s==='check_external'?'CHECK BELOW':s.replace(/-/g,' ')}</span>})()}
+                </div>
+
+                {/* Route display */}
+                {flightChecker.result.depAirport!=='—'&&<div className="flight-route">
+                  <div className="flight-apt">
+                    <div className="flight-apt-code">{flightChecker.result.depAirport}</div>
+                    <div className="flight-apt-name">{flightChecker.result.depName.slice(0,25)}</div>
+                  </div>
+                  <div className="flight-arrow">————✈————→</div>
+                  <div className="flight-apt">
+                    <div className="flight-apt-code">{flightChecker.result.arrAirport}</div>
+                    <div className="flight-apt-name">{flightChecker.result.arrName.slice(0,25)}</div>
+                  </div>
+                </div>}
+
+                {/* Detail grid */}
+                {flightChecker.result.depAirport!=='—'&&<div className="flight-detail-grid">
+                  <div><dt>Departure</dt><dd>{flightChecker.result.depTime?new Date(flightChecker.result.depTime).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false}):'—'}</dd></div>
+                  <div><dt>Arrival</dt><dd>{flightChecker.result.arrTime?new Date(flightChecker.result.arrTime).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false}):'—'}</dd></div>
+                  <div><dt>Gate (Dep)</dt><dd>{flightChecker.result.depGate} / T{flightChecker.result.depTerminal}</dd></div>
+                  <div><dt>Gate (Arr)</dt><dd>{flightChecker.result.arrGate} / T{flightChecker.result.arrTerminal}</dd></div>
+                  <div><dt>Dep Delay</dt><dd style={{color:flightChecker.result.depDelay>0?'#ff3b30':'#30d158'}}>{flightChecker.result.depDelay>0?'+'+flightChecker.result.depDelay+' min':'On time'}</dd></div>
+                  <div><dt>Arr Delay</dt><dd style={{color:flightChecker.result.arrDelay>0?'#ff3b30':'#30d158'}}>{flightChecker.result.arrDelay>0?'+'+flightChecker.result.arrDelay+' min':'On time'}</dd></div>
+                  <div><dt>Aircraft</dt><dd>{flightChecker.result.aircraft}</dd></div>
+                  {flightChecker.result.live&&<div><dt>Altitude</dt><dd>{flightChecker.result.live.altitude} ft</dd></div>}
+                </div>}
+
+                {/* External tracking links */}
+                <div className="flight-links">
+                  <a className="flight-link" href={'https://www.flightradar24.com/'+flightChecker.result.flight} target="_blank" rel="noopener noreferrer">FlightRadar24 ↗</a>
+                  <a className="flight-link" href={'https://flightaware.com/live/flight/'+flightChecker.result.flight} target="_blank" rel="noopener noreferrer">FlightAware ↗</a>
+                  <a className="flight-link" href={'https://www.google.com/search?q=flight+'+flightChecker.result.flight+'+status'} target="_blank" rel="noopener noreferrer">Google ↗</a>
+                </div>
+              </div>
+
+              {/* MENA Airspace Warnings */}
+              {flightChecker.result.warnings&&flightChecker.result.warnings.length>0&&<div className="flight-warning">
+                <div className="flight-warning-title">⚠ MENA Airspace Restrictions Active</div>
+                {flightChecker.result.warnings.map(function(w,i){
+                  return <div key={i} className="flight-warning-item">
+                    <span style={{color:w.color,fontWeight:700}}>{w.status}</span> — <strong>{w.zone}</strong>: {w.detail}
+                    {w.authority&&<div style={{font:'500 7.5px var(--mono)',color:'var(--t3)',marginTop:1}}>{w.authority}</div>}
+                  </div>;
+                })}
+              </div>}
+            </div>}
+
+            {/* No query yet — show prompt */}
+            {!flightChecker.result&&!flightChecker.loading&&<div style={{textAlign:'center',padding:'20px 0',color:'var(--t3)'}}>
+              <div style={{fontSize:32,marginBottom:10}}>✈</div>
+              <div style={{font:'400 10px/1.6 Inter,sans-serif'}}>Enter a flight number above to check real-time status,<br/>gate info, delays, and MENA airspace warnings.</div>
+              <div style={{font:'400 9px var(--mono)',color:'var(--t3)',marginTop:12}}>Examples: EK203 · BA115 · QR777 · TK1 · LH600 · SV123</div>
+            </div>}
+          </div>
         </div>
       </div>}
     </div>
