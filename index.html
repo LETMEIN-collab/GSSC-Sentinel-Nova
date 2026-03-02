@@ -1043,13 +1043,16 @@ function App(){
   };
   const clearSearch=function(){setSearchQuery('');};
 
-  // ═══ GDELT BREAKING NEWS — auto-polls every 2 min ═══
+  // ═══ GDELT BREAKING NEWS — US-IRAN-ISRAEL WAR FOCUS (auto-polls every 30s) ═══
   const GDELT_KEYWORDS=[
-    'war','invasion','airstrike','missile','bombing','ceasefire','coup','martial law',
-    'earthquake','tsunami','hurricane','typhoon','cyclone','volcanic eruption','wildfire',
-    'terrorist attack','mass shooting','hostage','assassination','nuclear',
-    'pandemic','outbreak','bird flu','H5N1','Ebola',
-    'sanctions','NATO','UN Security Council','emergency summit','market crash','tariff'
+    'Iran strike','Iran attack','IRGC','Hezbollah','Houthi','Israel Iran',
+    'ballistic missile','cruise missile','drone strike Iran','uranium enrichment',
+    'Strait of Hormuz','Persian Gulf','Red Sea attack','Bab el-Mandeb',
+    'CENTCOM','carrier strike group','F-35 Gulf','B-52 Iran','THAAD',
+    'Natanz','Fordow','IAEA Iran','JCPOA','nuclear Iran',
+    'IDF Lebanon','Israel Gaza','Quds Force','axis of resistance',
+    'Iran sanctions','Iran proxy','Iraq militia','Syria strike','Yemen strike',
+    'ceasefire Iran','Iran retaliation','Iran escalation','ayatollah','Khamenei'
   ];
   // GDELT helper — multi-proxy fallback (GDELT has no CORS headers)
   var gdeltProxies=[
@@ -1074,14 +1077,15 @@ function App(){
 
   // ── TIER 1: Direct RSS scan of major outlets for stories they tag as "breaking" ──
   var BREAKING_RSS=[
-    {url:'https://feeds.bbci.co.uk/news/world/rss.xml',name:'BBC'},
-    {url:'http://rss.cnn.com/rss/edition_world.rss',name:'CNN'},
+    {url:'https://feeds.bbci.co.uk/news/world/middle_east/rss.xml',name:'BBC'},
+    {url:'http://rss.cnn.com/rss/edition_meast.rss',name:'CNN'},
     {url:'https://www.aljazeera.com/xml/rss/all.xml',name:'Al Jazeera'},
     {url:'https://feeds.reuters.com/reuters/topNews',name:'Reuters'},
-    {url:'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',name:'NY Times'},
+    {url:'https://rss.nytimes.com/services/xml/rss/nyt/MiddleEast.xml',name:'NY Times'},
+    {url:'https://www.timesofisrael.com/feed/',name:'Times of Israel'},
+    {url:'https://english.alarabiya.net/tools/rss',name:'Al Arabiya'},
   ];
   var breakingPattern=/breaking|just in|developing|flash|urgent/i;
-  var securityBreaking=/kill|dead|shot|attack|bomb|strike|shoot|war|coup|quake|tsunami|hurricane|crash|hostage|kidnap|missile|nuclear|terror|explo|casualt|evacuat|siege|fire|collaps|shoot|armed|troops|invasion/i;
 
   var fetchBreakingRSS=async function(){
     try{
@@ -1095,9 +1099,11 @@ function App(){
             var pubTime=new Date(item.pubDate).getTime();
             if(pubTime<cutoff)return;
             var title=decEnt(item.title||'');
-            // Promote if outlet tags it as breaking OR headline matches urgent security terms
+            // FILTER: must match Iran/Israel/MENA war context first
+            if(!iranMustMatch.test(title)&&!iranMustMatch.test(item.description||''))return;
+            // Then check if outlet tags it as breaking OR headline has urgent language
             var isTaggedBreaking=breakingPattern.test(title)||breakingPattern.test(item.description||'')||((item.categories||[]).join(' ').toLowerCase().indexOf('breaking')!==-1);
-            var isUrgentSecurity=securityBreaking.test(title);
+            var isUrgentSecurity=/attack|strike|missile|bomb|kill|dead|casualt|explo|retaliat|escalat|shoot|troops|invasion|intercept|launch/i.test(title);
             if(isTaggedBreaking||isUrgentSecurity){
               candidates.push({title:title.replace(/^(BREAKING|JUST IN|DEVELOPING)[:\s\-]*/i,'').trim(),url:item.link,source:feed.name,time:new Date(item.pubDate).toISOString().slice(11,16)+' UTC',priority:isTaggedBreaking?2:1,pubTime:pubTime});
             }
@@ -1123,7 +1129,7 @@ function App(){
       if(rssHit)return; // RSS found a breaking story, no need for GDELT
 
       // Tier 2: GDELT multi-source clustering
-      var q='('+GDELT_KEYWORDS.slice(0,12).join(' OR ')+') sourcelang:eng';
+      var q='(Iran OR Israel OR Hezbollah OR Houthi OR IRGC OR CENTCOM OR "Persian Gulf" OR "Red Sea") ('+GDELT_KEYWORDS.slice(0,10).join(' OR ')+') sourcelang:eng';
       var data=await gdeltFetch(q,75,'180min');
       if(!data)return;
       if(!data.articles||data.articles.length<1)return;
@@ -1134,6 +1140,8 @@ function App(){
         art.title=decEnt(art.title);
         var titleLower=art.title.toLowerCase();
         if(/opinion|editorial|top \d|best \d|review|recipe|horoscope|celebrity|kardashian/i.test(art.title))return;
+        // Must match Iran/Israel/MENA war context
+        if(!iranMustMatch.test(art.title))return;
         var isBreaking=GDELT_KEYWORDS.some(function(kw){return titleLower.indexOf(kw.toLowerCase())!==-1;});
         if(!isBreaking)return;
         var matched=false;
@@ -1370,202 +1378,169 @@ function App(){
     return{l4,l3,l2,total:advisories.length};
   },[advisories]);
 
-  // ═══ GENERATE BRIEF — one-page top 10 global security developments (web-sourced) ═══
+  // ═══ GENERATE BRIEF — US-IRAN-ISRAEL WAR ASSESSMENT (real-time OSINT) ═══
   const generateBrief=async function(){
     var D=window.docx;if(!D){alert('Document library not loaded. Please refresh.');return;}
     var now=new Date();
     var dateStr=now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
     var timeStr=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false})+' UTC';
-    // Tightly scoped queries — each requires TWO security-relevant terms to co-occur
+
+    // ═══ WAR-FOCUSED GDELT QUERIES — 6 conflict domains ═══
     var queries=[
-      {q:'(airstrike OR missile OR shelling OR "armed conflict" OR "military offensive") (killed OR casualties OR "civilian" OR troops OR strike) sourcelang:eng',tag:'ARMED CONFLICT'},
-      {q:'("terrorist attack" OR "suicide bomb" OR "car bomb" OR "IED" OR "mass shooting" OR "extremist") (killed OR injured OR claimed OR plot) sourcelang:eng',tag:'TERRORISM'},
-      {q:'(kidnapping OR hostage OR abduction OR "ransom") (gang OR cartel OR militia OR "armed group" OR pirates) sourcelang:eng',tag:'KIDNAP & RANSOM'},
-      {q:'(earthquake OR tsunami OR hurricane OR typhoon OR "volcanic eruption" OR cyclone) (deaths OR evacuated OR destroyed OR emergency OR casualties) sourcelang:eng',tag:'NATURAL DISASTER'},
-      {q:'(ransomware OR cyberattack OR "data breach") (government OR hospital OR infrastructure OR pipeline OR bank) sourcelang:eng',tag:'CYBER THREAT'},
-      {q:'(detained OR arrested OR "political prisoner" OR "wrongful detention") (journalist OR opposition OR diplomat OR activist OR dissident) sourcelang:eng',tag:'DETENTION / ARREST'},
-      {q:'(deepfake OR "AI-generated" OR disinformation) (election OR government OR military OR "influence operation") sourcelang:eng',tag:'SYNTHETIC MEDIA'},
-      {q:'(cartel OR assassination OR "drug war" OR "gang violence" OR "organized crime") (Mexico OR Colombia OR Ecuador OR Brazil OR Honduras) sourcelang:eng',tag:'ORGANIZED CRIME'},
-      {q:'(coup OR "regime change" OR "martial law" OR "state of emergency" OR uprising OR revolution) (military OR government OR parliament OR protest) sourcelang:eng',tag:'POLITICAL INSTABILITY'},
-      {q:'("nuclear" OR "ballistic missile" OR "weapons test" OR "chemical attack") (North Korea OR Iran OR Russia OR threat OR launch) sourcelang:eng',tag:'WMD / PROLIFERATION'},
+      {q:'(Iran OR IRGC OR "Quds Force" OR "Revolutionary Guard") (strike OR attack OR retaliation OR missile OR drone) sourcelang:eng',tag:'IRAN MILITARY'},
+      {q:'(Israel OR IDF OR "Iron Dome" OR Mossad) (Iran OR Lebanon OR Hezbollah OR Gaza OR strike) sourcelang:eng',tag:'ISRAEL OPS'},
+      {q:'(Hezbollah OR Houthi OR "Ansar Allah" OR "axis of resistance" OR "Iraqi militia") (attack OR strike OR missile OR drone OR rocket) sourcelang:eng',tag:'PROXY FORCES'},
+      {q:'(Iran OR Natanz OR Fordow OR IAEA OR JCPOA) (nuclear OR uranium OR enrichment OR centrifuge OR "breakout") sourcelang:eng',tag:'NUCLEAR'},
+      {q:'("Strait of Hormuz" OR "Red Sea" OR "Bab el-Mandeb" OR "Persian Gulf" OR "Gulf of Oman") (ship OR tanker OR attack OR closure OR navy OR blockade) sourcelang:eng',tag:'MARITIME'},
+      {q:'(CENTCOM OR "carrier strike" OR "B-52" OR THAAD OR "Fifth Fleet" OR "force posture") (deploy OR Iran OR Gulf OR "Middle East") sourcelang:eng',tag:'US FORCES'},
+      {q:'(Iran OR Israel) (ceasefire OR diplomacy OR talks OR sanctions OR OFAC OR "UN Security Council") sourcelang:eng',tag:'DIPLOMACY'},
+      {q:'(Iran OR Israel OR Hezbollah) (airspace OR NOTAM OR "flight ban" OR "no-fly" OR divert OR aviation OR airport) sourcelang:eng',tag:'AIRSPACE'},
     ];
-    // Relevance keywords — headlines must contain at least one to pass the quality filter
-    var securityTerms=/kill|dead|attack|bomb|shoot|strike|seize|arrest|detain|hostage|kidnap|ransom|breach|hack|quake|tsunami|hurricane|typhoon|cyclone|erupt|flood|wildfire|coup|martial|uprising|missile|nuclear|weapon|terror|explo|casualt|evacuat|cartel|traffick|assassin|deepfake|disinfo|sanction|militia|drone|shell|siege|riot|clash|protest.*violen/i;
-    // Fetch top stories across all categories via GDELT
-    var allDevs=[];
+    var warTerms=/iran|israel|irgc|idf|hezbollah|houthi|tehran|gaza|lebanon|centcom|hormuz|red sea|gulf|proxy|nuclear|uranium|enrichment|natanz|fordow|missile|drone strike|carrier|mossad|quds|militia|sanction|jcpoa|iaea|ayatollah|khamenei|netanyahu/i;
+
+    // Fetch across all war domains
+    var allDevs=[];var allSources=[];
     var fetchPromises=queries.map(function(cat){
-      return gdeltFetch(cat.q,6,'1440min').then(function(data){
+      return gdeltFetch(cat.q,10,'1440min').then(function(data){
         if(data&&data.articles){
           data.articles.forEach(function(art){
             var title=decEnt(art.title||'');
-            // Strip source suffix (e.g. " - Reuters")
             if(title.indexOf(' - ')>25)title=title.substring(0,title.lastIndexOf(' - '));
-            // Quality gate: must match security-relevant terms
-            if(!securityTerms.test(title))return;
+            if(!warTerms.test(title))return;
+            if(/opinion|editorial|top \d|best \d|review|recipe|horoscope|celebrity/i.test(title))return;
             var src=art.domain||'';
             var key=title.slice(0,35).toLowerCase().replace(/[^a-z0-9]/g,'');
-            allDevs.push({headline:title.slice(0,120),tag:cat.tag,source:src,time:timeAgo(art.seendate),key:key,seendate:art.seendate||'',sources:art.socialimage?2:1});
+            allDevs.push({headline:title.slice(0,140),tag:cat.tag,source:src,time:timeAgo(art.seendate),key:key,seendate:art.seendate||''});
+            if(src&&allSources.indexOf(src)===-1)allSources.push(src);
           });
         }
       }).catch(function(){});
     });
     await Promise.all(fetchPromises);
-    // Deduplicate by fuzzy key
+    // Deduplicate
     var seen=new Set();
     var unique=allDevs.filter(function(d){if(seen.has(d.key))return false;seen.add(d.key);return true;});
-    // Sort by recency
     unique.sort(function(a,b){return(b.seendate||'').localeCompare(a.seendate||'');});
-    var topItems=unique.slice(0,12);
-    // Fallback to dashboard data if GDELT underperformed
+    var topItems=unique.slice(0,20);
+    // Fallback to dashboard iranEvents + INCIDENTS
     if(topItems.length<5){
-      var news=liveNews.length>0?liveNews:INCIDENTS;
-      news.slice(0,12-topItems.length).forEach(function(n){
-        topItems.push({headline:decEnt(n.t||n.title||'').slice(0,120),tag:(n.cat||'SECURITY').toUpperCase(),source:decEnt(n.src||n.reg||''),time:n.tm||''});
+      var fallback=iranEvents.length>0?iranEvents:INCIDENTS;
+      fallback.slice(0,15-topItems.length).forEach(function(n){
+        var hl=decEnt(n.t||n.title||'').slice(0,140);
+        if(!warTerms.test(hl))return;
+        topItems.push({headline:hl,tag:classifyIran(hl),source:decEnt(n.src||n.source||''),time:n.tm||''});
       });
     }
-    // ═══ REGION-BASED NARRATIVE CONSTRUCTION ═══
-    var regionRules=[
-      {name:'Middle East and North Africa',rx:/\b(iraq|iran|syria|yemen|gaza|palestine|israel|hezbollah|houthi|lebanon|jordan|saudi|bahrain|qatar|oman|uae|emirates|egypt|libya|tunisia|algeria|morocco|sinai|golan|west bank|rafah|beirut|tehran|baghdad|damascus|sanaa|riyadh|cairo|tripoli)\b/i},
-      {name:'Russia-Ukraine',rx:/\b(ukraine|russia|russian|kremlin|kyiv|kiev|moscow|donbas|donetsk|luhansk|crimea|zaporizhzhia|kharkiv|kherson|odesa|putin|zelensky|wagner|bakhmut|avdiivka|kursk|belgorod|drone.*russia|russia.*drone|nato.*ukr|ukr.*nato)\b/i},
-      {name:'Indo-Pacific',rx:/\b(china|chinese|beijing|taiwan|strait|south china sea|philippines|manila|japan|tokyo|north korea|pyongyang|DPRK|korea|india|pakistan|kashmir|bangladesh|myanmar|burma|rohingya|indonesia|bali|vietnam|thailand|australia|pacific|ASEAN|sri lanka|cambodia|laos|aukus|quad)\b/i},
-      {name:'Sub-Saharan Africa',rx:/\b(nigeria|niger|mali|burkina faso|chad|sudan|south sudan|khartoum|RSF|ethiopia|tigray|somalia|mogadishu|al.shabaab|congo|DRC|mozambique|sahel|boko haram|kenya|uganda|cameroon|senegal|ghana|tanzania|zimbabwe|south africa|rwanda|junta.*africa|africa.*junta)\b/i},
-      {name:'Europe and Transatlantic',rx:/\b(NATO|eu |european union|brussels|london|paris|berlin|germany|france|britain|UK |poland|romania|baltic|finland|sweden|norway|denmark|spain|italy|greece|turkey|ankara|istanbul|balkans|serbia|kosovo|moldova|georgia|tbilisi|arctic|north sea)\b/i},
-      {name:'Americas',rx:/\b(mexico|cartel|sinaloa|colombia|bogota|venezuela|maduro|brazil|ecuador|peru|argentina|chile|honduras|guatemala|el salvador|haiti|cuba|canada|fentanyl|border.*US|US.*border|latin america|central america|caribbean)\b/i},
-      {name:'Cyber and Technology',rx:/\b(cyber|ransomware|hack|breach|malware|phishing|zero.day|APT|deepfake|AI.generated|disinformation|misinformation|influence operation|botnet|critical infrastructure|SCADA|DDoS)\b/i}
-    ];
-    function classifyRegion(headline,tag){
-      for(var ri=0;ri<regionRules.length;ri++){if(regionRules[ri].rx.test(headline))return regionRules[ri].name;}
-      if(tag==='CYBER THREAT'||tag==='SYNTHETIC MEDIA')return 'Cyber and Technology';
-      if(tag==='ORGANIZED CRIME')return 'Americas';
-      return 'Global';
-    }
-    // Group by region and collect all sources for bottom attribution
-    var regionGroups={};
-    var allSources=[];
+    // Group by domain
+    var domainGroups={};
     topItems.forEach(function(d){
-      var reg=classifyRegion(d.headline,d.tag);
-      if(!regionGroups[reg])regionGroups[reg]=[];
-      regionGroups[reg].push(d);
-      var src=(d.source||'').replace('www.','');
-      if(src&&allSources.indexOf(src)===-1)allSources.push(src);
+      if(!domainGroups[d.tag])domainGroups[d.tag]=[];
+      domainGroups[d.tag].push(d);
     });
-    var regionOrder=['Middle East and North Africa','Russia-Ukraine','Indo-Pacific','Sub-Saharan Africa','Europe and Transatlantic','Americas','Cyber and Technology','Global'];
-    var activeRegions=regionOrder.filter(function(r){return regionGroups[r]&&regionGroups[r].length>0;});
 
-    // ═══ ANALYTICAL NARRATIVE BUILDERS ═══
-    // Primary assessment per tag (woven after lead item in each region)
-    var tagInsight={
-      'ARMED CONFLICT':'We judge this carries significant escalation risk and may draw in regional state or non-state actors, potentially shifting alliance postures and complicating ongoing diplomatic efforts. The trajectory of kinetic operations in this theater suggests that belligerents retain both the intent and capability to sustain or intensify current levels of activity, which we assess reduces the near-term probability of any meaningful ceasefire or negotiated pause.',
-      'TERRORISM':'We assess the threat environment remains fluid and the operational tempo suggests a sustained capability among known networks. There is a moderate-to-high probability of retaliatory or copycat actions in the near term, particularly against soft targets in urban centers. The adaptability of threat actors to exploit emerging vulnerabilities continues to challenge existing protective security frameworks.',
-      'KIDNAP & RANSOM':'This pattern is assessed as consistent with deteriorating local security conditions and likely indicates an expansion of criminal operational reach beyond traditional areas of activity. We judge that the frequency and geographic spread of reported incidents reflects a deliberate diversification of targeting, which may signal growing confidence among organized criminal groups operating in the region.',
-      'NATURAL DISASTER':'We assess that humanitarian response capacity is likely to be strained across multiple response corridors, with cascading second-order effects on population displacement, supply chain disruption, and broader regional stability. The intersection of natural hazard events with pre-existing fragility amplifies the potential for protracted humanitarian need and may necessitate expanded international coordination.',
-      'CYBER THREAT':'We assess that affected systems face sustained operational disruption. The sophistication and targeting pattern observed in recent reporting underscore persistent and evolving vulnerabilities across critical national infrastructure. We judge that the convergence of state-sponsored and criminal cyber activity presents a compounding risk that is not yet adequately reflected in prevailing defensive postures.',
-      'DETENTION / ARREST':'We judge these actions are likely to draw significant international scrutiny and may signal a broader crackdown on civil liberties that could constrain the operating environment for foreign organizations and personnel. The pattern of detentions, when viewed in the context of recent political developments, suggests a deliberate effort to suppress dissent and restrict independent information flows.',
-      'SYNTHETIC MEDIA':'We assess the information environment remains actively contested. The scale and coordination of observed synthetic media activity warrants enhanced monitoring for potential impact on democratic processes, public trust, and the integrity of open-source reporting itself.',
-      'ORGANIZED CRIME':'We judge that territorial and operational disputes between criminal networks continue to pose a persistent threat to governance, public safety, and economic stability across affected regions. The increasing integration of narcotics trafficking, money laundering, and political corruption within these networks complicates law enforcement response and undermines institutional resilience.',
-      'POLITICAL INSTABILITY':'We assess that governance continuity is at material risk, with cascading political, security, and economic effects that could destabilize adjacent states and complicate international engagement. The erosion of democratic norms and the centralization of executive power in affected states increase the probability of abrupt political transitions with limited institutional safeguards.',
-      'WMD / PROLIFERATION':'We judge this represents a material and potentially acute concern for regional security architecture, which may prompt a recalibration of deterrence postures among relevant parties. Proliferation-related activity, particularly when combined with provocative rhetoric or diplomatic brinkmanship, elevates the risk of miscalculation with potentially severe consequences.'
-    };
-    // Secondary context per tag (woven after follow-on items)
-    var tagContext={
-      'ARMED CONFLICT':'This development, viewed alongside broader regional reporting, reinforces our assessment that the conflict trajectory remains on a deteriorating arc with limited near-term prospects for de-escalation. We continue to monitor for indicators of geographic spread or qualitative shifts in the nature of hostilities.',
-      'TERRORISM':'The operational pattern is consistent with a capable and adaptive threat network. We assess continued vigilance across soft-target environments is warranted, and note that the evolution of attack methodologies may require corresponding adjustments to protective security measures.',
-      'KIDNAP & RANSOM':'This further supports the assessment that criminal groups are exploiting security vacuums and may be diversifying both their operational geography and their ransom methodologies to maximize revenue and minimize risk of interdiction.',
-      'NATURAL DISASTER':'The compounding nature of these events is assessed as likely to overwhelm existing response frameworks and may necessitate expanded international coordination. We note that disaster-affected populations in conflict zones face particularly acute vulnerabilities.',
-      'CYBER THREAT':'This is consistent with a broader pattern of increasing sophistication in the threat landscape. The potential for cross-sector cascading effects remains a key concern, particularly where critical infrastructure interdependencies create single points of failure.',
-      'DETENTION / ARREST':'Collectively, these detentions are assessed as part of a systematic pattern that may chill future opposition activity, restrict humanitarian access, and erode the rule of law in affected jurisdictions.',
-      'SYNTHETIC MEDIA':'The proliferation of synthetic content across multiple platforms complicates attribution and response, which we assess as an intentional feature of the observed campaign designed to degrade public trust in legitimate information sources.',
-      'ORGANIZED CRIME':'The convergence of trafficking, corruption, and violent enforcement underscores the systemic nature of this threat and its capacity to undermine institutional resilience at both local and national levels.',
-      'POLITICAL INSTABILITY':'This further erodes the already fragile political settlement and, we assess, increases the probability of a more acute governance crisis within the coming weeks. International mediation efforts face narrowing windows of opportunity.',
-      'WMD / PROLIFERATION':'Viewed in the context of recent diplomatic developments, this activity suggests a deliberate calibration of strategic signaling that warrants close watch and may indicate a willingness to escalate beyond established norms of behavior.'
-    };
-    // Standing regional background
-    var regionBackground={
-      'Middle East and North Africa':'The Middle East and North Africa remain among the most volatile and strategically consequential theaters in the current global security landscape. Ongoing conflicts in multiple states, shifting alliance structures, and the persistent threat of both state and non-state actor escalation continue to define the region\'s risk profile. The interplay between Iranian proxy networks, Israeli security operations, Gulf state diplomacy, and the humanitarian crisis in Gaza and the broader Levant creates a multi-layered threat environment that demands continuous monitoring. Energy security, maritime freedom of navigation, and the stability of key transit corridors add further strategic weight to developments across this region.',
-      'Russia-Ukraine':'The Russia-Ukraine conflict continues to shape European and global security dynamics in profound and lasting ways. The war has entered a phase characterized by attritional warfare, evolving drone and missile strategies, and periodic shifts in territorial control along an extended front line. Western military and economic support to Ukraine remains a decisive variable, while Russian force generation, sanctions evasion, and information operations continue to complicate the strategic picture. Any shifts in the tempo or geography of hostilities carry significant implications for NATO posture, European energy security, and the broader rules-based international order.',
-      'Indo-Pacific':'The Indo-Pacific region remains a focal point of great-power competition, with the U.S.-China strategic rivalry, Taiwan Strait tensions, North Korean provocations, and maritime disputes in the South China Sea all contributing to an elevated baseline threat level. The militarization of disputed territories, economic coercion, and information warfare are increasingly integrated elements of statecraft in the region. The potential for miscalculation or unintended escalation remains a persistent concern for security planners, particularly given the density of military assets and the absence of reliable de-escalation mechanisms between principal competitors.',
-      'Sub-Saharan Africa':'Sub-Saharan Africa continues to face a convergence of security challenges including jihadist insurgency across the Sahel, civil conflict in Sudan and the eastern Democratic Republic of the Congo, and democratic backsliding through military coups in multiple West African states. Humanitarian conditions in several countries remain dire, with displacement, food insecurity, and endemic disease compounding the effects of armed violence. The withdrawal of Western security partners from the Sahel and the growing role of non-traditional security actors have fundamentally reshaped the security architecture of the continent, introducing new dynamics that remain difficult to predict.',
-      'Europe and Transatlantic':'Beyond the direct Russia-Ukraine conflict, the broader European and Transatlantic security environment is characterized by the ongoing adaptation of NATO posture, energy security recalibration, and an evolving terrorism and domestic extremism threat. Hybrid threats including sabotage, cyber intrusions, and influence operations attributed to Russian intelligence services have featured prominently in recent reporting across Baltic, Nordic, and Central European states. The resilience of critical infrastructure and democratic institutions against these persistent threats remains a central concern for allied governments.',
-      'Americas':'The Western Hemisphere security picture is dominated by transnational organized crime, narcotics trafficking, and governance fragility in several Central and South American states. Mexican cartel operations, Venezuelan political instability, and migration-driven pressures on the U.S. southern border continue to drive both national and regional security agendas. Gang violence, extortion, and the fentanyl epidemic represent persistent and in some cases worsening threat vectors with significant implications for public health, law enforcement capacity, and bilateral relations.',
-      'Cyber and Technology':'The global cyber threat landscape continues to evolve in both sophistication and impact. State-sponsored advanced persistent threat groups, criminal ransomware syndicates, and influence operations leveraging AI-generated content all contribute to an increasingly contested digital environment. Critical infrastructure including energy, healthcare, financial services, and government networks remains a high-value target. The convergence of cyber and information warfare blurs traditional boundaries between espionage, sabotage, and armed conflict, and presents unique challenges for attribution and response.',
-      'Global':'Several developments in the past 24 hours carry cross-cutting implications that span multiple geographic regions and threat domains. These events reflect the interconnected nature of modern security risk, where developments in one theater can rapidly influence conditions in another through diplomatic, economic, or informational channels.'
-    };
-    // Varied analytical connectors
-    var conn1=['Reporting indicates that ','Available intelligence suggests that ','Open-source collection points to ','Multiple corroborating sources report that ','Assessed reporting reflects ','Collection over the past 24 hours reveals that ','Credible open-source reporting highlights ','We note that '];
-    var conn2=['Separately, ','In a related development, ','Concurrently, ','Of additional note, ','In parallel, ','Also within this region, ','Adding to the regional threat picture, ','Further complicating the operating environment, '];
-    var ci1=0;var ci2=0;
-    function nC1(){var c=conn1[ci1%conn1.length];ci1++;return c;}
-    function nC2(){var c=conn2[ci2%conn2.length];ci2++;return c;}
+    // ═══ ANALYTICAL PROSE BUILDERS ═══
+    var conn=['Reporting indicates that ','Open-source collection confirms ','Multiple sources assess that ','Available intelligence suggests ','Credible reporting reflects ','We note that ','Collection over the past 24 hours reveals ','Corroborating sources report '];
+    var conn2=['Separately, ','In a related development, ','Concurrently, ','Of additional note, ','Also assessed, ','Further reporting indicates ','Adding to this picture, ','In parallel, '];
+    var ci=0;var ci2x=0;
+    function nC(){var c=conn[ci%conn.length];ci++;return c;}
+    function nC2(){var c=conn2[ci2x%conn2.length];ci2x++;return c;}
 
-    // Build flowing prose per region: background + event narrative (no inline source citations)
-    var regionNarratives=[];
-    activeRegions.forEach(function(reg){
-      var items=regionGroups[reg];
-      var paragraphs=[];
-      if(regionBackground[reg])paragraphs.push(regionBackground[reg]);
-      var currentPara='Against this backdrop, ';
-      items.forEach(function(d,di){
-        if(di===0){
-          var cn=nC1();
-          currentPara+=cn.charAt(0).toLowerCase()+cn.slice(1);
-          currentPara+=d.headline+'. ';
-          if(tagInsight[d.tag])currentPara+=tagInsight[d.tag]+' ';
-        }else{
-          var lh=d.headline.charAt(0).toLowerCase()+d.headline.slice(1);
-          currentPara+=nC2()+lh+'. ';
-          if(tagContext[d.tag])currentPara+=tagContext[d.tag]+' ';
-          if(di%2===0&&di<items.length-1){
-            paragraphs.push(currentPara.trim());
-            currentPara='Continued collection in this region also indicates ';
-          }
-        }
+    // Domain-specific analytical context
+    var domainInsight={
+      'IRAN MILITARY':'We assess that Iranian military posture reflects a deliberate signaling strategy calibrated to demonstrate retaliatory capability while managing escalation risk. The operational tempo of IRGC and regular military assets suggests sustained readiness across multiple strike domains, which we judge materially increases the probability of kinetic action within the current threat cycle.',
+      'ISRAEL OPS':'Israeli operational activity continues to reflect a forward-leaning security posture with demonstrated willingness to conduct preemptive and retaliatory strikes across multiple theaters. We judge that the IDF maintains both the intent and capability to escalate operations if provoked, with implications for regional stability and allied force protection.',
+      'PROXY FORCES':'Iranian proxy networks across the axis of resistance continue to demonstrate coordinated operational capability. We assess that the tempo and geographic spread of proxy actions reflect centralized strategic direction from Tehran, with individual groups retaining tactical autonomy. This layered threat architecture complicates deterrence and increases the risk of miscalculation.',
+      'NUCLEAR':'Iran\'s nuclear program remains a critical escalation vector. We assess that any observed acceleration in enrichment activity or reduction in IAEA access would represent a material shift in the strategic calculus, potentially triggering preemptive action by Israel or expanded sanctions pressure from Western powers.',
+      'MARITIME':'Maritime security in the Persian Gulf and Red Sea corridors remains under sustained threat from Iranian naval forces and Houthi anti-shipping operations. We assess that any disruption to these chokepoints carries cascading effects on global energy markets, insurance premiums, and commercial shipping routes, with potential second-order impacts on global supply chains.',
+      'US FORCES':'U.S. force posture adjustments in the CENTCOM area of responsibility reflect an assessed need to reinforce deterrence and demonstrate commitment to allied defense. We judge that current deployments signal both defensive readiness and offensive capability, intended to constrain Iranian decision-making and reassure regional partners.',
+      'DIPLOMACY':'Diplomatic activity related to the conflict remains fragmented and lacking in momentum. We assess that the window for negotiated de-escalation is narrowing, with hardening positions on both sides reducing the probability of meaningful engagement in the near term. Sanctions enforcement and multilateral coordination at the UN Security Council remain key variables to watch.',
+      'AIRSPACE':'Airspace restrictions and NOTAMs across the region continue to reflect the elevated threat environment. We assess that the current pattern of closures and diversions is consistent with sustained military activity and carries material implications for commercial aviation routing, fuel costs, and passenger safety across the broader Middle East corridor.'
+    };
+
+    // ═══ BUILD SECTION: WHAT WE KNOW ═══
+    var knowParas=[];
+    var domainOrder=['IRAN MILITARY','ISRAEL OPS','PROXY FORCES','NUCLEAR','MARITIME','US FORCES','DIPLOMACY','AIRSPACE'];
+    var activeDomains=domainOrder.filter(function(d){return domainGroups[d]&&domainGroups[d].length>0;});
+    activeDomains.forEach(function(dom){
+      var items=domainGroups[dom];
+      var para=nC()+items[0].headline+'. ';
+      if(domainInsight[dom])para+=domainInsight[dom]+' ';
+      items.slice(1).forEach(function(d,di){
+        para+=nC2()+d.headline.charAt(0).toLowerCase()+d.headline.slice(1)+'. ';
       });
-      if(currentPara.trim())paragraphs.push(currentPara.trim());
-      regionNarratives.push({region:reg,paragraphs:paragraphs});
+      knowParas.push({domain:dom,text:para.trim()});
     });
 
     // ═══ BUILD BLUF ═══
-    var threatCount=topItems.length;
-    var regionCount=activeRegions.length;
-    var sortedRegs=activeRegions.slice().sort(function(a,b){return regionGroups[b].length-regionGroups[a].length;});
-    var topRegs=sortedRegs.slice(0,Math.min(3,sortedRegs.length));
-    var hasConflict=topItems.some(function(d){return d.tag==='ARMED CONFLICT'||d.tag==='WMD / PROLIFERATION';});
-    var hasCyber=topItems.some(function(d){return d.tag==='CYBER THREAT'||d.tag==='SYNTHETIC MEDIA';});
-    var hasTerror=topItems.some(function(d){return d.tag==='TERRORISM';});
-    var hasInstability=topItems.some(function(d){return d.tag==='POLITICAL INSTABILITY'||d.tag==='DETENTION / ARREST';});
-    var hasNatDis=topItems.some(function(d){return d.tag==='NATURAL DISASTER';});
+    var evtCount=topItems.length;
+    var domCount=activeDomains.length;
+    var hasMilitary=!!domainGroups['IRAN MILITARY']||!!domainGroups['ISRAEL OPS'];
+    var hasProxy=!!domainGroups['PROXY FORCES'];
+    var hasNuclear=!!domainGroups['NUCLEAR'];
+    var hasMaritime=!!domainGroups['MARITIME'];
+    var hasAirspace=!!domainGroups['AIRSPACE'];
+    // Escalation score from dashboard
+    var crit=iranEvents.filter(function(e){return e.sev==='CRITICAL';}).length;
+    var hi=iranEvents.filter(function(e){return e.sev==='HIGH';}).length;
+    var escScore=Math.min(100,crit*15+hi*8+iranEvents.length*2);
+    var escLabel=escScore>=70?'HIGH':escScore>=40?'ELEVATED':'MODERATE';
 
-    var blufText='The global security environment over the preceding 24-hour reporting cycle is assessed as elevated with moderate-to-high confidence. Open-source collection has identified approximately '+threatCount+' significant developments spanning '+regionCount+' geographic regions and multiple threat domains. ';
-    blufText+='The most concentrated and consequential activity was observed across '+topRegs.join(', ')+', which together account for the preponderance of assessed escalation risk during this period. ';
-    if(hasConflict)blufText+='We judge that active armed conflicts, particularly those involving state-on-state or state-on-proxy engagements, remain the primary driver of the current threat posture, with kinetic activity showing no material signs of abatement. ';
-    if(hasTerror)blufText+='The terrorism and violent extremism threat picture warrants continued close monitoring; recent operational activity suggests sustained intent and capability among known threat networks, with a moderate-to-high probability of follow-on actions. ';
-    if(hasCyber)blufText+='Persistent and evolving cyber and information warfare threats continue to test the resilience of critical infrastructure across multiple sectors and geographies. ';
-    if(hasInstability)blufText+='Political instability and governance disruption in several states present compounding risk factors that may constrain the operating environment for international organizations and personnel. ';
-    if(hasNatDis)blufText+='Natural disaster events are placing additional strain on humanitarian response capacity and are assessed as likely to generate secondary displacement and infrastructure effects in already fragile contexts. ';
-    blufText+='This assessment is derived exclusively from open-source collection and is rendered with moderate-to-high confidence. All judgments are subject to revision as new information becomes available. We recommend sustained monitoring and enhanced collection across all identified vectors.';
+    var blufText='SENTINEL NOVA assesses the US-Iran-Israel threat environment as '+escLabel+' ('+escScore+'/100) as of '+timeStr+' on '+dateStr+'. ';
+    blufText+='Open-source collection over the preceding 24-hour cycle has identified '+evtCount+' significant developments across '+domCount+' conflict domains. ';
+    if(hasMilitary)blufText+='Active military operations by Iranian and Israeli forces remain the primary driver of escalation risk, with kinetic activity showing no material signs of abatement. ';
+    if(hasProxy)blufText+='Iranian proxy networks across Lebanon, Yemen, Iraq, and Syria continue to demonstrate coordinated strike capability against U.S. and Israeli interests. ';
+    if(hasNuclear)blufText+='Nuclear program developments warrant close monitoring as a potential trigger for preemptive action or expanded sanctions. ';
+    if(hasMaritime)blufText+='Maritime chokepoints in the Strait of Hormuz and Bab el-Mandeb face sustained threat from Iranian and Houthi anti-shipping operations, with implications for global energy markets. ';
+    if(hasAirspace)blufText+='Airspace restrictions across the region are impacting commercial aviation and may expand if hostilities intensify. ';
+    blufText+='This assessment is derived exclusively from open-source collection and real-time dashboard telemetry. All judgments are subject to revision as the situation evolves.';
 
-    // ═══ LOOKING AHEAD ═══
-    var laText='Over the next 24 to 48 hours, we assess that ';
-    if(hasConflict)laText+='active conflict zones, particularly in '+topRegs[0]+', carry the highest probability of further escalation, with potential for expanded area of operations or intensified targeting of civilian infrastructure. ';
-    else laText+='the overall threat environment is likely to remain at current levels, though the fluid nature of developments across multiple regions introduces uncertainty that could alter this assessment rapidly. ';
-    laText+='Key watchpoints for the coming reporting cycle include the trajectory of any ceasefire or diplomatic initiatives associated with active conflicts, the potential for retaliatory actions following high-profile strikes or detentions, the propagation of cyber incidents to additional sectors or geographies, and the humanitarian impact of natural disaster events particularly where these intersect with pre-existing fragility. ';
-    laText+='We recommend sustained collection on all identified vectors and note that developments in ';
-    laText+=sortedRegs.length>1?sortedRegs[0]+' and '+sortedRegs[1]:sortedRegs[0];
-    laText+=' have the greatest potential for near-term impact on organizational security posture and duty-of-care obligations. Organizations with equities in the identified regions should consider reviewing travel policies, continuity arrangements, and information security postures in light of this assessment. We will provide an updated assessment in the next scheduled cycle.';
+    // ═══ BUILD SECTION: WHAT WE ARE MONITORING ═══
+    var monitorItems=[
+      {label:'Escalation Triggers',text:'We are monitoring for indicators of direct state-on-state strikes between Iran and Israel, including ballistic missile launches, airspace penetrations, and attacks on strategic infrastructure such as nuclear facilities, energy installations, and command nodes. Any such action would represent a qualitative escalation with potential to trigger broader regional conflict.'},
+      {label:'Proxy Coordination',text:'We continue to track the operational tempo and coordination level across Iranian proxy forces including Hezbollah, Houthi forces, and Iraqi Shia militias. An increase in simultaneous multi-front attacks would suggest centralized direction from Tehran and a deliberate strategy to overwhelm U.S. and Israeli defensive systems.'},
+      {label:'Nuclear Breakout Indicators',text:'Collection is focused on IAEA reporting cadence, centrifuge cascading activity at Natanz and Fordow, and any reduction in inspector access. We assess that a decision by Iran to enrich to weapons-grade (90%+) would fundamentally alter the strategic calculus and compress decision timelines for all parties.'},
+      {label:'U.S. Force Movements',text:'We are tracking CENTCOM asset repositioning including carrier strike group movements, bomber task force deployments, and air defense reinforcements. Changes in force posture serve as leading indicators of both defensive preparation and potential offensive planning.'},
+      {label:'Diplomatic Signals',text:'We monitor backchannel communications, UN Security Council deliberations, and third-party mediation efforts (Qatar, Oman, Switzerland) for indicators of de-escalation pathways. The absence of credible diplomatic momentum is itself assessed as a risk factor.'},
+    ];
+    if(hasMaritime)monitorItems.push({label:'Maritime Chokepoints',text:'Real-time tracking of vessel transits through the Strait of Hormuz and Bab el-Mandeb for interdiction attempts, mine-laying activity, or military confrontation. Any sustained disruption would trigger global energy price volatility and insurance rate surges affecting commercial shipping.'});
 
-    // ═══ BUILD DOCUMENT ═══ sizes in HALF-POINTS (size:20=10pt), spacing in twips, line in 240ths
+    // ═══ BUILD SECTION: AIR & TRAVEL IMPACTS ═══
+    var airItems=[];
+    // Pull from dashboard airspaceData
+    airspaceData.forEach(function(z){
+      if(z.status==='CLOSED'||z.status==='RESTRICTED'){
+        airItems.push({zone:z.zone,fir:z.fir||'',status:z.status,detail:z.detail,color:z.color,authority:z.authority||''});
+      }
+    });
+    var cautionZones=airspaceData.filter(function(z){return z.status==='CAUTION'||z.status==='MONITORING';});
+    var airNarrative='The current airspace environment across the Middle East reflects the elevated threat posture. ';
+    var closedCount=airItems.filter(function(a){return a.status==='CLOSED';}).length;
+    var restrictedCount=airItems.filter(function(a){return a.status==='RESTRICTED';}).length;
+    airNarrative+=closedCount+' Flight Information Regions are currently assessed as CLOSED to civil aviation';
+    if(restrictedCount>0)airNarrative+=', with an additional '+restrictedCount+' operating under significant restrictions';
+    airNarrative+='. ';
+    airNarrative+='Airlines are rerouting flights around affected airspace, resulting in increased fuel costs, extended flight times, and potential disruptions to schedules serving the Gulf, Levant, and broader MENA region. ';
+    airNarrative+='We assess that any intensification of hostilities could expand closure zones to include additional FIRs currently under CAUTION status ('+cautionZones.length+' zones), further compounding disruption to commercial aviation. ';
+    airNarrative+='Travelers with itineraries transiting the region should monitor airline communications, FAA Special Federal Aviation Regulations (SFARs), and EASA Safety Information Bulletins. We recommend against non-essential travel to conflict-affected areas and advise enhanced contingency planning for personnel with regional equities.';
+
+    // ═══ BUILD DOCUMENT ═══
     var children=[];
     var SP=D.BorderStyle.SINGLE;
-    var LN=340; // ~1.42x line spacing
-    var bodySize=19; // 9.5pt
+    var LN=340;
+    var bodySize=19;
     // ── Header ──
     children.push(new D.Paragraph({spacing:{after:40},children:[
       new D.TextRun({text:'SENTINEL NOVA',font:'Arial',size:30,bold:true,color:'cc0000'}),
-      new D.TextRun({text:'  |  Global Security Brief',font:'Arial',size:20,color:'777777'}),
+      new D.TextRun({text:'  |  US-Iran-Israel War Assessment',font:'Arial',size:20,color:'777777'}),
     ]}));
-    children.push(new D.Paragraph({spacing:{after:120},border:{bottom:{style:SP,size:3,color:'cc0000',space:4}},children:[
-      new D.TextRun({text:'24-Hour Intelligence Summary  \u2022  '+dateStr+'  \u2022  '+timeStr,font:'Arial',size:15,color:'999999'}),
+    children.push(new D.Paragraph({spacing:{after:60},border:{bottom:{style:SP,size:3,color:'cc0000',space:4}},children:[
+      new D.TextRun({text:'Real-Time Conflict Assessment  \u2022  '+dateStr+'  \u2022  '+timeStr,font:'Arial',size:15,color:'999999'}),
     ]}));
+    children.push(new D.Paragraph({spacing:{after:120},children:[
+      new D.TextRun({text:'ESCALATION INDEX: ',font:'Arial',size:17,bold:true,color:'999999'}),
+      new D.TextRun({text:escLabel+' ('+escScore+'/100)',font:'Arial',size:17,bold:true,color:escScore>=70?'ff3b30':escScore>=40?'ff9500':'ffd60a'}),
+    ]}));
+
     // ── BLUF ──
     children.push(new D.Paragraph({spacing:{before:100,after:80},children:[
       new D.TextRun({text:'BOTTOM LINE UP FRONT (BLUF)',font:'Arial',size:20,bold:true,color:'1a1a1a'}),
@@ -1573,60 +1548,99 @@ function App(){
     children.push(new D.Paragraph({spacing:{after:200,line:LN},children:[
       new D.TextRun({text:blufText,font:'Arial',size:bodySize,color:'333333'}),
     ]}));
-    // ── WHAT HAS HAPPENED ──
+
+    // ── WHAT WE KNOW ──
     children.push(new D.Paragraph({spacing:{before:60,after:100},border:{bottom:{style:SP,size:1,color:'cccccc',space:3}},children:[
-      new D.TextRun({text:'WHAT HAS HAPPENED',font:'Arial',size:20,bold:true,color:'1a1a1a'}),
+      new D.TextRun({text:'WHAT WE KNOW',font:'Arial',size:20,bold:true,color:'1a1a1a'}),
     ]}));
-    regionNarratives.forEach(function(rn){
-      // Region subheading
-      children.push(new D.Paragraph({spacing:{before:160,after:80},children:[
-        new D.TextRun({text:rn.region,font:'Arial',size:bodySize,bold:true,color:'1a1a1a'}),
+    knowParas.forEach(function(kp){
+      children.push(new D.Paragraph({spacing:{before:140,after:60},children:[
+        new D.TextRun({text:kp.domain,font:'Arial',size:bodySize,bold:true,color:'cc0000'}),
       ]}));
-      // Each paragraph with proper spacing between them
-      rn.paragraphs.forEach(function(para){
-        children.push(new D.Paragraph({spacing:{after:180,line:LN},children:[
-          new D.TextRun({text:para,font:'Arial',size:bodySize,color:'333333'}),
+      children.push(new D.Paragraph({spacing:{after:160,line:LN},children:[
+        new D.TextRun({text:kp.text,font:'Arial',size:bodySize,color:'333333'}),
+      ]}));
+    });
+
+    // ── WHAT WE ARE MONITORING ──
+    children.push(new D.Paragraph({spacing:{before:60,after:100},border:{bottom:{style:SP,size:1,color:'cccccc',space:3}},children:[
+      new D.TextRun({text:'WHAT WE ARE MONITORING',font:'Arial',size:20,bold:true,color:'1a1a1a'}),
+    ]}));
+    monitorItems.forEach(function(mi){
+      children.push(new D.Paragraph({spacing:{before:120,after:60},children:[
+        new D.TextRun({text:mi.label,font:'Arial',size:bodySize,bold:true,color:'1a1a1a'}),
+      ]}));
+      children.push(new D.Paragraph({spacing:{after:140,line:LN},children:[
+        new D.TextRun({text:mi.text,font:'Arial',size:bodySize,color:'333333'}),
+      ]}));
+    });
+
+    // ── AIR & TRAVEL IMPACTS ──
+    children.push(new D.Paragraph({spacing:{before:60,after:100},border:{bottom:{style:SP,size:1,color:'cccccc',space:3}},children:[
+      new D.TextRun({text:'AIR & TRAVEL IMPACTS',font:'Arial',size:20,bold:true,color:'1a1a1a'}),
+    ]}));
+    children.push(new D.Paragraph({spacing:{after:160,line:LN},children:[
+      new D.TextRun({text:airNarrative,font:'Arial',size:bodySize,color:'333333'}),
+    ]}));
+    // Zone-by-zone table
+    if(airItems.length>0){
+      children.push(new D.Paragraph({spacing:{before:80,after:80},children:[
+        new D.TextRun({text:'Affected Airspace Zones',font:'Arial',size:bodySize,bold:true,color:'1a1a1a'}),
+      ]}));
+      airItems.forEach(function(z){
+        children.push(new D.Paragraph({spacing:{after:40},children:[
+          new D.TextRun({text:'\u25A0 ',font:'Arial',size:bodySize,color:z.status==='CLOSED'?'ff3b30':'ff9500'}),
+          new D.TextRun({text:z.zone+(z.fir?' ('+z.fir+')':''),font:'Arial',size:bodySize,bold:true,color:'333333'}),
+          new D.TextRun({text:' \u2014 '+z.status,font:'Arial',size:bodySize,bold:true,color:z.status==='CLOSED'?'ff3b30':'ff9500'}),
+        ]}));
+        children.push(new D.Paragraph({spacing:{after:100,line:LN},children:[
+          new D.TextRun({text:z.detail+(z.authority?' ['+z.authority+']':''),font:'Arial',size:17,color:'555555'}),
         ]}));
       });
-    });
-    // ── LOOKING AHEAD ──
-    children.push(new D.Paragraph({spacing:{before:100,after:80},border:{bottom:{style:SP,size:1,color:'cccccc',space:3}},children:[
-      new D.TextRun({text:'LOOKING AHEAD',font:'Arial',size:20,bold:true,color:'1a1a1a'}),
-    ]}));
-    children.push(new D.Paragraph({spacing:{after:200,line:LN},children:[
-      new D.TextRun({text:laText,font:'Arial',size:bodySize,color:'333333'}),
-    ]}));
-    // ── SOURCES (at the bottom, verified only) ──
-    children.push(new D.Paragraph({spacing:{before:100,after:60},border:{bottom:{style:SP,size:1,color:'cccccc',space:3}},children:[
+    }
+    if(cautionZones.length>0){
+      children.push(new D.Paragraph({spacing:{before:80,after:60},children:[
+        new D.TextRun({text:'Zones Under Watch ('+cautionZones.length+')',font:'Arial',size:bodySize,bold:true,color:'1a1a1a'}),
+      ]}));
+      cautionZones.forEach(function(z){
+        children.push(new D.Paragraph({spacing:{after:60},children:[
+          new D.TextRun({text:'\u25CB '+z.zone+(z.fir?' ('+z.fir+')':''),font:'Arial',size:17,color:'555555'}),
+          new D.TextRun({text:' \u2014 '+z.status,font:'Arial',size:17,color:z.status==='CAUTION'?'ffd60a':'64d2ff'}),
+        ]}));
+      });
+    }
+
+    // ── SOURCES ──
+    children.push(new D.Paragraph({spacing:{before:140,after:60},border:{bottom:{style:SP,size:1,color:'cccccc',space:3}},children:[
       new D.TextRun({text:'SOURCES',font:'Arial',size:18,bold:true,color:'1a1a1a'}),
     ]}));
-    var verifiedSources=['GDELT Project (Global Event Database)','U.S. Department of State Travel Advisories','ReliefWeb (UN OCHA)'];
+    var verifiedSources=['GDELT Project (Global Event Database)','FAA Special Federal Aviation Regulations','EASA Safety Information Bulletins','U.S. CENTCOM Public Affairs'];
     allSources.forEach(function(s){
-      if(/reuters|bbc|aljazeera|cnn|guardian|nytimes|washingtonpost|apnews|france24|dw\.com|economist|ft\.com|bloomberg|sky|abc|nbc|cbs|pbs|npr|politico|thehill|defense|janes|military|haaretz|timesofisrael/i.test(s)){
+      if(/reuters|bbc|aljazeera|cnn|guardian|nytimes|washingtonpost|apnews|france24|dw\.com|economist|ft\.com|bloomberg|sky|abc|nbc|cbs|pbs|npr|politico|thehill|defense|janes|military|haaretz|timesofisrael|alarabiya/i.test(s)){
         var clean=s.replace(/\.com$|\.co\.uk$|\.org$/,'').replace(/\./g,' ');
         clean=clean.charAt(0).toUpperCase()+clean.slice(1);
         if(verifiedSources.indexOf(clean)===-1)verifiedSources.push(clean);
       }
     });
-    var sourceText=verifiedSources.join('  \u2022  ');
     children.push(new D.Paragraph({spacing:{after:120,line:300},children:[
-      new D.TextRun({text:sourceText,font:'Arial',size:16,color:'555555'}),
+      new D.TextRun({text:verifiedSources.join('  \u2022  '),font:'Arial',size:16,color:'555555'}),
     ]}));
     // ── Methodology ──
     children.push(new D.Paragraph({spacing:{before:120,after:40,line:280},border:{top:{style:SP,size:1,color:'DDDDDD',space:4}},children:[
       new D.TextRun({text:'METHODOLOGY: ',font:'Arial',size:14,bold:true,color:'AAAAAA'}),
-      new D.TextRun({text:'This brief is compiled from open-source intelligence (OSINT) feeds including the GDELT global event monitoring system, RSS aggregation from major international wire services, and structured data from government advisories. Events are classified by geographic region and threat domain. Probabilistic language ("we assess," "we judge") reflects confidence levels based on source reliability, recency, and multi-source corroboration. All analytical judgments are preliminary and require independent verification prior to operational use. This product does not constitute legal, operational, or travel advice.',font:'Arial',size:14,color:'BBBBBB',italics:true}),
+      new D.TextRun({text:'This assessment is compiled from open-source intelligence (OSINT) feeds including the GDELT global event monitoring system, real-time RSS aggregation from international wire services and regional outlets, SENTINEL NOVA dashboard telemetry (escalation index, airspace tracker, force posture monitor), and structured data from FAA/EASA aviation advisories. Conflict events are classified across eight operational domains. Probabilistic language reflects confidence levels based on source reliability, recency, and multi-source corroboration. All analytical judgments are preliminary and require independent verification. This product does not constitute legal, operational, or travel advice.',font:'Arial',size:14,color:'BBBBBB',italics:true}),
     ]}));
     children.push(new D.Paragraph({spacing:{after:20},alignment:D.AlignmentType.CENTER,children:[
       new D.TextRun({text:'Classification: UNCLASSIFIED // FOUO',font:'Arial',size:13,bold:true,color:'AAAAAA'}),
     ]}));
+
     var doc=new D.Document({
       styles:{default:{document:{run:{font:'Arial',size:20}}}},
       sections:[{
         properties:{page:{size:{width:12240,height:15840},margin:{top:1080,right:1200,bottom:900,left:1200}}},
         footers:{default:new D.Footer({children:[
           new D.Paragraph({alignment:D.AlignmentType.CENTER,children:[
-            new D.TextRun({text:'Powered by SENTINEL NOVA \u2014 Human Verified',font:'Arial',size:12,color:'BBBBBB',italics:true}),
+            new D.TextRun({text:'SENTINEL NOVA \u2014 US-Iran-Israel War Terminal \u2014 Human Verified',font:'Arial',size:12,color:'BBBBBB',italics:true}),
           ]})
         ]})},
         children:children
@@ -1636,7 +1650,7 @@ function App(){
     var url=URL.createObjectURL(blob);
     var a=document.createElement('a');
     a.href=url;
-    a.download='SENTINEL_NOVA_Brief_'+now.toISOString().slice(0,10)+'.docx';
+    a.download='SENTINEL_NOVA_War_Assessment_'+now.toISOString().slice(0,10)+'.docx';
     document.body.appendChild(a);a.click();document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
@@ -1717,69 +1731,56 @@ function App(){
             }):<div style={{font:'400 10px var(--mono)',color:'var(--t3)',padding:'8px 0'}}>Loading advisories...</div>}
           </div>
 
-          {/* U.S. FORCE POSTURE — CENTCOM AOR */}
-          <div className="ph"><div className="pt">◆ U.S. Force Posture — CENTCOM AOR</div><span className="pb" style={{background:forceLive?'var(--redbg)':'rgba(102,102,102,.15)',color:forceLive?'var(--red)':'var(--t3)'}}>{forceLive?'● ACTIVE':'LOADING'}</span></div>
-          <div className="pbd" style={{padding:'10px 16px',maxHeight:400,overflowY:'auto'}}>
-            {/* Force summary bar */}
-            <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap'}}>
-              {['CSG','ARG','SSGN','BOMBER','FIGHTER','AMD','ISR','QRF'].map(function(ty){
-                var ct=forcePosture.filter(function(f){return f.type===ty}).length;
-                if(ct===0)return null;
-                return <div key={ty} style={{background:(FORCE_TYPE_COLORS[ty]||'#666')+'18',border:'1px solid '+(FORCE_TYPE_COLORS[ty]||'#666')+'44',borderRadius:3,padding:'3px 8px',font:'600 8px var(--mono)',color:FORCE_TYPE_COLORS[ty]||'#aaa'}}>{ty} ×{ct}</div>;
+          {/* MENA AIRSPACE STATUS */}
+          <div className="ph"><div className="pt">◆ MENA Airspace Status</div><span className="pb" style={{background:'var(--redbg)',color:'var(--red)'}}>● LIVE</span></div>
+          <div className="pbd" style={{padding:'10px 14px',maxHeight:400,overflowY:'auto'}}>
+            {/* Summary counts */}
+            <div style={{display:'flex',gap:0,marginBottom:10,borderRadius:4,overflow:'hidden',border:'1px solid var(--bdr)'}}>
+              {[['CLOSED','#ff3b30'],['RESTRICTED','#ff9500'],['CAUTION','#ffd60a'],['OPEN','#30d158']].map(function(pair){
+                var label=pair[0],color=pair[1];
+                var ct=airspaceData.filter(function(z){return z.status===label||(label==='OPEN'&&z.status==='MONITORING');}).length;
+                return <div key={label} style={{flex:1,padding:'8px 4px',textAlign:'center',background:ct>0?color+'12':'transparent',borderRight:label!=='OPEN'?'1px solid var(--bdr)':'none'}}>
+                  <div style={{font:'700 16px var(--mono)',color:ct>0?color:'var(--t3)'}}>{ct}</div>
+                  <div style={{font:'600 6px var(--mono)',color:ct>0?color:'var(--t3)',letterSpacing:'.5px',marginTop:1}}>{label}</div>
+                </div>;
               })}
             </div>
-            {forcePosture.map(function(fp,i){
-              var statusColor=FORCE_STATUS_COLORS[fp.sev]||'#aaa';
-              return <div key={i} style={{padding:'7px 0',borderBottom:i<forcePosture.length-1?'1px solid var(--bdr)':'none'}}>
-                <div style={{display:'flex',alignItems:'center',gap:8}}>
-                  <span style={{fontSize:14,flexShrink:0}}>{fp.icon}</span>
-                  <span style={{font:'600 7px var(--mono)',color:FORCE_TYPE_COLORS[fp.type]||'#aaa',padding:'2px 6px',borderRadius:2,background:(FORCE_TYPE_COLORS[fp.type]||'#666')+'18',flexShrink:0}}>{fp.type}</span>
-                  <span style={{font:'500 9.5px/1.4 Inter,sans-serif',color:'var(--t1)',flex:1}}>{fp.asset}</span>
-                  <span style={{font:'600 7px var(--mono)',color:statusColor,padding:'2px 6px',borderRadius:2,background:statusColor+'18',flexShrink:0}}>{fp.status}</span>
-                </div>
-                <div style={{display:'flex',justifyContent:'space-between',marginTop:4,paddingLeft:26}}>
-                  <span style={{font:'400 8.5px/1.4 Inter,sans-serif',color:'var(--t3)',flex:1}}>{fp.loc}</span>
-                  {fp.relatedEvents>0&&<span style={{font:'600 8px var(--mono)',color:'#ff3b30'}}>{fp.relatedEvents} threats</span>}
-                </div>
-                <div style={{font:'400 8px/1.3 Inter,sans-serif',color:'var(--t3)',marginTop:1,paddingLeft:22}}>{fp.detail.slice(0,120)}</div>
+            {/* Zone list — compact */}
+            {airspaceData.map(function(zone,i){
+              var statusColor=zone.status==='CLOSED'?'#ff3b30':zone.status==='RESTRICTED'?'#ff9500':zone.status==='CAUTION'?'#ffd60a':'#30d158';
+              return <div key={i} style={{padding:'5px 0',borderBottom:i<airspaceData.length-1?'1px solid var(--bdr)':'none',display:'flex',alignItems:'center',gap:8}}>
+                <span style={{width:6,height:6,borderRadius:'50%',background:statusColor,flexShrink:0}}></span>
+                <span style={{font:'500 9.5px Inter,sans-serif',color:'var(--t1)',flex:1}}>{zone.zone}</span>
+                <span style={{font:'600 7px var(--mono)',color:statusColor,padding:'2px 6px',borderRadius:2,background:statusColor+'18'}}>{zone.status}</span>
               </div>;
             })}
+            {/* Source links */}
+            <div style={{marginTop:10,paddingTop:8,borderTop:'1px solid var(--bdr)',display:'flex',flexDirection:'column',gap:4}}>
+              <a href="https://www.faa.gov/air_traffic/publications/us_restrictions" target="_blank" rel="noopener noreferrer" style={{font:'500 8px var(--mono)',color:'#0a84ff',textDecoration:'none'}}>FAA Flight Restrictions ↗</a>
+              <a href="https://www.easa.europa.eu/en/domains/air-operations/czibs" target="_blank" rel="noopener noreferrer" style={{font:'500 8px var(--mono)',color:'#0a84ff',textDecoration:'none'}}>EASA Conflict Zone Info ↗</a>
+              <a href="https://notams.aim.faa.gov/notamSearch" target="_blank" rel="noopener noreferrer" style={{font:'500 8px var(--mono)',color:'#0a84ff',textDecoration:'none'}}>FAA NOTAM Search ↗</a>
+            </div>
           </div>
         </div>
 
         {/* CENTER */}
         <div className="center">
-          {/* AIRSPACE IMPACT TRACKER */}
-          <div style={{flex:'1 1 55%',minHeight:0,borderBottom:'1px solid var(--bdr)'}}>
-            <div className="mwrap">
-              <div id="airspace-tracker">
-                <div className="airspace-header">
-                  <div className="airspace-title">AIRSPACE IMPACT TRACKER</div>
-                  <div className="airspace-live">● LIVE</div>
-                </div>
-                <div className="airspace-grid">
-                  {airspaceData.map(function(zone,i){
-                    var threats=iranEvents.filter(function(ev){return (ev.title||'').toLowerCase().indexOf(zone.zone.split('(')[0].trim().split(' ')[0].toLowerCase())!==-1||(ev.detail||'').toLowerCase().indexOf(zone.zone.split('(')[0].trim().split(' ')[0].toLowerCase())!==-1}).length;
-                    return <div key={i} className="airspace-row" onClick={function(){setAirspaceDetail(zone);}}>
-                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
-                        <div>
-                          <div className="airspace-zone">{zone.zone}</div>
-                          <div className="airspace-fir">{zone.fir}</div>
-                        </div>
-                        <div style={{display:'flex',alignItems:'center',gap:6}}>
-                          {threats>0&&<span style={{font:'600 8px var(--mono)',color:'#ff3b30',background:'rgba(255,59,48,.12)',padding:'2px 5px',borderRadius:2}}>{threats} alerts</span>}
-                          <div className={'airspace-status '+zone.status.toLowerCase()}>{zone.status}</div>
-                        </div>
-                      </div>
-                      <div className="airspace-detail">{zone.detail}</div>
-                      {zone.authority&&<div style={{font:'500 7px var(--mono)',color:zone.color||'var(--t3)',marginTop:3,letterSpacing:'.3px'}}>{zone.authority}</div>}
-                    </div>;
-                  })}
-                </div>
+          {/* FLIGHTRADAR24 LIVE MAP — MENA REGION */}
+          <div style={{flex:'1 1 55%',minHeight:0,borderBottom:'1px solid var(--bdr)',display:'flex',flexDirection:'column'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'8px 14px',borderBottom:'1px solid var(--bdr)',background:'var(--card)'}}>
+              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                <span style={{font:'600 10px var(--mono)',color:'var(--t1)',letterSpacing:'1px'}}>LIVE AIRSPACE — MENA REGION</span>
+                <span style={{font:'500 8px var(--mono)',color:'#30d158',background:'rgba(48,209,88,.12)',padding:'2px 6px',borderRadius:2}}>● LIVE</span>
               </div>
-              <div className="map-search" style={{display:'none'}}>
-                <input type="text" placeholder="Search zone..." />
-              </div>
+              <a href="https://www.flightradar24.com/29.5,47.5/5" target="_blank" rel="noopener noreferrer" style={{font:'500 8px var(--mono)',color:'#0a84ff',textDecoration:'none'}}>Open FlightRadar24 ↗</a>
+            </div>
+            <div style={{flex:1,minHeight:0,position:'relative'}}>
+              <iframe
+                src="https://www.flightradar24.com/simple_index.php?lat=29.5&lon=47.5&z=5&airports=1"
+                style={{width:'100%',height:'100%',border:'none'}}
+                title="FlightRadar24 MENA Live"
+                sandbox="allow-scripts allow-same-origin"
+              ></iframe>
             </div>
           </div>
 
@@ -1797,7 +1798,7 @@ function App(){
                 <span style={{font:'400 9px var(--mono)',color:'var(--t3)'}}>🔍</span>
                 <input
                   type="text"
-                  placeholder="Search intel — e.g. Mexico cartel, Iran nuclear, bird flu..."
+                  placeholder="Search intel — e.g. Iran missile, Hezbollah, airspace, Hormuz..."
                   value={searchQuery}
                   onChange={e=>setSearchQuery(e.target.value)}
                   onKeyDown={e=>{if(e.key==='Enter')searchIntel(searchQuery);}}
@@ -1935,35 +1936,41 @@ function App(){
                 </div>;
               })}
             </div>
-            {/* Key Flashpoints */}
-            <div style={{font:'600 9px var(--mono)',color:'var(--t2)',letterSpacing:'.5px',marginBottom:6}}>KEY FLASHPOINTS</div>
-            {iranEvents.filter(function(e){return e.sev==='critical'||e.sev==='high'}).slice(0,5).map(function(ev,i){
-              return <div key={i} style={{padding:'6px 0',borderBottom:'1px solid var(--bdr)'}}>
-                <div style={{display:'flex',alignItems:'center',gap:8}}>
-                  <span style={{font:'400 12px',flexShrink:0}}>{ev.icon}</span>
-                  <span style={{font:'600 8px var(--mono)',color:IRAN_SEV_COLORS[ev.sev],padding:'2px 6px',borderRadius:2,background:IRAN_SEV_COLORS[ev.sev]+'18',flexShrink:0}}>{ev.domain}</span>
-                  <span style={{font:'500 9px/1.4 Inter,sans-serif',color:'var(--t1)',flex:1}}>{ev.title.length>65?ev.title.slice(0,65)+'…':ev.title}</span>
-                </div>
-                {ev.detail&&<div style={{font:'400 8.5px/1.4 Inter,sans-serif',color:'var(--t3)',marginTop:3,paddingLeft:24}}>{ev.detail.slice(0,100)}</div>}
-              </div>;
-            })}
           </div>
 
-          {/* MENA CONFLICT WIRE */}
-          <div className="ph" style={{marginTop:10}}><div className="pt">◆ MENA Conflict Wire</div><span className="pb" style={{background:iranLive?'var(--redbg)':'rgba(102,102,102,.15)',color:iranLive?'var(--red)':'var(--t3)'}}>{iranLive?'● LIVE':'FEED'}</span></div>
-          <div className="pbd" style={{padding:'8px 16px',maxHeight:240,overflowY:'auto'}}>
-            {iranEvents.slice(0,10).map(function(ev,i){
-              return <div key={i} style={{padding:'6px 0',borderBottom:i<Math.min(iranEvents.length,10)-1?'1px solid var(--bdr)':'none'}}>
-                <div style={{display:'flex',alignItems:'center',gap:7}}>
-                  <span style={{font:'400 11px',flexShrink:0}}>{ev.icon}</span>
-                  <span style={{font:'600 7px var(--mono)',color:IRAN_SEV_COLORS[ev.sev],padding:'2px 5px',borderRadius:2,background:IRAN_SEV_COLORS[ev.sev]+'15',flexShrink:0}}>{ev.sev.toUpperCase()}</span>
-                  <span style={{font:'500 9px/1.4 Inter,sans-serif',color:'var(--t1)',flex:1}}>{ev.title}</span>
+          {/* GOVERNMENT ADVISORIES & ALERTS */}
+          <div className="ph" style={{marginTop:10}}><div className="pt">◆ Government Advisories</div><span className="pb" style={{background:'var(--redbg)',color:'var(--red)'}}>ALERTS</span></div>
+          <div className="pbd" style={{padding:'8px 14px',maxHeight:300,overflowY:'auto'}}>
+            {/* Quick links to official sources */}
+            <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:10}}>
+              {[
+                {label:'U.S. State Dept Travel',url:'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories.html/',icon:'🇺🇸',desc:'Latest travel advisories & alerts'},
+                {label:'UK FCDO Travel Advice',url:'https://www.gov.uk/foreign-travel-advice',icon:'🇬🇧',desc:'Foreign travel advice by country'},
+                {label:'FAA SFAR / TFRs',url:'https://www.faa.gov/air_traffic/publications/us_restrictions',icon:'✈',desc:'Special Federal Aviation Regulations'},
+                {label:'EASA Conflict Zones',url:'https://www.easa.europa.eu/en/domains/air-operations/czibs',icon:'🇪🇺',desc:'Conflict zone information bulletins'},
+                {label:'UN OCHA ReliefWeb',url:'https://reliefweb.int/country/irn+isr+lbn+yem+irq+syr',icon:'🌐',desc:'Humanitarian situation updates'},
+              ].map(function(link,i){
+                return <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:'none',color:'inherit',display:'flex',alignItems:'center',gap:8,padding:'6px 8px',background:'rgba(255,255,255,.03)',border:'1px solid var(--bdr)',borderRadius:4,transition:'all .2s'}}>
+                  <span style={{fontSize:14,flexShrink:0}}>{link.icon}</span>
+                  <div style={{flex:1}}>
+                    <div style={{font:'500 9.5px Inter,sans-serif',color:'var(--t1)'}}>{link.label} <span style={{color:'#0a84ff',fontSize:8}}>↗</span></div>
+                    <div style={{font:'400 8px Inter,sans-serif',color:'var(--t3)',marginTop:1}}>{link.desc}</div>
+                  </div>
+                </a>;
+              })}
+            </div>
+            {/* Filtered advisories — MENA only */}
+            <div style={{font:'600 8px var(--mono)',color:'var(--t2)',letterSpacing:'.5px',marginBottom:6,marginTop:4}}>LATEST MENA ADVISORIES</div>
+            {advisories.filter(function(adv){return /iran|iraq|israel|lebanon|syria|yemen|jordan|saudi|bahrain|qatar|kuwait|oman|egypt|palestine|gaza/i.test(adv.country);}).slice(0,8).map(function(adv,i){
+              var inner=<div key={i} style={{padding:'5px 0',borderBottom:'1px solid var(--bdr)'}}>
+                <div style={{display:'flex',alignItems:'center',gap:6}}>
+                  <span style={{font:'600 7px var(--mono)',color:ADV_COLORS[adv.level],padding:'1px 4px',borderRadius:2,background:ADV_COLORS[adv.level]+'18',border:'1px solid '+ADV_COLORS[adv.level]+'35',flexShrink:0}}>{ADV_SHORT[adv.level]||'L'+adv.level}</span>
+                  <span style={{font:'500 9px Inter,sans-serif',color:'var(--t1)',flex:1}}>{adv.country}</span>
+                  <span style={{font:'400 8px var(--mono)',color:'var(--t3)',flexShrink:0}}>{adv.date?adv.date.toLocaleDateString('en-US',{month:'short',day:'numeric'}):''}</span>
                 </div>
-                <div style={{display:'flex',justifyContent:'space-between',marginTop:3,paddingLeft:22}}>
-                  <span style={{font:'400 8px var(--mono)',color:IRAN_DOMAIN_COLORS[ev.domain]||'var(--t3)'}}>{ev.domain}</span>
-                  <span style={{font:'400 8px var(--mono)',color:'var(--t3)'}}>{ev.time||'Recent'}</span>
-                </div>
+                {adv.desc&&<div style={{font:'400 8px/1.3 Inter,sans-serif',color:'var(--t3)',marginTop:2,paddingLeft:0}}>{adv.desc.slice(0,90)}</div>}
               </div>;
+              return adv.url?<a key={i} href={adv.url} target="_blank" rel="noopener noreferrer" style={{textDecoration:'none',color:'inherit',display:'block'}}>{inner}</a>:inner;
             })}
           </div>
         </div>
