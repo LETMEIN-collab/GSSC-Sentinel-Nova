@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>SENTINEL NOVA — US-Iran-Israel War Terminal</title>
+<title>SENTINEL NOVA — Global Security & Geopolitical Risk Terminal</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
@@ -418,22 +418,25 @@ const FORCE_STATUS_COLORS={active:'#ff3b30',standing:'#ff9500',standby:'#ffd60a'
 const FORCE_TYPE_COLORS={CSG:'#0a84ff',ARG:'#5ac8fa',SSGN:'#bf5af2',BOMBER:'#ff3b30',FIGHTER:'#ff9500',ISR:'#64d2ff',AMD:'#30d158',NAVAL:'#0a84ff',BASE:'#ffd60a',QRF:'#ff375f'};
 
 const INCIDENTS=[
-  {id:1,t:'IRGC Naval Exercises in Strait of Hormuz — Fast-Attack Craft & Anti-Ship Missiles',sv:'critical',cat:'CONFLICT',reg:'M. East',tm:'NOW',lat:26.5,lon:56.3,imp:'21% global oil transit at risk, U.S. Fifth Fleet on alert',ty:'Military'},
-  {id:2,t:'Iran Enriching Uranium to 60% — Near Weapons-Grade Threshold',sv:'critical',cat:'CONFLICT',reg:'M. East',tm:'Active',lat:33.7,lon:51.4,imp:'IAEA reports 100+ kg stockpile, breakout time estimated 2-3 weeks',ty:'Nuclear'},
-  {id:3,t:'Houthi Anti-Ship Ballistic Missile Strike on Red Sea Vessel',sv:'critical',cat:'CONFLICT',reg:'M. East',tm:'12m',lat:13.5,lon:42.5,imp:'Bab el-Mandeb transit down 60%, rerouting via Cape of Good Hope',ty:'Proxy'},
-  {id:4,t:'Israel IDF Strikes on Hezbollah Targets in Southern Lebanon',sv:'critical',cat:'CONFLICT',reg:'M. East',tm:'1h',lat:33.3,lon:35.5,imp:'Cross-border escalation, 130K+ rockets in Hezbollah arsenal',ty:'Military'},
-  {id:5,t:'U.S. Deploys Second Carrier Strike Group to Eastern Mediterranean',sv:'critical',cat:'CONFLICT',reg:'M. East',tm:'2h',lat:34.5,lon:33.0,imp:'USS Bataan ARG + 26th MEU, deterrence signal to Iran',ty:'Military'},
-  {id:6,t:'Iran-Backed Militia Drone Attack on Al-Asad Airbase, Iraq',sv:'high',cat:'CONFLICT',reg:'M. East',tm:'3h',lat:33.8,lon:42.4,imp:'U.S. personnel shelter in place, C-RAM engagement confirmed',ty:'Proxy'},
-  {id:7,t:'THAAD Battery Deployment to Israel — Ballistic Missile Defense',sv:'high',cat:'CONFLICT',reg:'M. East',tm:'4h',lat:31.8,lon:34.7,imp:'Terminal defense layer vs. Iranian MRBM/IRBM threat',ty:'Defense'},
-  {id:8,t:'Brent Crude Surges on Hormuz Closure Fears — Conflict Premium',sv:'high',cat:'ENERGY',reg:'M. East',tm:'5h',lat:26.0,lon:56.0,imp:'Oil +$8/bbl, $2.1B/day trade risk, insurance rates spike',ty:'Energy'},
-  {id:9,t:'Iran Cyber Operations Target U.S. Military Infrastructure',sv:'high',cat:'CYBER',reg:'M. East',tm:'6h',lat:35.7,lon:51.4,imp:'APT33/Shamoon variants detected, CISA advisory issued',ty:'Cyber'},
-  {id:10,t:'JCPOA Revival Talks Collapse — Tehran Demands Sanctions Relief',sv:'high',cat:'CONFLICT',reg:'M. East',tm:'8h',lat:48.2,lon:16.4,imp:'Diplomatic off-ramp closing, UNSC emergency session possible',ty:'Diplomacy'},
-  {id:11,t:'B-52H Bombers Forward-Deployed to Al Udeid AB, Qatar',sv:'high',cat:'CONFLICT',reg:'M. East',tm:'10h',lat:25.1,lon:51.3,imp:'Long-range strike capability, JASSM-ER loadout confirmed',ty:'Military'},
-  {id:12,t:'Iran Sanctions Expansion — OFAC Designates 15 IRGC Entities',sv:'medium',cat:'ECONOMIC',reg:'M. East',tm:'12h',lat:38.9,lon:-77.0,imp:'Oil export enforcement tightened, Chinese intermediaries targeted',ty:'Sanctions'},
-  {id:13,t:'Red Sea Shipping Reroutes — Suez Canal Traffic Down 40%',sv:'high',cat:'ENERGY',reg:'M. East',tm:'1d',lat:30.0,lon:32.3,imp:'Global supply chain disruption, container rates +280%',ty:'Maritime'},
-  {id:14,t:'Israel Iron Dome Intercepts Barrage from Southern Lebanon',sv:'critical',cat:'CONFLICT',reg:'M. East',tm:'1d',lat:33.0,lon:35.1,imp:'Northern Israel evacuations ongoing, Arrow-3 on standby',ty:'Defense'},
-  {id:15,t:'U.S. CENTCOM Raises Force Protection Level to FPCON Charlie',sv:'high',cat:'CONFLICT',reg:'M. East',tm:'1d',lat:25.9,lon:50.6,imp:'All CENTCOM installations on heightened alert',ty:'Military'},
-  {id:16,t:'Patriot PAC-3 Engages Cruise Missile Over Saudi Airspace',sv:'high',cat:'CONFLICT',reg:'M. East',tm:'2d',lat:24.7,lon:46.7,imp:'Houthi cruise missile intercepted, Aramco facilities secured',ty:'Defense'},
+  {id:1,t:'Ukraine War — Sustained Russian Missile & Drone Campaign on Energy Grid',sv:'critical',cat:'CONFLICT',reg:'Europe',tm:'Active',lat:50.4,lon:30.5,imp:'Mass civilian blackouts, NATO aid packages in coordination, grain corridor status volatile',ty:'Military'},
+  {id:2,t:'Middle East — Israel/Iran Tensions Remain Elevated With Persistent Proxy Attacks',sv:'critical',cat:'CONFLICT',reg:'M. East',tm:'Active',lat:31.8,lon:34.7,imp:'Regional spillover risk, Red Sea & Hormuz shipping premiums elevated',ty:'Military'},
+  {id:3,t:'Taiwan Strait — PLA Conducts Largest Joint Air-Sea Exercises in a Year',sv:'high',cat:'CONFLICT',reg:'Asia',tm:'Active',lat:24.5,lon:121.0,imp:'Semiconductor supply chain risk, U.S. carrier activity in Philippine Sea',ty:'Military'},
+  {id:4,t:'DPRK Ballistic Missile Test — Hwasong-Class ICBM Overflight Trajectory',sv:'high',cat:'CONFLICT',reg:'Asia',tm:'Recent',lat:39.0,lon:125.7,imp:'UN Security Council consultations, Japan & ROK defense coordination tightening',ty:'Military'},
+  {id:5,t:'Red Sea — Houthi Anti-Ship Missile & USV Attacks on Commercial Shipping',sv:'critical',cat:'CONFLICT',reg:'M. East',tm:'Ongoing',lat:13.5,lon:42.5,imp:'Suez transit volumes down substantially, Cape of Good Hope rerouting, container rates surging',ty:'Maritime'},
+  {id:6,t:'Ransomware Incident Disrupts Major Western Healthcare Provider Network',sv:'high',cat:'CYBER',reg:'N. America',tm:'Recent',lat:40.7,lon:-74.0,imp:'Patient data exposure, emergency services partially diverted, CISA/HHS advisories issued',ty:'Cyber'},
+  {id:7,t:'Sahel — Sahel-Wide Jihadist Attacks and Coup Government Instability',sv:'high',cat:'CONFLICT',reg:'Africa',tm:'Ongoing',lat:12.6,lon:-8.0,imp:'French & Western force withdrawals, Wagner/Africa Corps backfill, humanitarian crisis deepening',ty:'Military'},
+  {id:8,t:'Haiti — Gang Violence Collapses State Authority in Port-au-Prince',sv:'high',cat:'CONFLICT',reg:'Lat. Am.',tm:'Ongoing',lat:18.5,lon:-72.3,imp:'Multinational Security Support Mission deployed, airport intermittently operational',ty:'Civil'},
+  {id:9,t:'Caribbean — Major Atlantic Hurricane Tracking Toward U.S. Gulf Coast',sv:'high',cat:'CLIMATE',reg:'N. America',tm:'Active',lat:25.0,lon:-85.0,imp:'State of emergency declared in multiple states, refineries & ports preparing for shutdown',ty:'Climate'},
+  {id:10,t:'Pacific — Magnitude 7+ Earthquake Triggers Regional Tsunami Advisory',sv:'high',cat:'CLIMATE',reg:'Asia',tm:'Recent',lat:-6.2,lon:106.8,imp:'Coastal evacuations, shipping lanes temporarily suspended, USGS on watch',ty:'Climate'},
+  {id:11,t:'Panama Canal — Prolonged Drought Forces Transit Restrictions',sv:'medium',cat:'ENERGY',reg:'Lat. Am.',tm:'Active',lat:9.0,lon:-79.5,imp:'Daily transit slots cut, maritime fuel market impacts, container rates affected',ty:'Maritime'},
+  {id:12,t:'Europe — Hybrid Attacks on Undersea Cables & Critical Infrastructure',sv:'high',cat:'CYBER',reg:'Europe',tm:'Recent',lat:59.3,lon:18.1,imp:'NATO investigation underway, Nord Stream-style deniable sabotage pattern',ty:'Cyber'},
+  {id:13,t:'South America — Narcotrafficking Violence Prompts Constitutional Emergency',sv:'high',cat:'CONFLICT',reg:'Lat. Am.',tm:'Ongoing',lat:-2.2,lon:-79.9,imp:'Military deployed to streets, state-of-exception declared, U.S. coordination',ty:'Civil'},
+  {id:14,t:'Health Security — WHO Tracks Zoonotic Outbreak Cluster in Asia-Pacific',sv:'medium',cat:'HEALTH',reg:'Asia',tm:'Monitoring',lat:14.6,lon:121.0,imp:'Surveillance protocols elevated, no community transmission confirmed yet',ty:'Health'},
+  {id:15,t:'Nuclear — IAEA Reports Continued Iranian Uranium Enrichment at 60%',sv:'high',cat:'CONFLICT',reg:'M. East',tm:'Ongoing',lat:33.7,lon:51.4,imp:'Diplomatic track strained, regional defense posture hardening',ty:'Nuclear'},
+  {id:16,t:'Maritime — South China Sea Collision Between PRC & Philippine Vessels',sv:'high',cat:'CONFLICT',reg:'Asia',tm:'Recent',lat:9.5,lon:116.0,imp:'Mutual defense treaty consultations, ASEAN statement pending',ty:'Maritime'},
+  {id:17,t:'Energy — Major North American Refinery Outage Tightens Distillate Markets',sv:'medium',cat:'ENERGY',reg:'N. America',tm:'Recent',lat:29.7,lon:-95.3,imp:'Diesel crack spreads widening, potential jet fuel supply tightness into East Coast',ty:'Energy'},
+  {id:18,t:'Terrorism — Foiled Mass-Casualty Plot Disrupted in European Capital',sv:'high',cat:'INTEL',reg:'Europe',tm:'Recent',lat:48.9,lon:2.3,imp:'Heightened threat level, public events and transit hubs on enhanced alert',ty:'Intel'},
+  {id:19,t:'Political Risk — Major Democracy Faces Constitutional Crisis Over Election Dispute',sv:'medium',cat:'CONFLICT',reg:'Lat. Am.',tm:'Ongoing',lat:-15.8,lon:-47.9,imp:'Markets volatile, foreign investment under review, regional diplomatic pressure',ty:'Political'},
 ];
 
 const CC={CONFLICT:'#ff3b30',CYBER:'#bf5af2',ECONOMIC:'#0a84ff',ENERGY:'#ffd60a',INTEL:'#ff375f',MARITIME:'#5ac8fa'};
@@ -449,20 +452,20 @@ const CONNS=[
   [9,12,'Cyber ops → sanctions escalation','#64d2ff'],
 ];
 
-/* News headlines for live ticker — US-Iran-Israel War Focus */
+/* News headlines for live ticker — Global Security & Geopolitical Risk */
 const NEWS=[
-  {t:'IRGC conducts large-scale naval exercises near Strait of Hormuz — U.S. Fifth Fleet responds',s:'CENTCOM',c:'#ff3b30'},
-  {t:'Iran uranium enrichment at 60% threshold — IAEA reports stockpile growth',s:'Reuters',c:'#ff3b30'},
-  {t:'Houthi anti-ship missile strikes commercial vessel in Red Sea — Bab el-Mandeb disrupted',s:'UKMTO',c:'#ff9500'},
-  {t:'Israel IDF launches strikes on Hezbollah positions in southern Lebanon',s:'IDF',c:'#ff3b30'},
-  {t:'U.S. deploys THAAD battery to Israel for ballistic missile defense',s:'DoD',c:'#0a84ff'},
-  {t:'Brent crude surges $8/bbl on Hormuz closure fears — conflict premium widening',s:'Bloomberg',c:'#ffd60a'},
-  {t:'Iran-backed militia conducts drone strike on Al-Asad Airbase, Iraq',s:'CENTCOM',c:'#ff3b30'},
-  {t:'IMF warns sovereign debt risks compounding climate vulnerability in 40 nations',s:'FT',c:'#ff9500'},
-  {t:'OFAC designates 15 IRGC entities in expanded Iran sanctions package',s:'Treasury',c:'#bf5af2'},
-  {t:'Red Sea shipping reroutes via Cape of Good Hope — container rates up 280%',s:'Platts',c:'#ffd60a'},
-  {t:'CENTCOM raises force protection to FPCON Charlie across all installations',s:'DoD',c:'#ff3b30'},
-  {t:'B-52H bombers forward-deployed to Al Udeid AB, Qatar — JASSM-ER loadout',s:'USAF',c:'#ff3b30'},
+  {t:'Ukraine war enters new phase as Russia launches winter energy infrastructure campaign',s:'Reuters',c:'#ff3b30'},
+  {t:'Taiwan Strait: PLA conducts largest joint air-sea exercises in a year around island',s:'FT',c:'#ff3b30'},
+  {t:'Middle East tensions persist — Red Sea shipping attacks continue into new quarter',s:'Bloomberg',c:'#ff9500'},
+  {t:'DPRK tests Hwasong-class ICBM — Japan & ROK coordinate defense response',s:'NHK',c:'#ff3b30'},
+  {t:'Major ransomware incident disrupts Western healthcare network — CISA advisory issued',s:'CISA',c:'#bf5af2'},
+  {t:'Sahel instability deepens — Wagner successors expand footprint as Western forces withdraw',s:'AFP',c:'#ff9500'},
+  {t:'Atlantic hurricane intensifies to major category — U.S. Gulf Coast refinery shutdowns begin',s:'NOAA',c:'#ffd60a'},
+  {t:'IMF warns sovereign debt risks compounding climate vulnerability in 40+ nations',s:'IMF',c:'#ff9500'},
+  {t:'NATO investigates hybrid sabotage attacks on Baltic undersea cables',s:'Reuters',c:'#0a84ff'},
+  {t:'Panama Canal drought forces further transit slot reductions — global shipping impact',s:'S&P Platts',c:'#ffd60a'},
+  {t:'WHO tracks zoonotic outbreak cluster in Asia-Pacific — no community spread confirmed',s:'WHO',c:'#30d158'},
+  {t:'Haiti: multinational security mission deployed as gang violence collapses state authority',s:'UN',c:'#ff3b30'},
 ];
 
 const MKTS={
@@ -472,22 +475,25 @@ const MKTS={
   'DEFENSE & INTEL':[{s:'LMT',n:'Lockheed',p:'661.49',c:'+0.42%',u:1},{s:'RTX',n:'RTX Corp',p:'204.81',c:'+0.64%',u:1},{s:'NOC',n:'Northrop',p:'724.83',c:'+3.38%',u:1},{s:'GD',n:'Gen Dynamics',p:'289.15',c:'+0.88%',u:1},{s:'PLTR',n:'Palantir',p:'135.38',c:'+1.77%',u:1}],
 };
 
-/* MENA conflict RSS queries */
+/* Global security wire RSS queries */
 const MENA_RSS_QUERIES=[
-  'Iran+Israel+military+strike+attack+MENA',
-  'Houthi+Red+Sea+Hezbollah+Gaza+war+ceasefire',
+  'global+security+conflict+war+escalation',
+  'cyber+attack+ransomware+infrastructure+threat',
+  'terrorism+disaster+coup+political+crisis',
 ];
 
-/* MENA conflict wire fallback (Feb 2026) */
+/* Global security wire fallback */
 const MENA_WIRE_FALLBACK=[
-  {t:'IRGC Navy conducts live-fire exercises near Strait of Hormuz — U.S. Fifth Fleet on alert',src:'CENTCOM',tm:'Active',dom:'MILITARY'},
-  {t:'Iran enrichment at 60% threshold — IAEA inspectors report centrifuge cascade expansion at Fordow',src:'IAEA',tm:'Ongoing',dom:'NUCLEAR'},
-  {t:'Houthi forces launch anti-ship ballistic missile at commercial vessel in Red Sea',src:'UKMTO',tm:'Recent',dom:'PROXY'},
-  {t:'Hezbollah stockpile assessment — estimated 130,000+ rockets and precision-guided munitions',src:'IDF Intel',tm:'Standing',dom:'PROXY'},
-  {t:'U.S. deploys additional carrier strike group to Eastern Mediterranean amid tensions',src:'DoD',tm:'Recent',dom:'MILITARY'},
-  {t:'Iran-backed militia conducts drone attack on Al-Asad Airbase, Iraq',src:'CENTCOM',tm:'Recent',dom:'PROXY'},
-  {t:'JCPOA revival talks stall — Tehran demands sanctions relief before nuclear compliance',src:'State Dept',tm:'Ongoing',dom:'DIPLOMACY'},
-  {t:'Brent crude rises on Strait of Hormuz closure fears — conflict premium widens',src:'Reuters',tm:'Active',dom:'ENERGY'},
+  {t:'Ukraine war enters new phase as Russia launches winter campaign against energy grid',src:'Reuters',tm:'Active',dom:'MILITARY'},
+  {t:'PLA conducts largest joint air-sea exercises in a year in Taiwan Strait — U.S. carrier responds',src:'FT',tm:'Active',dom:'MILITARY'},
+  {t:'IAEA confirms continued Iranian uranium enrichment at 60% threshold',src:'IAEA',tm:'Ongoing',dom:'NUCLEAR'},
+  {t:'Red Sea: Houthi anti-ship attacks persist — Suez transit volumes down substantially',src:'UKMTO',tm:'Recent',dom:'PROXY'},
+  {t:'DPRK tests Hwasong-class ICBM on overflight trajectory — UN consultations requested',src:'NHK',tm:'Recent',dom:'MILITARY'},
+  {t:'NATO investigates hybrid sabotage attacks on Baltic undersea communications cables',src:'Reuters',tm:'Recent',dom:'CYBER'},
+  {t:'Sahel: jihadist attacks and coup governments destabilize West Africa — Western withdrawals',src:'AFP',tm:'Ongoing',dom:'MILITARY'},
+  {t:'Major ransomware incident disrupts Western healthcare provider network — CISA advisory',src:'CISA',tm:'Recent',dom:'CYBER'},
+  {t:'WHO tracks zoonotic outbreak cluster in Asia-Pacific — surveillance protocols elevated',src:'WHO',tm:'Monitoring',dom:'HEALTH'},
+  {t:'Haiti: multinational security mission deployed as gang violence collapses state authority',src:'UN',tm:'Ongoing',dom:'DIPLOMACY'},
 ];
 
 const TREND={
@@ -500,30 +506,31 @@ const TREND={
 
 /* (Regional risk now computed from live advisories) */
 
-/* ═══ RSS FEED CONFIG — US-Iran-Israel War Focus ═══ */
+/* ═══ RSS FEED CONFIG — Global Security & Geopolitical Risk ═══ */
 const RSS_FEEDS=[
-  // Iran military & nuclear
-  {q:'Iran+military+IRGC+strike+attack+retaliation',cat:'CONFLICT'},
-  {q:'Iran+nuclear+uranium+enrichment+IAEA+JCPOA',cat:'CONFLICT'},
-  {q:'Iran+Israel+war+conflict+strike+attack',cat:'CONFLICT'},
-  // Israel operations
-  {q:'Israel+IDF+military+Gaza+Lebanon+Hezbollah',cat:'CONFLICT'},
-  {q:'Israel+Iron+Dome+Arrow+missile+defense',cat:'CONFLICT'},
-  // Proxy forces
-  {q:'Houthi+Red+Sea+attack+ship+missile+Yemen',cat:'CONFLICT'},
-  {q:'Hezbollah+Lebanon+rockets+Israel+border',cat:'CONFLICT'},
-  {q:'Iraq+militia+Iran+proxy+al-Asad+attack',cat:'CONFLICT'},
-  // U.S. military
-  {q:'CENTCOM+US+military+Iran+Middle+East+deployment',cat:'CONFLICT'},
-  {q:'US+Navy+Fifth+Fleet+carrier+Persian+Gulf',cat:'CONFLICT'},
-  // Sanctions & diplomacy
-  {q:'Iran+sanctions+OFAC+nuclear+deal+diplomacy',cat:'ECONOMIC'},
-  // Energy & chokepoints
-  {q:'Strait+Hormuz+oil+tanker+Persian+Gulf+energy+disruption',cat:'ENERGY'},
-  // Cyber & intel (Iran-focused)
-  {q:'Iran+cyber+attack+hack+infrastructure+espionage',cat:'CYBER'},
-  // Airspace & shipping
-  {q:'Iran+airspace+NOTAM+flight+restriction+FAA+SFAR',cat:'CONFLICT'},
+  // Armed conflict & military (global)
+  {q:'Ukraine+Russia+war+military+strike+offensive',cat:'CONFLICT'},
+  {q:'Middle+East+Israel+Iran+conflict+strike+escalation',cat:'CONFLICT'},
+  {q:'Taiwan+China+PLA+Indo-Pacific+military+exercise',cat:'CONFLICT'},
+  {q:'North+Korea+missile+launch+DPRK+ballistic+test',cat:'CONFLICT'},
+  {q:'NATO+deployment+military+alliance+defense',cat:'CONFLICT'},
+  // Cyber & critical infrastructure
+  {q:'cyber+attack+ransomware+breach+critical+infrastructure',cat:'CYBER'},
+  {q:'APT+state-sponsored+hack+espionage+CISA',cat:'CYBER'},
+  // Geoeconomics & sanctions
+  {q:'sanctions+tariff+trade+decoupling+economic+security',cat:'ECONOMIC'},
+  // Energy security
+  {q:'oil+gas+pipeline+energy+supply+OPEC+disruption',cat:'ENERGY'},
+  // Terrorism & intel
+  {q:'terrorism+ISIS+attack+counterterrorism+intelligence',cat:'INTEL'},
+  // Climate & disasters
+  {q:'hurricane+earthquake+flood+wildfire+disaster+evacuation',cat:'CLIMATE'},
+  // Health security
+  {q:'outbreak+WHO+pandemic+virus+disease+epidemic',cat:'HEALTH'},
+  // Civil unrest & political risk
+  {q:'coup+protest+civil+unrest+political+crisis',cat:'CONFLICT'},
+  // Aviation & travel security
+  {q:'airspace+NOTAM+flight+restriction+aviation+security',cat:'CONFLICT'},
 ];
 const PROXY='https://api.rss2json.com/v1/api.json?rss_url=';
 // Multi-proxy RSS fetch — tries rss2json first, then allorigins+DOMParser fallback
@@ -614,23 +621,23 @@ function timeAgo(dateStr){
   var hrs=Math.floor(mins/60);if(hrs<24)return hrs+'h ago';
   return Math.floor(hrs/24)+'d ago';
 }
-/* ═══ IRAN-U.S. WAR TRACKER — MENA Escalation Monitor ═══ */
+/* ═══ GLOBAL SECURITY TRACKER — Threat Monitor ═══ */
 const IRAN_TRACKER_FALLBACK=[
-  {sev:'critical',domain:'MILITARY',title:'IRGC Conducts Large-Scale Naval Exercises in Strait of Hormuz',detail:'Islamic Revolutionary Guard Corps deploying fast-attack craft, anti-ship missiles, and naval mines in exercises simulating closure of the Strait. U.S. Fifth Fleet on heightened alert. 21% of global oil transits this chokepoint.',time:'Active',icon:'\u{1F6A2}'},
-  {sev:'critical',domain:'NUCLEAR',title:'Iran Enriching Uranium to 60% — Near Weapons-Grade Threshold',detail:'IAEA confirms stockpile of 60%-enriched uranium now exceeds 120 kg. Breakout time estimated at under two weeks. Diplomatic window narrowing rapidly. P5+1 talks stalled since 2023.',time:'Ongoing',icon:'\u2622\uFE0F'},
-  {sev:'high',domain:'PROXY',title:'Houthi Anti-Ship Missile Strikes Continue in Red Sea',detail:'Ansar Allah forces launched multiple ballistic and cruise missiles at commercial vessels in the Bab el-Mandeb strait. U.S. and UK conducted retaliatory strikes on Houthi missile sites in Yemen. Shipping rerouting around Cape of Good Hope.',time:'Active',icon:'\u{1F3AF}'},
-  {sev:'high',domain:'PROXY',title:'Hezbollah-Israel Border Tensions Remain Elevated',detail:'Daily exchange of fire along the Blue Line. Hezbollah rocket and drone attacks on northern Israel. IDF conducting airstrikes in southern Lebanon. Risk of wider escalation assessed as moderate-to-high.',time:'Active',icon:'\u{1F4A5}'},
-  {sev:'high',domain:'MILITARY',title:'U.S. Carrier Strike Group Repositioned to Eastern Mediterranean',detail:'USS Eisenhower CSG redeployed from Central Command AOR. Additional F-35 squadrons forward-deployed to Al Udeid and Al Dhafra. Force posture consistent with contingency planning for Iran scenarios.',time:'Recent',icon:'\u2693'},
-  {sev:'high',domain:'CYBER',title:'Iranian APT Groups Targeting U.S. Critical Infrastructure',detail:'CISA advisory: APT42 (Charming Kitten) and MuddyWater conducting espionage campaigns against U.S. energy, defense, and financial sectors. Destructive wiper malware variants detected in staging environments.',time:'Active',icon:'\u{1F4BB}'},
-  {sev:'moderate',domain:'DIPLOMACY',title:'JCPOA Revival Talks — No Progress, Channels Narrowing',detail:'Back-channel diplomatic efforts through Oman yielding limited results. EU coordinator reporting impasse on sanctions relief sequencing. U.S. secondary sanctions on Iranian oil exports tightened. China and India continue importing Iranian crude via shadow fleet.',time:'Stalled',icon:'\u{1F91D}'},
-  {sev:'moderate',domain:'SANCTIONS',title:'U.S. Treasury Designates Additional IRGC-Linked Entities',detail:'New OFAC sanctions targeting IRGC-Quds Force financial networks, petrochemical exports, and drone component suppliers. Asset freezes on 14 individuals and 8 entities across UAE, Turkey, and China.',time:'Recent',icon:'\u{1F4B0}'},
-  {sev:'moderate',domain:'PROXY',title:'Iran-Backed Militias Strike U.S. Forces in Iraq and Syria',detail:'Islamic Resistance in Iraq launched drone and rocket attacks on Al-Asad and Al-Tanf bases. No U.S. casualties reported. Pentagon confirms proportional retaliatory strikes on militia weapons depots.',time:'Ongoing',icon:'\u{1F680}'},
-  {sev:'high',domain:'INTEL',title:'Mossad-IRGC Shadow War Intensifies Across Region',detail:'Reported assassination of senior IRGC officer in Damascus. Iranian-linked plots disrupted in Europe. Cyber operations targeting Iranian nuclear facilities. Covert conflict escalation pattern accelerating.',time:'Active',icon:'\u{1F575}\uFE0F'},
-  {sev:'moderate',domain:'ENERGY',title:'Oil Markets Pricing in Iran Conflict Premium',detail:'Brent crude trading above $85/bbl with $8-12 risk premium attributed to Strait of Hormuz closure scenarios. Lloyd\'s of London raising war-risk insurance premiums for Persian Gulf shipping. Energy analysts modeling $120-150/bbl spike in full blockade scenario.',time:'Active',icon:'\u{1F6E2}\uFE0F'},
-  {sev:'critical',domain:'WMD',title:'Iran Ballistic Missile Arsenal — Growing Range and Precision',detail:'Shahab-3, Emad, and Khorramshahr missiles capable of striking Israel and U.S. bases in the Gulf. Solid-fuel Kheibar Shekan reduces launch preparation time. Estimated 3,000+ missile inventory. No effective arms control framework in place.',time:'Standing',icon:'\u{1F3AF}'},
+  {sev:'critical',domain:'MILITARY',title:'Ukraine War — Russia Sustains Winter Energy Infrastructure Campaign',detail:'Mass drone and cruise-missile strikes on Ukrainian power grid ongoing. NATO allies accelerating air defense deliveries (Patriot, IRIS-T). Grain corridor status volatile. Winter civilian impact severe.',time:'Active',icon:'\u{1F4A5}'},
+  {sev:'critical',domain:'NUCLEAR',title:'Iran Enriching Uranium to 60% — IAEA Reports Continued Growth',detail:'IAEA confirms continued stockpile expansion of 60%-enriched uranium. Diplomatic track strained. Regional defense posture hardening. Israel maintains strike-planning options.',time:'Ongoing',icon:'\u2622\uFE0F'},
+  {sev:'high',domain:'MILITARY',title:'Taiwan Strait — PLA Joint Air-Sea Exercises at Record Scale',detail:'Largest combined PLA Navy/Air Force exercises in the past year. Simulated blockade and amphibious-assault drills. U.S. carrier activity in Philippine Sea. Semiconductor supply chain risk elevated.',time:'Active',icon:'\u{1F4A5}'},
+  {sev:'high',domain:'MILITARY',title:'DPRK ICBM Overflight Test — Regional Defense Coordination Tightens',detail:'North Korea tested a Hwasong-class ICBM on a lofted trajectory. Japan and ROK activating missile defense consultations. UN Security Council emergency session requested by Western members.',time:'Recent',icon:'\u{1F680}'},
+  {sev:'high',domain:'SHIPPING',title:'Red Sea — Houthi Anti-Ship Attacks on Commercial Vessels Continue',detail:'Anti-ship ballistic missile, cruise missile, and USV attacks persist in the Bab el-Mandeb. Suez transit volumes substantially reduced. Major carriers rerouting via Cape of Good Hope. War-risk insurance premiums elevated.',time:'Active',icon:'\u{1F6A2}'},
+  {sev:'high',domain:'CYBER',title:'Ransomware Outbreak Disrupts Major Western Healthcare Network',detail:'Significant ransomware incident taking down hospital operations across multiple U.S. states. CISA and HHS joint advisory issued. Emergency services partially diverted. Patient data exposure investigations underway.',time:'Recent',icon:'\u{1F4BB}'},
+  {sev:'high',domain:'TERROR',title:'Mass-Casualty Terror Plot Disrupted in European Capital',detail:'Domestic intelligence services foiled attack targeting public transit. Multiple arrests. Threat level raised. Event security for upcoming political gatherings on enhanced alert.',time:'Recent',icon:'\u{1F4A3}'},
+  {sev:'high',domain:'POLITICAL',title:'Haiti — Gang Coalition Collapses State Authority in Port-au-Prince',detail:'Multinational Security Support Mission (MSS) deployed. Airport intermittently closed. Humanitarian pipeline under stress. Caribbean migration pressures rising.',time:'Ongoing',icon:'\u{1F6A7}'},
+  {sev:'high',domain:'CLIMATE',title:'Major Atlantic Hurricane Tracking Toward U.S. Gulf Coast',detail:'Category 4 forecast at landfall. State-of-emergency declarations in multiple states. Refinery shutdowns initiated. Downstream fuel market disruptions expected.',time:'Active',icon:'\u{1F30D}'},
+  {sev:'moderate',domain:'HEALTH',title:'WHO Tracks Zoonotic Outbreak Cluster in Asia-Pacific',detail:'Cluster of spillover cases under enhanced surveillance. No sustained human-to-human transmission confirmed. Cross-border reporting and diagnostics scaling up.',time:'Monitoring',icon:'\u{1FA7A}'},
+  {sev:'high',domain:'ECONOMY',title:'Sovereign Debt Stress Compounds in Emerging Markets',detail:'IMF warns of compounding debt and climate vulnerability in 40+ nations. Currency pressure in frontier markets. Restructuring negotiations complex where China holds significant bilateral claims.',time:'Ongoing',icon:'\u{1F4B0}'},
+  {sev:'high',domain:'CYBER',title:'NATO Probes Baltic Undersea Cable Sabotage Pattern',detail:'Multiple incidents affecting communications and power cables in Baltic and North Sea. Investigations focused on deniable state-linked sabotage. Allied maritime surveillance increased.',time:'Recent',icon:'\u{1F4BB}'},
 ];
 const IRAN_SEV_COLORS={critical:'#ff3b30',high:'#ff9500',moderate:'#ffd60a',low:'#64d2ff'};
-const IRAN_DOMAIN_COLORS={MILITARY:'#ff3b30',NUCLEAR:'#ff3b30',PROXY:'#ff9500',CYBER:'#bf5af2',DIPLOMACY:'#30d158',SANCTIONS:'#ffd60a',INTEL:'#ff6482',ENERGY:'#ff9f0a',WMD:'#ff3b30'};
+const IRAN_DOMAIN_COLORS={MILITARY:'#ff3b30',NUCLEAR:'#ff3b30',TERROR:'#ff375f',CYBER:'#bf5af2',DIPLOMACY:'#30d158',ECONOMY:'#ffd60a',INTEL:'#ff6482',ENERGY:'#ff9f0a',CLIMATE:'#64d2ff',HEALTH:'#5ac8fa',POLITICAL:'#ff9500',AIRSPACE:'#0a84ff',TRAVEL:'#30d158',SHIPPING:'#5ac8fa'};
 
 /* ═══ APP ═══ */
 function App(){
@@ -942,39 +949,45 @@ function App(){
     }catch(e){setFeedStatus('fallback');}
   };
 
-  // ═══ IRAN-U.S. WAR TRACKER FETCH — multi-source MENA escalation monitor (60s refresh) ═══
-  var iranMustMatch=/iran|tehran|irgc|revolutionary guard|quds force|hezbollah|houthi|ansar allah|strait of hormuz|persian gulf|bab.el.mandeb|red sea|yemen|iraq.*militia|syria.*strike|lebanon.*israel|israel.*iran|nuclear.*iran|iran.*nuclear|uranium|enrichment|jcpoa|ballistic missile|cruise missile|drone.*iran|iran.*drone|proxy|axis of resistance|al.asad|al.tanf|natanz|fordow|isfahan|parchin|arak|bushehr|kharg island|bandar abbas|chabahar|sanctions.*iran|iran.*sanctions|ofac|iaea|mossad|cia.*iran|centcom|fifth fleet|carrier.*gulf|f-35.*gulf|b-52.*iran|ayatollah|khamenei|raisi|zarif|oil.*iran|iran.*oil|petrochemical/i;
+  // ═══ GLOBAL SECURITY TRACKER FETCH — multi-source threat monitor (60s refresh) ═══
+  // Broad security filter: keeps headlines relevant to conflict, cyber, terrorism, disasters, political risk, and geoeconomics
+  var iranMustMatch=/\b(war|conflict|attack|strike|airstrike|missile|drone|bomb|invasion|offensive|military|army|navy|air force|troops|casualt|kill(ed)?|dead|wound|battalion|artillery|ceasefire|escalat|retaliat|intercept|sabotage|coup|insurgenc|militia|terror|isis|al.?qaeda|hostage|hijack|assassinat|cyber|ransomware|hack|breach|malware|phishing|apt\d+|zero.?day|ddos|spyware|cisa|infrastructure|pipeline|refinery|shipping|tanker|cargo|chokepoint|sanction|tariff|trade war|default|debt crisis|inflation|recession|hurricane|typhoon|earthquake|tsunami|wildfire|flood|drought|storm|cyclone|evacuat|disaster|outbreak|pandemic|epidemic|virus|who|vaccine|ukraine|russia|nato|taiwan|china|north korea|dprk|iran|israel|gaza|lebanon|yemen|houthi|hezbollah|irgc|hamas|sudan|ethiopia|haiti|venezuela|protest|unrest|embassy|evacuation|advisor|notam|airspace|faa|easa|border|mobiliz|nuclear|uranium|enrichment|jcpoa|iaea|imf|world bank|oecd|un security|summit)\b/i;
 
-  // ═══ IRAN-U.S. WAR TRACKER + LIVE IMPACT FETCH (60s refresh) ═══
+  // ═══ GLOBAL SECURITY TRACKER + LIVE IMPACT FETCH (60s refresh) ═══
   function classifyIran(headline){
     var hl=headline.toLowerCase();
     var domain='MILITARY',sev='moderate',icon='\u{1F6A8}';
-    if(/nuclear|uranium|enrichment|iaea|breakout|centrifuge|fordow|natanz|parchin|arak/.test(hl)){domain='NUCLEAR';sev='critical';icon='\u2622\uFE0F';}
-    else if(/houthi|hezbollah|militia|proxy|ansar allah|islamic resistance|axis of resistance/.test(hl)){domain='PROXY';sev='high';icon='\u{1F3AF}';}
-    else if(/cyber|hack|apt|malware|breach|espionage|wiper/.test(hl)){domain='CYBER';sev='high';icon='\u{1F4BB}';}
-    else if(/jcpoa|diplomat|negotiat|talks|deal|back.channel/.test(hl)){domain='DIPLOMACY';sev='moderate';icon='\u{1F91D}';}
-    else if(/sanction|ofac|treasury|designat|asset freeze/.test(hl)){domain='SANCTIONS';sev='moderate';icon='\u{1F4B0}';}
-    else if(/oil|energy|petrol|crude|brent|shipping|tanker|insurance|hormuz.*clos/.test(hl)){domain='ENERGY';sev='high';icon='\u{1F6E2}\uFE0F';}
-    else if(/missile|ballistic|cruise|launch|test|warhead|wmd/.test(hl)){domain='WMD';sev='critical';icon='\u{1F680}';}
-    else if(/mossad|cia|intelligence|covert|assassin|shadow war/.test(hl)){domain='INTEL';sev='high';icon='\u{1F575}\uFE0F';}
-    else if(/airspace|notam|flight restrict|no.fly|tfr|aviation|faa.*iran|iran.*faa/.test(hl)){domain='AIRSPACE';sev='high';icon='\u2708\uFE0F';}
+    if(/nuclear|uranium|enrichment|iaea|breakout|centrifuge|warhead|wmd|ballistic missile test|icbm|hwasong/.test(hl)){domain='NUCLEAR';sev='critical';icon='\u2622\uFE0F';}
+    else if(/cyber|hack|apt|malware|ransomware|breach|espionage|wiper|data leak|phishing|ddos/.test(hl)){domain='CYBER';sev='high';icon='\u{1F4BB}';}
+    else if(/terror|isis|al.?qaeda|bombing|mass shooting|suicide|hostage|hijack/.test(hl)){domain='TERROR';sev='critical';icon='\u{1F4A3}';}
+    else if(/diplomat|negotiat|talks|deal|summit|treaty|accord|un security|resolution/.test(hl)){domain='DIPLOMACY';sev='moderate';icon='\u{1F91D}';}
+    else if(/sanction|tariff|ofac|treasury|designat|asset freeze|trade war|decoupling|embargo/.test(hl)){domain='ECONOMY';sev='moderate';icon='\u{1F4B0}';}
+    else if(/oil|energy|petrol|crude|brent|pipeline|refinery|opec|lng|electric|power grid/.test(hl)){domain='ENERGY';sev='high';icon='\u{1F6E2}\uFE0F';}
+    else if(/hurricane|typhoon|earthquake|tsunami|wildfire|flood|drought|storm|cyclone|volcano|landslide/.test(hl)){domain='CLIMATE';sev='high';icon='\u{1F30D}';}
+    else if(/outbreak|pandemic|epidemic|virus|vaccine|who|quarantine|h5n1|avian flu|ebola|mpox/.test(hl)){domain='HEALTH';sev='high';icon='\u{1FA7A}';}
+    else if(/coup|insurgenc|civil unrest|protest|riot|martial law|state of emergency|political crisis/.test(hl)){domain='POLITICAL';sev='high';icon='\u{1F6A7}';}
+    else if(/airspace|notam|flight restrict|no.fly|tfr|aviation|faa|easa/.test(hl)){domain='AIRSPACE';sev='high';icon='\u2708\uFE0F';}
     else if(/travel.*advis|travel.*ban|evacuati|embassy|consular|do not travel/.test(hl)){domain='TRAVEL';sev='high';icon='\u{1F6C2}';}
-    else if(/ship|maritime|vessel|strait|chokepoint|reroute|cape of good hope|suez|bab/.test(hl)){domain='SHIPPING';sev='high';icon='\u{1F6A2}';}
-    else if(/strike|airstrike|bomb|attack|kill|casualt|carrier|deploy|fleet|troops|military/.test(hl)){domain='MILITARY';sev='critical';icon='\u{1F4A5}';}
+    else if(/ship|maritime|vessel|strait|chokepoint|reroute|cape of good hope|suez|bab|panama canal/.test(hl)){domain='SHIPPING';sev='high';icon='\u{1F6A2}';}
+    else if(/intelligence|covert|surveillance|counter.?intel|mossad|cia|mi6|gru|assassin|shadow war/.test(hl)){domain='INTEL';sev='high';icon='\u{1F575}\uFE0F';}
+    else if(/strike|airstrike|bomb|attack|kill|casualt|carrier|deploy|fleet|troops|military|nato|offensive|invasion/.test(hl)){domain='MILITARY';sev='critical';icon='\u{1F4A5}';}
     return{domain:domain,sev:sev,icon:icon};
   }
   const fetchIranTracker=async()=>{
     var allItems=[];
     var iranQueries=[
-      '(Iran OR IRGC OR "Revolutionary Guard" OR Tehran) (missile OR strike OR military OR nuclear OR enrichment OR sanctions)',
-      '(Houthi OR "Ansar Allah" OR "Red Sea" OR "Bab el-Mandeb") (attack OR missile OR ship OR strike OR drone)',
-      '(Hezbollah OR Lebanon OR "Blue Line") (Israel OR rocket OR drone OR strike OR escalation)',
-      '(Iraq OR Syria) (militia OR "Islamic Resistance" OR "Al-Asad" OR "Al-Tanf" OR drone OR rocket) USA',
-      '("Strait of Hormuz" OR "Persian Gulf" OR "Fifth Fleet" OR CENTCOM) (Iran OR military OR exercise OR carrier)',
-      '(Iran OR IRGC) (cyber OR hack OR APT OR espionage OR infrastructure)',
-      '(JCPOA OR "nuclear deal" OR IAEA OR uranium OR enrichment) (Iran OR talks OR sanctions)',
-      '(Iran) (airspace OR NOTAM OR "flight restriction" OR "no-fly" OR aviation OR travel advisory OR embassy)',
-      '(Iran OR "Red Sea" OR Houthi) (shipping OR oil OR tanker OR crude OR Brent OR insurance OR reroute)'
+      '(Ukraine OR Russia OR NATO) (war OR offensive OR strike OR missile OR drone OR escalation)',
+      '(Taiwan OR China OR PLA OR "Indo-Pacific") (military OR exercise OR coast guard OR intrusion OR escalation)',
+      '("North Korea" OR DPRK OR Pyongyang) (missile OR test OR launch OR nuclear OR escalation)',
+      '(Israel OR Iran OR Lebanon OR Gaza OR Yemen OR Houthi OR Hezbollah) (strike OR attack OR missile OR escalation OR retaliation)',
+      '(cyber OR ransomware OR APT OR "data breach" OR CISA) (attack OR critical infrastructure OR hospital OR utility)',
+      '(terrorism OR terror OR ISIS OR "al-qaeda" OR bombing) (attack OR plot OR arrest OR disrupted)',
+      '(coup OR "civil unrest" OR insurgency OR "state of emergency" OR protest) (crisis OR violence OR military)',
+      '(hurricane OR earthquake OR tsunami OR wildfire OR flood OR drought) (evacuation OR emergency OR disaster)',
+      '(outbreak OR pandemic OR epidemic OR WHO OR virus) (cluster OR surveillance OR spread OR advisory)',
+      '(sanctions OR tariff OR "trade war" OR embargo) (economy OR market OR default OR financial)',
+      '(airspace OR NOTAM OR "flight restriction" OR "no-fly" OR aviation OR FAA OR EASA) (security OR closure OR advisory)',
+      '(shipping OR maritime OR "Red Sea" OR "Panama Canal" OR "Suez" OR chokepoint) (disruption OR attack OR rerouting)'
     ];
     for(var qi=0;qi<iranQueries.length;qi++){
       try{
@@ -991,9 +1004,10 @@ function App(){
       }catch(e){}
     }
     var iranRssFeeds=[
-      'https://news.google.com/rss/search?q=Iran+military+OR+IRGC+OR+missile+OR+nuclear+OR+Houthi+OR+Hezbollah&hl=en-US&gl=US&ceid=US:en',
-      'https://news.google.com/rss/search?q=Iran+USA+OR+sanctions+OR+strike+OR+Red+Sea+OR+Strait+Hormuz&hl=en-US&gl=US&ceid=US:en',
-      'https://news.google.com/rss/search?q=Iran+airspace+OR+travel+advisory+OR+shipping+OR+oil+tanker+OR+NOTAM+Middle+East&hl=en-US&gl=US&ceid=US:en'
+      'https://news.google.com/rss/search?q=global+security+OR+conflict+OR+war+OR+military+OR+strike+OR+missile&hl=en-US&gl=US&ceid=US:en',
+      'https://news.google.com/rss/search?q=cyber+attack+OR+ransomware+OR+breach+OR+terrorism+OR+infrastructure&hl=en-US&gl=US&ceid=US:en',
+      'https://news.google.com/rss/search?q=hurricane+OR+earthquake+OR+outbreak+OR+coup+OR+unrest+OR+evacuation&hl=en-US&gl=US&ceid=US:en',
+      'https://news.google.com/rss/search?q=sanctions+OR+airspace+OR+NOTAM+OR+shipping+disruption+OR+travel+advisory&hl=en-US&gl=US&ceid=US:en'
     ];
     for(var ri=0;ri<iranRssFeeds.length;ri++){
       try{
@@ -1021,22 +1035,22 @@ function App(){
       setIranEvents(merged);setIranLive(true);
       var impactItems=merged.filter(function(d){return d.domain==='AIRSPACE'||d.domain==='TRAVEL'||d.domain==='SHIPPING'||d.domain==='ENERGY';});
       var IMPACT_STANDING=[
-        {sev:'critical',domain:'AIRSPACE',title:'Iran Airspace (OIIX) — All U.S. Civil Flights Prohibited',detail:'FAA SFAR 117 in effect. European EASA warning active. Full Tehran FIR ban for U.S. carriers.',time:'Standing',icon:'\u2708\uFE0F'},
-        {sev:'high',domain:'AIRSPACE',title:'Iraq (ORBB) — Flights Below FL320 Restricted',detail:'Militia drone and missile threat. GPS spoofing reported across Baghdad FIR.',time:'Standing',icon:'\u2708\uFE0F'},
-        {sev:'critical',domain:'SHIPPING',title:'Red Sea / Bab el-Mandeb — Houthi Anti-Ship Attacks Active',detail:'Multiple commercial vessels struck. Major carriers rerouting via Cape of Good Hope. +$2M per voyage cost.',time:'Active',icon:'\u{1F6A2}'},
-        {sev:'high',domain:'SHIPPING',title:'Strait of Hormuz — Elevated Maritime Risk',detail:'IRGC naval exercises and fast-boat harassment. War-risk insurance at record levels. 21% of global oil transits.',time:'Active',icon:'\u{1F6A2}'},
-        {sev:'high',domain:'ENERGY',title:'Oil Markets — Iran Conflict Premium Priced In',detail:'Brent crude carrying $8-12 risk premium. Full Hormuz blockade modeled at $120-150/bbl.',time:'Active',icon:'\u{1F6E2}\uFE0F'},
-        {sev:'moderate',domain:'TRAVEL',title:'U.S. State Dept — Level 4: Do Not Travel to Iran',detail:'No consular services available. Risk of arbitrary arrest of dual nationals.',time:'Standing',icon:'\u{1F6C2}'},
-        {sev:'moderate',domain:'TRAVEL',title:'Lebanon, Iraq, Yemen — Level 4: Do Not Travel',detail:'Active conflict zones. U.S. Embassy Baghdad operations limited.',time:'Standing',icon:'\u{1F6C2}'},
+        {sev:'critical',domain:'AIRSPACE',title:'Ukraine (UKBV/UKLV) — Civil Aviation Prohibited',detail:'Full Ukrainian airspace closed to civil aviation since 2022. NOTAM restrictions in adjacent Polish/Romanian FIRs during strikes.',time:'Standing',icon:'\u2708\uFE0F'},
+        {sev:'critical',domain:'AIRSPACE',title:'Iran / Iraq / Syria / Yemen / Afghanistan — FAA SFAR Restrictions',detail:'Multiple FAA SFARs in effect for U.S. civil aviation. European EASA conflict zone advisories mirror most restrictions.',time:'Standing',icon:'\u2708\uFE0F'},
+        {sev:'critical',domain:'SHIPPING',title:'Red Sea / Bab el-Mandeb — Houthi Anti-Ship Attacks Active',detail:'Commercial vessels struck. Major carriers rerouting via Cape of Good Hope. Container rates elevated. War-risk premiums at record levels.',time:'Active',icon:'\u{1F6A2}'},
+        {sev:'high',domain:'SHIPPING',title:'Panama Canal — Drought-Driven Transit Restrictions',detail:'Daily transit slots significantly reduced. Dry-bulk, LNG, and containerized shipping all affected. Alternate routing costs rising.',time:'Active',icon:'\u{1F6A2}'},
+        {sev:'high',domain:'ENERGY',title:'Global Oil Markets — Persistent Geopolitical Risk Premium',detail:'Brent and WTI carrying conflict premiums from Red Sea and Middle East exposure. Refinery outages tightening distillate markets seasonally.',time:'Active',icon:'\u{1F6E2}\uFE0F'},
+        {sev:'high',domain:'TRAVEL',title:'U.S. State Dept — Level 4: Do Not Travel List (20+ Countries)',detail:'Includes Iran, Iraq, Syria, Yemen, Lebanon, Afghanistan, Russia, Belarus, Ukraine, Haiti, Libya, Mali, Burkina Faso, and others.',time:'Standing',icon:'\u{1F6C2}'},
+        {sev:'moderate',domain:'TRAVEL',title:'FCDO / EASA / Western Allies — Aligned Travel & Airspace Warnings',detail:'UK FCDO, EU EASA, Canada, and Australia maintain overlapping conflict-zone and do-not-travel designations across active theatres.',time:'Standing',icon:'\u{1F6C2}'},
       ];
       var impactTitles=new Set(impactItems.map(function(d){return d.title.slice(0,30);}));
       IMPACT_STANDING.forEach(function(s){if(!impactTitles.has(s.title.slice(0,30)))impactItems.push(s);});
       setIranMilitary(impactItems.slice(0,10));
       setIranMilLive(true);
-      console.log('SENTINEL: Iran tracker loaded '+liveItems.length+' live + '+impactItems.length+' impact items');
+      console.log('SENTINEL: Global security tracker loaded '+liveItems.length+' live + '+impactItems.length+' impact items');
     }else{
       setIranEvents(IRAN_TRACKER_FALLBACK);setIranLive(true);
-      setIranMilitary(IRAN_TRACKER_FALLBACK.filter(function(d){return d.domain==='ENERGY'||d.domain==='MILITARY'||d.domain==='WMD';}));
+      setIranMilitary(IRAN_TRACKER_FALLBACK.filter(function(d){return d.domain==='MILITARY'||d.domain==='NUCLEAR'||d.domain==='CYBER'||d.domain==='CLIMATE'||d.domain==='TERROR';}));
       setIranMilLive(true);
     }
   };
@@ -1049,16 +1063,24 @@ function App(){
   };
   const clearSearch=function(){setSearchQuery('');};
 
-  // ═══ GDELT BREAKING NEWS — US-IRAN-ISRAEL WAR FOCUS (auto-polls every 30s) ═══
+  // ═══ GDELT BREAKING NEWS — GLOBAL SECURITY & GEOPOLITICAL RISK (auto-polls every 30s) ═══
   const GDELT_KEYWORDS=[
-    'Iran strike','Iran attack','IRGC','Hezbollah','Houthi','Israel Iran',
-    'ballistic missile','cruise missile','drone strike Iran','uranium enrichment',
-    'Strait of Hormuz','Persian Gulf','Red Sea attack','Bab el-Mandeb',
-    'CENTCOM','carrier strike group','F-35 Gulf','B-52 Iran','THAAD',
-    'Natanz','Fordow','IAEA Iran','JCPOA','nuclear Iran',
-    'IDF Lebanon','Israel Gaza','Quds Force','axis of resistance',
-    'Iran sanctions','Iran proxy','Iraq militia','Syria strike','Yemen strike',
-    'ceasefire Iran','Iran retaliation','Iran escalation','ayatollah','Khamenei'
+    // Armed conflict
+    'attack','strike','airstrike','missile launch','invasion','offensive','casualties','military operation',
+    // Major powers / regions
+    'Ukraine','Russia','NATO','Taiwan','China','North Korea','DPRK','Iran','Israel',
+    // Cyber & infrastructure
+    'cyberattack','ransomware','data breach','critical infrastructure','CISA',
+    // Terrorism & political violence
+    'terrorism','bombing','mass shooting','coup','insurgency','civil unrest',
+    // Geoeconomics
+    'sanctions','tariff','trade war','default','financial crisis',
+    // Energy & maritime
+    'pipeline','refinery','chokepoint','shipping','oil','tanker',
+    // Natural hazards
+    'hurricane','earthquake','tsunami','wildfire','flood',
+    // Health security
+    'outbreak','pandemic','epidemic','quarantine'
   ];
   // GDELT helper — multi-proxy fallback (GDELT has no CORS headers)
   var gdeltProxies=[
@@ -1081,15 +1103,15 @@ function App(){
     return null;
   };
 
-  // ── TIER 1: Direct RSS scan of major outlets for stories they tag as "breaking" ──
+  // ── TIER 1: Direct RSS scan of major global wire outlets ──
   var BREAKING_RSS=[
-    {url:'https://feeds.bbci.co.uk/news/world/middle_east/rss.xml',name:'BBC'},
-    {url:'http://rss.cnn.com/rss/edition_meast.rss',name:'CNN'},
+    {url:'https://feeds.bbci.co.uk/news/world/rss.xml',name:'BBC'},
+    {url:'http://rss.cnn.com/rss/edition_world.rss',name:'CNN'},
     {url:'https://www.aljazeera.com/xml/rss/all.xml',name:'Al Jazeera'},
     {url:'https://feeds.reuters.com/reuters/topNews',name:'Reuters'},
-    {url:'https://rss.nytimes.com/services/xml/rss/nyt/MiddleEast.xml',name:'NY Times'},
-    {url:'https://www.timesofisrael.com/feed/',name:'Times of Israel'},
-    {url:'https://english.alarabiya.net/tools/rss',name:'Al Arabiya'},
+    {url:'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',name:'NY Times'},
+    {url:'https://feeds.apnews.com/apf-topnews',name:'AP'},
+    {url:'https://www.ft.com/rss/home',name:'FT'},
   ];
   var breakingPattern=/breaking|just in|developing|flash|urgent/i;
 
@@ -1384,27 +1406,29 @@ function App(){
     return{l4,l3,l2,total:advisories.length};
   },[advisories]);
 
-  // ═══ GENERATE BRIEF — US-IRAN-ISRAEL WAR ASSESSMENT (real-time OSINT) ═══
+  // ═══ GENERATE BRIEF — GLOBAL SECURITY & GEOPOLITICAL RISK ASSESSMENT (real-time OSINT) ═══
   const generateBrief=async function(){
     var D=window.docx;if(!D){alert('Document library not loaded. Please refresh.');return;}
     var now=new Date();
     var dateStr=now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
     var timeStr=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false})+' UTC';
 
-    // ═══ WAR-FOCUSED GDELT QUERIES — 6 conflict domains ═══
+    // ═══ GLOBAL SECURITY GDELT QUERIES — cross-domain, cross-region ═══
     var queries=[
-      {q:'(Iran OR IRGC OR "Quds Force" OR "Revolutionary Guard") (strike OR attack OR retaliation OR missile OR drone) sourcelang:eng',tag:'IRAN MILITARY'},
-      {q:'(Israel OR IDF OR "Iron Dome" OR Mossad) (Iran OR Lebanon OR Hezbollah OR Gaza OR strike) sourcelang:eng',tag:'ISRAEL OPS'},
-      {q:'(Hezbollah OR Houthi OR "Ansar Allah" OR "axis of resistance" OR "Iraqi militia") (attack OR strike OR missile OR drone OR rocket) sourcelang:eng',tag:'PROXY FORCES'},
-      {q:'(Iran OR Natanz OR Fordow OR IAEA OR JCPOA) (nuclear OR uranium OR enrichment OR centrifuge OR "breakout") sourcelang:eng',tag:'NUCLEAR'},
-      {q:'("Strait of Hormuz" OR "Red Sea" OR "Bab el-Mandeb" OR "Persian Gulf" OR "Gulf of Oman") (ship OR tanker OR attack OR closure OR navy OR blockade) sourcelang:eng',tag:'MARITIME'},
-      {q:'(CENTCOM OR "carrier strike" OR "B-52" OR THAAD OR "Fifth Fleet" OR "force posture") (deploy OR Iran OR Gulf OR "Middle East") sourcelang:eng',tag:'US FORCES'},
-      {q:'(Iran OR Israel) (ceasefire OR diplomacy OR talks OR sanctions OR OFAC OR "UN Security Council") sourcelang:eng',tag:'DIPLOMACY'},
-      {q:'(Iran OR Israel OR Hezbollah) (airspace OR NOTAM OR "flight ban" OR "no-fly" OR divert OR aviation OR airport) sourcelang:eng',tag:'AIRSPACE'},
+      {q:'(Ukraine OR Russia OR NATO OR Europe) (war OR offensive OR strike OR missile OR drone OR escalation OR sabotage) sourcelang:eng',tag:'EUROPE / UKRAINE'},
+      {q:'(Taiwan OR China OR PLA OR "Indo-Pacific" OR "South China Sea" OR Philippines OR Japan OR Korea) (military OR exercise OR intrusion OR escalation OR test) sourcelang:eng',tag:'INDO-PACIFIC'},
+      {q:'(Iran OR Israel OR Lebanon OR Gaza OR Yemen OR Houthi OR Hezbollah OR IAEA) (strike OR missile OR attack OR escalation OR nuclear) sourcelang:eng',tag:'MIDDLE EAST'},
+      {q:'(cyber OR ransomware OR APT OR "data breach" OR CISA) (attack OR critical infrastructure OR hospital OR utility OR sabotage) sourcelang:eng',tag:'CYBER & INFRASTRUCTURE'},
+      {q:'(terrorism OR ISIS OR "al-qaeda" OR bombing OR "mass shooting") (attack OR plot OR arrest OR disrupted) sourcelang:eng',tag:'TERRORISM'},
+      {q:'(coup OR "civil unrest" OR insurgency OR "state of emergency" OR protest OR junta) (crisis OR violence OR military OR government) sourcelang:eng',tag:'POLITICAL RISK'},
+      {q:'(hurricane OR typhoon OR earthquake OR tsunami OR wildfire OR flood OR drought OR storm) (evacuation OR emergency OR disaster OR damage) sourcelang:eng',tag:'CLIMATE & DISASTERS'},
+      {q:'(outbreak OR pandemic OR epidemic OR WHO OR virus OR zoonotic) (cluster OR surveillance OR spread OR advisory) sourcelang:eng',tag:'HEALTH SECURITY'},
+      {q:'(sanctions OR tariff OR "trade war" OR embargo OR default OR "debt crisis") (economy OR market OR financial OR sovereign) sourcelang:eng',tag:'GEOECONOMICS'},
+      {q:'(airspace OR NOTAM OR "flight restriction" OR "no-fly" OR aviation OR FAA OR EASA OR shipping OR maritime OR chokepoint OR "Red Sea" OR "Panama Canal" OR "Suez") (security OR closure OR advisory OR disruption) sourcelang:eng',tag:'AIR & TRAVEL'}
     ];
-    var warTerms=/iran|israel|irgc|idf|hezbollah|houthi|tehran|gaza|lebanon|centcom|hormuz|red sea|gulf|proxy|nuclear|uranium|enrichment|natanz|fordow|missile|drone strike|carrier|mossad|quds|militia|sanction|jcpoa|iaea|ayatollah|khamenei|netanyahu/i;
+    var secTerms=/attack|strike|missile|drone|bomb|invasion|offensive|military|troops|casualt|ceasefire|escalat|retaliat|intercept|sabotage|coup|insurgenc|militia|terror|isis|al.?qaeda|hostage|hijack|cyber|ransomware|hack|breach|malware|apt\d+|ddos|sanction|tariff|trade war|hurricane|earthquake|tsunami|wildfire|flood|drought|outbreak|pandemic|epidemic|virus|who|ukraine|russia|nato|taiwan|china|north korea|dprk|iran|israel|houthi|coup|protest|unrest|embassy|evacuation|advisor|notam|airspace|border|nuclear|uranium|summit/i;
 
-    // Fetch across all war domains
+    // Fetch across all security domains
     var allDevs=[];var allSources=[];
     var fetchPromises=queries.map(function(cat){
       return gdeltFetch(cat.q,10,'1440min').then(function(data){
@@ -1412,7 +1436,7 @@ function App(){
           data.articles.forEach(function(art){
             var title=decEnt(art.title||'');
             if(title.indexOf(' - ')>25)title=title.substring(0,title.lastIndexOf(' - '));
-            if(!warTerms.test(title))return;
+            if(!secTerms.test(title))return;
             if(/opinion|editorial|top \d|best \d|review|recipe|horoscope|celebrity/i.test(title))return;
             var src=art.domain||'';
             var key=title.slice(0,35).toLowerCase().replace(/[^a-z0-9]/g,'');
@@ -1427,14 +1451,14 @@ function App(){
     var seen=new Set();
     var unique=allDevs.filter(function(d){if(seen.has(d.key))return false;seen.add(d.key);return true;});
     unique.sort(function(a,b){return(b.seendate||'').localeCompare(a.seendate||'');});
-    var topItems=unique.slice(0,20);
+    var topItems=unique.slice(0,24);
     // Fallback to dashboard iranEvents + INCIDENTS
     if(topItems.length<5){
       var fallback=iranEvents.length>0?iranEvents:INCIDENTS;
-      fallback.slice(0,15-topItems.length).forEach(function(n){
+      fallback.slice(0,18-topItems.length).forEach(function(n){
         var hl=decEnt(n.t||n.title||'').slice(0,140);
-        if(!warTerms.test(hl))return;
-        topItems.push({headline:hl,tag:classifyIran(hl),source:decEnt(n.src||n.source||''),time:n.tm||''});
+        if(!secTerms.test(hl))return;
+        topItems.push({headline:hl,tag:(n.reg||'GLOBAL').toString().toUpperCase(),source:decEnt(n.src||n.source||''),time:n.tm||''});
       });
     }
     // Group by domain
@@ -1453,19 +1477,21 @@ function App(){
 
     // Domain-specific analytical context
     var domainInsight={
-      'IRAN MILITARY':'We assess that Iranian military posture reflects a deliberate signaling strategy calibrated to demonstrate retaliatory capability while managing escalation risk. The operational tempo of IRGC and regular military assets suggests sustained readiness across multiple strike domains, which we judge materially increases the probability of kinetic action within the current threat cycle.',
-      'ISRAEL OPS':'Israeli operational activity continues to reflect a forward-leaning security posture with demonstrated willingness to conduct preemptive and retaliatory strikes across multiple theaters. We judge that the IDF maintains both the intent and capability to escalate operations if provoked, with implications for regional stability and allied force protection.',
-      'PROXY FORCES':'Iranian proxy networks across the axis of resistance continue to demonstrate coordinated operational capability. We assess that the tempo and geographic spread of proxy actions reflect centralized strategic direction from Tehran, with individual groups retaining tactical autonomy. This layered threat architecture complicates deterrence and increases the risk of miscalculation.',
-      'NUCLEAR':'Iran\'s nuclear program remains a critical escalation vector. We assess that any observed acceleration in enrichment activity or reduction in IAEA access would represent a material shift in the strategic calculus, potentially triggering preemptive action by Israel or expanded sanctions pressure from Western powers.',
-      'MARITIME':'Maritime security in the Persian Gulf and Red Sea corridors remains under sustained threat from Iranian naval forces and Houthi anti-shipping operations. We assess that any disruption to these chokepoints carries cascading effects on global energy markets, insurance premiums, and commercial shipping routes, with potential second-order impacts on global supply chains.',
-      'US FORCES':'U.S. force posture adjustments in the CENTCOM area of responsibility reflect an assessed need to reinforce deterrence and demonstrate commitment to allied defense. We judge that current deployments signal both defensive readiness and offensive capability, intended to constrain Iranian decision-making and reassure regional partners.',
-      'DIPLOMACY':'Diplomatic activity related to the conflict remains fragmented and lacking in momentum. We assess that the window for negotiated de-escalation is narrowing, with hardening positions on both sides reducing the probability of meaningful engagement in the near term. Sanctions enforcement and multilateral coordination at the UN Security Council remain key variables to watch.',
-      'AIRSPACE':'Airspace restrictions and NOTAMs across the region continue to reflect the elevated threat environment. We assess that the current pattern of closures and diversions is consistent with sustained military activity and carries material implications for commercial aviation routing, fuel costs, and passenger safety across the broader Middle East corridor.'
+      'EUROPE / UKRAINE':'We assess that the Ukraine war continues to drive the highest-intensity state-on-state kinetic activity in the global system. Russian strategic bombing campaigns against civilian infrastructure, combined with NATO\'s expanding support commitments, sustain escalation risk and constrain off-ramps. Baltic and North Sea hybrid sabotage activity extends the theatre beyond the eastern front.',
+      'INDO-PACIFIC':'Indo-Pacific dynamics remain a principal strategic-competition vector. PLA operational tempo around Taiwan, South China Sea maritime incidents, and DPRK missile testing collectively raise miscalculation risk. U.S. and allied posture adjustments signal contested deterrence. Supply chain concentration in semiconductors amplifies economic spillover risk.',
+      'MIDDLE EAST':'Middle East risk remains elevated across interconnected theatres — Israel/Iran deterrence, Lebanon and Yemen fronts, Iraqi/Syrian proxy activity, and persistent Red Sea maritime attacks. We assess the environment as one of managed escalation rather than resolved de-escalation, with continued potential for cross-domain spillover into energy and shipping markets.',
+      'CYBER & INFRASTRUCTURE':'Cyber threat activity continues to shift toward high-impact operational disruption. State-aligned and criminal ransomware operators increasingly target healthcare, energy, and water utilities. We assess that undersea cable sabotage and OT/ICS intrusions represent growing hybrid-conflict modalities with strategic implications for allied resilience.',
+      'TERRORISM':'Counterterrorism authorities continue to disrupt plots tied to both Salafi-jihadist networks and lone-actor radicalization. The geographic centre of gravity has shifted toward the Sahel and Central Asia even as Iraq/Syria threats persist. We assess the homeland threat in Western nations as elevated but managed, with event-security concerns around major gatherings.',
+      'POLITICAL RISK':'Political instability across the Sahel, Haiti, and parts of Latin America reflects deteriorating state capacity. Coup governments, gang-driven state collapse, and constitutional crises create humanitarian and migration pressures. We assess that these dynamics increasingly require integrated diplomatic, development, and security responses.',
+      'CLIMATE & DISASTERS':'Climate-driven disasters are producing compounding security effects, from hurricane impacts on energy infrastructure to drought-driven shipping constraints. We assess that the frequency and severity of these events is now a first-order planning input alongside conflict and cyber risk.',
+      'HEALTH SECURITY':'Global health surveillance is tracking multiple zoonotic spillover events alongside persistent H5N1 and mpox activity. We assess that pandemic-potential events remain a credible tail risk requiring sustained surveillance and rapid diagnostics capability, with potential for disruption to travel, trade, and supply chains.',
+      'GEOECONOMICS':'Geoeconomic pressure continues to rise through sanctions, export controls, and tariff regimes. We assess that sovereign debt stress, currency volatility, and financial-sector contagion pathways are growing risks, particularly in frontier markets with significant bilateral exposures.',
+      'AIR & TRAVEL':'Global aviation operates under a dense network of FAA SFARs, EASA conflict-zone warnings, and NOTAMs covering Ukraine, Russia, the Middle East, and Afghanistan. Maritime chokepoints in the Red Sea, Strait of Hormuz, and Panama Canal face sustained disruption. We assess that global travel and logistics resilience is now a persistent operational concern requiring continuous rerouting and contingency planning.'
     };
 
     // ═══ BUILD SECTION: WHAT WE KNOW ═══
     var knowParas=[];
-    var domainOrder=['IRAN MILITARY','ISRAEL OPS','PROXY FORCES','NUCLEAR','MARITIME','US FORCES','DIPLOMACY','AIRSPACE'];
+    var domainOrder=['EUROPE / UKRAINE','INDO-PACIFIC','MIDDLE EAST','CYBER & INFRASTRUCTURE','TERRORISM','POLITICAL RISK','CLIMATE & DISASTERS','HEALTH SECURITY','GEOECONOMICS','AIR & TRAVEL'];
     var activeDomains=domainOrder.filter(function(d){return domainGroups[d]&&domainGroups[d].length>0;});
     activeDomains.forEach(function(dom){
       var items=domainGroups[dom];
@@ -1480,35 +1506,44 @@ function App(){
     // ═══ BUILD BLUF ═══
     var evtCount=topItems.length;
     var domCount=activeDomains.length;
-    var hasMilitary=!!domainGroups['IRAN MILITARY']||!!domainGroups['ISRAEL OPS'];
-    var hasProxy=!!domainGroups['PROXY FORCES'];
-    var hasNuclear=!!domainGroups['NUCLEAR'];
-    var hasMaritime=!!domainGroups['MARITIME'];
-    var hasAirspace=!!domainGroups['AIRSPACE'];
+    var hasEurope=!!domainGroups['EUROPE / UKRAINE'];
+    var hasAsia=!!domainGroups['INDO-PACIFIC'];
+    var hasMidEast=!!domainGroups['MIDDLE EAST'];
+    var hasCyber=!!domainGroups['CYBER & INFRASTRUCTURE'];
+    var hasTerror=!!domainGroups['TERRORISM'];
+    var hasPolitical=!!domainGroups['POLITICAL RISK'];
+    var hasClimate=!!domainGroups['CLIMATE & DISASTERS'];
+    var hasHealth=!!domainGroups['HEALTH SECURITY'];
+    var hasAirTravel=!!domainGroups['AIR & TRAVEL'];
     // Escalation score from dashboard
-    var crit=iranEvents.filter(function(e){return e.sev==='CRITICAL';}).length;
-    var hi=iranEvents.filter(function(e){return e.sev==='HIGH';}).length;
+    var crit=iranEvents.filter(function(e){return e.sev==='critical';}).length;
+    var hi=iranEvents.filter(function(e){return e.sev==='high';}).length;
     var escScore=Math.min(100,crit*15+hi*8+iranEvents.length*2);
-    var escLabel=escScore>=70?'HIGH':escScore>=40?'ELEVATED':'MODERATE';
+    var escLabel=escScore>=75?'CRITICAL':escScore>=50?'HIGH':escScore>=25?'ELEVATED':'MODERATE';
 
-    var blufText='SENTINEL NOVA assesses the US-Iran-Israel threat environment as '+escLabel+' ('+escScore+'/100) as of '+timeStr+' on '+dateStr+'. ';
-    blufText+='Open-source collection over the preceding 24-hour cycle has identified '+evtCount+' significant developments across '+domCount+' conflict domains. ';
-    if(hasMilitary)blufText+='Active military operations by Iranian and Israeli forces remain the primary driver of escalation risk, with kinetic activity showing no material signs of abatement. ';
-    if(hasProxy)blufText+='Iranian proxy networks across Lebanon, Yemen, Iraq, and Syria continue to demonstrate coordinated strike capability against U.S. and Israeli interests. ';
-    if(hasNuclear)blufText+='Nuclear program developments warrant close monitoring as a potential trigger for preemptive action or expanded sanctions. ';
-    if(hasMaritime)blufText+='Maritime chokepoints in the Strait of Hormuz and Bab el-Mandeb face sustained threat from Iranian and Houthi anti-shipping operations, with implications for global energy markets. ';
-    if(hasAirspace)blufText+='Airspace restrictions across the region are impacting commercial aviation and may expand if hostilities intensify. ';
+    var blufText='SENTINEL NOVA assesses the global security and geopolitical risk environment as '+escLabel+' ('+escScore+'/100) as of '+timeStr+' on '+dateStr+'. ';
+    blufText+='Open-source collection over the preceding 24-hour cycle has identified '+evtCount+' significant developments across '+domCount+' security domains, spanning multiple regions and risk categories. ';
+    if(hasEurope)blufText+='The Ukraine war continues to drive sustained kinetic activity in Europe, with Russian strategic strikes on civilian infrastructure and hybrid sabotage patterns extending into the Baltic and North Sea. ';
+    if(hasAsia)blufText+='Indo-Pacific dynamics — PLA activity around Taiwan, maritime friction in the South China Sea, and DPRK missile tests — sustain strategic-competition risk. ';
+    if(hasMidEast)blufText+='Middle East tensions remain elevated with persistent Red Sea shipping attacks, continued Iranian enrichment activity, and ongoing proxy confrontations. ';
+    if(hasCyber)blufText+='Cyber operations against critical infrastructure — including healthcare, energy, and undersea cables — reflect a continued shift toward disruptive hybrid-conflict modalities. ';
+    if(hasTerror)blufText+='Counterterrorism authorities continue to disrupt plots with evolving geographic focus, notably in the Sahel and around major Western political and sporting events. ';
+    if(hasPolitical)blufText+='Political instability and state-capacity collapse in the Sahel, Haiti, and parts of Latin America are generating humanitarian, migration, and security spillover. ';
+    if(hasClimate)blufText+='Climate-driven disasters are compounding infrastructure, energy, and shipping disruptions in multiple regions. ';
+    if(hasHealth)blufText+='Global health surveillance is tracking zoonotic spillover events warranting sustained watch. ';
+    if(hasAirTravel)blufText+='A dense global NOTAM and SFAR network, combined with Red Sea and Panama Canal disruptions, continues to shape aviation and maritime routing decisions. ';
     blufText+='This assessment is derived exclusively from open-source collection and real-time dashboard telemetry. All judgments are subject to revision as the situation evolves.';
 
     // ═══ BUILD SECTION: WHAT WE ARE MONITORING ═══
     var monitorItems=[
-      {label:'Escalation Triggers',text:'We are monitoring for indicators of direct state-on-state strikes between Iran and Israel, including ballistic missile launches, airspace penetrations, and attacks on strategic infrastructure such as nuclear facilities, energy installations, and command nodes. Any such action would represent a qualitative escalation with potential to trigger broader regional conflict.'},
-      {label:'Proxy Coordination',text:'We continue to track the operational tempo and coordination level across Iranian proxy forces including Hezbollah, Houthi forces, and Iraqi Shia militias. An increase in simultaneous multi-front attacks would suggest centralized direction from Tehran and a deliberate strategy to overwhelm U.S. and Israeli defensive systems.'},
-      {label:'Nuclear Breakout Indicators',text:'Collection is focused on IAEA reporting cadence, centrifuge cascading activity at Natanz and Fordow, and any reduction in inspector access. We assess that a decision by Iran to enrich to weapons-grade (90%+) would fundamentally alter the strategic calculus and compress decision timelines for all parties.'},
-      {label:'U.S. Force Movements',text:'We are tracking CENTCOM asset repositioning including carrier strike group movements, bomber task force deployments, and air defense reinforcements. Changes in force posture serve as leading indicators of both defensive preparation and potential offensive planning.'},
-      {label:'Diplomatic Signals',text:'We monitor backchannel communications, UN Security Council deliberations, and third-party mediation efforts (Qatar, Oman, Switzerland) for indicators of de-escalation pathways. The absence of credible diplomatic momentum is itself assessed as a risk factor.'},
+      {label:'Strategic Escalation Indicators',text:'We monitor for direct state-on-state kinetic activity between major powers — including NATO/Russia frictions along the eastern flank, Taiwan Strait escalation triggers, Korean peninsula provocations, and Israeli/Iranian direct exchanges. Changes in readiness posture, exercise tempo, and strategic-force signaling are leading indicators.'},
+      {label:'Cyber & Critical Infrastructure',text:'We track ransomware campaigns against healthcare, energy, and water utilities; state-aligned OT/ICS intrusions; undersea cable incidents; and supply-chain compromise activity. CISA, NCSC, and allied advisories are tracked in near-real time alongside sector-specific ISAC reporting.'},
+      {label:'Terrorism & Political Violence',text:'We monitor disrupted plots, radicalization indicators, and major event-security postures in Western capitals. Shifts in the Sahel, Central Asia, and the Horn of Africa are watched alongside lone-actor threat signals flagged by domestic services.'},
+      {label:'Political Risk & State Capacity',text:'We track coup activity, constitutional crises, election disputes, and gang/militia-driven state collapse (Haiti, Sahel, parts of Latin America). Adjacent humanitarian and migration indicators are tracked as downstream effects.'},
+      {label:'Geoeconomics & Sanctions',text:'We track sanctions enforcement, export controls, tariff escalation, sovereign debt stress, and currency volatility — particularly where these intersect with strategic commodities, critical minerals, and semiconductor flows.'},
+      {label:'Climate, Health & Natural Hazards',text:'We track hurricane/typhoon tracks, seismic and tsunami events, wildfire activity, and zoonotic outbreak clusters. These are assessed both for direct impact and for cascading effects on infrastructure, supply chains, and population movement.'},
+      {label:'Air, Maritime & Travel Impacts',text:'We maintain continuous watch over FAA SFARs, EASA conflict-zone advisories, NOTAMs, and maritime chokepoint status (Red Sea/Bab el-Mandeb, Strait of Hormuz, Panama Canal, Suez, Taiwan Strait). Disruptions are correlated to routing and contingency planning.'}
     ];
-    if(hasMaritime)monitorItems.push({label:'Maritime Chokepoints',text:'Real-time tracking of vessel transits through the Strait of Hormuz and Bab el-Mandeb for interdiction attempts, mine-laying activity, or military confrontation. Any sustained disruption would trigger global energy price volatility and insurance rate surges affecting commercial shipping.'});
 
     // ═══ BUILD SECTION: AIR & TRAVEL IMPACTS ═══
     var airItems=[];
@@ -1519,15 +1554,15 @@ function App(){
       }
     });
     var cautionZones=airspaceData.filter(function(z){return z.status==='CAUTION'||z.status==='MONITORING';});
-    var airNarrative='The current airspace environment across the Middle East reflects the elevated threat posture. ';
+    var airNarrative='The current global airspace environment reflects a dense overlay of conflict-zone restrictions, NOTAMs, and SFARs covering active theatres across Ukraine/Russia, the Middle East, Afghanistan, and selected African regions. ';
     var closedCount=airItems.filter(function(a){return a.status==='CLOSED';}).length;
     var restrictedCount=airItems.filter(function(a){return a.status==='RESTRICTED';}).length;
     airNarrative+=closedCount+' Flight Information Regions are currently assessed as CLOSED to civil aviation';
     if(restrictedCount>0)airNarrative+=', with an additional '+restrictedCount+' operating under significant restrictions';
     airNarrative+='. ';
-    airNarrative+='Airlines are rerouting flights around affected airspace, resulting in increased fuel costs, extended flight times, and potential disruptions to schedules serving the Gulf, Levant, and broader MENA region. ';
-    airNarrative+='We assess that any intensification of hostilities could expand closure zones to include additional FIRs currently under CAUTION status ('+cautionZones.length+' zones), further compounding disruption to commercial aviation. ';
-    airNarrative+='Travelers with itineraries transiting the region should monitor airline communications, FAA Special Federal Aviation Regulations (SFARs), and EASA Safety Information Bulletins. We recommend against non-essential travel to conflict-affected areas and advise enhanced contingency planning for personnel with regional equities.';
+    airNarrative+='Airlines continue to reroute around affected airspace, adding fuel costs, flight time, and crew-duty complexity on long-haul routes between Europe, Asia, and the Middle East. Maritime routing is similarly disrupted, with Red Sea diversions around the Cape of Good Hope and Panama Canal transit restrictions driven by drought. ';
+    airNarrative+='We assess that any intensification of hostilities in any active theatre could expand closure zones to include additional FIRs currently under CAUTION status ('+cautionZones.length+' zones). ';
+    airNarrative+='Travellers with itineraries transiting affected regions should monitor airline communications, FAA SFARs, EASA Safety Information Bulletins, State Department advisories, and FCDO guidance. We recommend enhanced contingency planning for personnel and operations with exposure to active conflict zones, cyber-targeted sectors, or disaster-prone regions.';
 
     // ═══ BUILD DOCUMENT ═══
     var children=[];
@@ -1537,10 +1572,10 @@ function App(){
     // ── Header ──
     children.push(new D.Paragraph({spacing:{after:40},children:[
       new D.TextRun({text:'SENTINEL NOVA',font:'Arial',size:30,bold:true,color:'cc0000'}),
-      new D.TextRun({text:'  |  US-Iran-Israel War Assessment',font:'Arial',size:20,color:'777777'}),
+      new D.TextRun({text:'  |  Global Security & Geopolitical Risk Assessment',font:'Arial',size:20,color:'777777'}),
     ]}));
     children.push(new D.Paragraph({spacing:{after:60},border:{bottom:{style:SP,size:3,color:'cc0000',space:4}},children:[
-      new D.TextRun({text:'Real-Time Conflict Assessment  \u2022  '+dateStr+'  \u2022  '+timeStr,font:'Arial',size:15,color:'999999'}),
+      new D.TextRun({text:'Multi-Domain Intelligence Brief  \u2022  '+dateStr+'  \u2022  '+timeStr,font:'Arial',size:15,color:'999999'}),
     ]}));
     children.push(new D.Paragraph({spacing:{after:120},children:[
       new D.TextRun({text:'ESCALATION INDEX: ',font:'Arial',size:17,bold:true,color:'999999'}),
@@ -1634,7 +1669,7 @@ function App(){
     // ── Methodology ──
     children.push(new D.Paragraph({spacing:{before:120,after:40,line:280},border:{top:{style:SP,size:1,color:'DDDDDD',space:4}},children:[
       new D.TextRun({text:'METHODOLOGY: ',font:'Arial',size:14,bold:true,color:'AAAAAA'}),
-      new D.TextRun({text:'This assessment is compiled from open-source intelligence (OSINT) feeds including the GDELT global event monitoring system, real-time RSS aggregation from international wire services and regional outlets, SENTINEL NOVA dashboard telemetry (escalation index, airspace tracker, force posture monitor), and structured data from FAA/EASA aviation advisories. Conflict events are classified across eight operational domains. Probabilistic language reflects confidence levels based on source reliability, recency, and multi-source corroboration. All analytical judgments are preliminary and require independent verification. This product does not constitute legal, operational, or travel advice.',font:'Arial',size:14,color:'BBBBBB',italics:true}),
+      new D.TextRun({text:'This assessment is compiled from open-source intelligence (OSINT) feeds including the GDELT global event monitoring system, real-time RSS aggregation from international wire services (BBC, CNN, Reuters, AP, Al Jazeera, FT, NYT), SENTINEL NOVA dashboard telemetry (escalation index, airspace tracker, force posture monitor), and structured data from FAA/EASA/FCDO aviation and travel advisories. Events are classified across ten operational domains: armed conflict, cyber & infrastructure, terrorism, political risk, climate & disasters, health security, geoeconomics, energy & maritime, WMD/nuclear, and air/travel. Probabilistic language reflects confidence levels based on source reliability, recency, and multi-source corroboration. All analytical judgments are preliminary and require independent verification. This product does not constitute legal, operational, or travel advice.',font:'Arial',size:14,color:'BBBBBB',italics:true}),
     ]}));
     children.push(new D.Paragraph({spacing:{after:20},alignment:D.AlignmentType.CENTER,children:[
       new D.TextRun({text:'Classification: UNCLASSIFIED // FOUO',font:'Arial',size:13,bold:true,color:'AAAAAA'}),
@@ -1646,7 +1681,7 @@ function App(){
         properties:{page:{size:{width:12240,height:15840},margin:{top:1080,right:1200,bottom:900,left:1200}}},
         footers:{default:new D.Footer({children:[
           new D.Paragraph({alignment:D.AlignmentType.CENTER,children:[
-            new D.TextRun({text:'SENTINEL NOVA \u2014 US-Iran-Israel War Terminal \u2014 Human Verified',font:'Arial',size:12,color:'BBBBBB',italics:true}),
+            new D.TextRun({text:'SENTINEL NOVA \u2014 Global Security & Geopolitical Risk Terminal \u2014 Human Verified',font:'Arial',size:12,color:'BBBBBB',italics:true}),
           ]})
         ]})},
         children:children
@@ -1656,7 +1691,7 @@ function App(){
     var url=URL.createObjectURL(blob);
     var a=document.createElement('a');
     a.href=url;
-    a.download='SENTINEL_NOVA_War_Assessment_'+now.toISOString().slice(0,10)+'.docx';
+    a.download='SENTINEL_NOVA_Global_Security_Brief_'+now.toISOString().slice(0,10)+'.docx';
     document.body.appendChild(a);a.click();document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
@@ -1693,9 +1728,9 @@ function App(){
 
       {/* Header */}
       <div className="hdr">
-        <div className="hdr-l"><div className="logo">SENTINEL NOVA<span>US-IRAN-ISRAEL WAR TERMINAL</span></div><span style={{font:'600 8px var(--mono)',color:'#ff3b30',padding:'2px 8px',borderRadius:2,border:'1px solid rgba(255,59,48,.4)',background:'rgba(255,59,48,.1)',letterSpacing:'1.5px',marginLeft:12}}>v3.0</span></div>
+        <div className="hdr-l"><div className="logo">SENTINEL NOVA<span>GLOBAL SECURITY &amp; GEOPOLITICAL RISK TERMINAL</span></div><span style={{font:'600 8px var(--mono)',color:'#ff9500',padding:'2px 8px',borderRadius:2,border:'1px solid rgba(255,149,0,.4)',background:'rgba(255,149,0,.1)',letterSpacing:'1.5px',marginLeft:12}}>v2.1</span></div>
         <div className="hdr-r">
-          {(function(){var crit=iranEvents.filter(function(e){return e.sev==='critical'}).length;var hi=iranEvents.filter(function(e){return e.sev==='high'}).length;var sc=Math.min(100,crit*15+hi*8+iranEvents.length*2);var cl=sc>=75?'#ff3b30':sc>=50?'#ff9500':sc>=25?'#ffd60a':'#30d158';var lb=sc>=75?'CRITICAL':sc>=50?'HIGH':sc>=25?'ELEVATED':'LOW';return <div className="hdr-spgi"><span style={{font:'600 9px var(--mono)',color:'var(--t2)'}}>MENA</span><span style={{font:'700 11px var(--mono)',color:cl}}>{lb}</span><div style={{width:40,height:6,background:'rgba(255,255,255,.12)',borderRadius:3,overflow:'hidden'}}><div style={{width:sc+'%',height:'100%',background:cl,borderRadius:3}}></div></div><span style={{font:'500 9px var(--mono)',color:cl}}>{sc}/100</span></div>})()}
+          {(function(){var crit=iranEvents.filter(function(e){return e.sev==='critical'}).length;var hi=iranEvents.filter(function(e){return e.sev==='high'}).length;var sc=Math.min(100,crit*15+hi*8+iranEvents.length*2);var cl=sc>=75?'#ff3b30':sc>=50?'#ff9500':sc>=25?'#ffd60a':'#30d158';var lb=sc>=75?'CRITICAL':sc>=50?'HIGH':sc>=25?'ELEVATED':'LOW';return <div className="hdr-spgi"><span style={{font:'600 9px var(--mono)',color:'var(--t2)'}}>GLOBAL THREAT</span><span style={{font:'700 11px var(--mono)',color:cl}}>{lb}</span><div style={{width:40,height:6,background:'rgba(255,255,255,.12)',borderRadius:3,overflow:'hidden'}}><div style={{width:sc+'%',height:'100%',background:cl,borderRadius:3}}></div></div><span style={{font:'500 9px var(--mono)',color:cl}}>{sc}/100</span></div>})()}
           <span className="threat">⚠ {advStats.l4>0?'L4 ADVISORIES: '+advStats.l4:'THREAT LEVEL: ELEVATED'}</span>
           <span className="live" style={{flexShrink:0}}><span className="ldot"></span>LIVE</span>
           <span style={{whiteSpace:'nowrap',flexShrink:0,fontSize:10}}>{time.toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})}</span>
@@ -1738,7 +1773,7 @@ function App(){
           </div>
 
           {/* MENA AIRSPACE STATUS */}
-          <div className="ph"><div className="pt">◆ MENA Airspace Status</div><span className="pb" style={{background:'var(--redbg)',color:'var(--red)'}}>● LIVE</span></div>
+          <div className="ph"><div className="pt">◆ Global Airspace Status</div><span className="pb" style={{background:'var(--redbg)',color:'var(--red)'}}>● LIVE</span></div>
           <div className="pbd" style={{padding:'10px 14px',maxHeight:400,overflowY:'auto'}}>
             {/* Summary counts */}
             <div style={{display:'flex',gap:0,marginBottom:10,borderRadius:4,overflow:'hidden',border:'1px solid var(--bdr)'}}>
@@ -1777,7 +1812,7 @@ function App(){
               <iframe
                 src="https://sicuro-airspace-tracker.replit.app/"
                 style={{width:'100%',height:'100%',border:'none'}}
-                title="MENA Airspace Tracker"
+                title="Global Airspace Tracker"
                 allow="accelerometer; autoplay; encrypted-media; gyroscope"
               ></iframe>
             </div>
@@ -1905,8 +1940,8 @@ function App(){
             <div style={{font:'400 9px var(--mono)',color:'var(--t3)',marginTop:6,textAlign:'center'}}>Al Jazeera English · 24/7 Live · Doha, Qatar</div>
           </div>
 
-          {/* MENA WAR ANALYSIS — below Sky News */}
-          <div className="ph" style={{marginTop:10}}><div className="pt">◆ MENA WAR ANALYSIS</div><span className="pb" style={{background:iranLive?'var(--redbg)':'rgba(102,102,102,.15)',color:iranLive?'var(--red)':'var(--t3)'}}>{iranLive?'● LIVE 60s':'LOADING'}</span></div>
+          {/* GLOBAL THREAT ANALYSIS — below Sky News */}
+          <div className="ph" style={{marginTop:10}}><div className="pt">◆ GLOBAL THREAT ANALYSIS</div><span className="pb" style={{background:iranLive?'var(--redbg)':'rgba(102,102,102,.15)',color:iranLive?'var(--red)':'var(--t3)'}}>{iranLive?'● LIVE 60s':'LOADING'}</span></div>
           <div className="pbd" style={{padding:'8px 12px'}}>
             {/* Escalation Gauge */}
             {(function(){
@@ -1959,7 +1994,7 @@ function App(){
               })}
             </div>
             {/* Filtered advisories — MENA only */}
-            <div style={{font:'600 8px var(--mono)',color:'var(--t2)',letterSpacing:'.5px',marginBottom:6,marginTop:4}}>LATEST MENA ADVISORIES</div>
+            <div style={{font:'600 8px var(--mono)',color:'var(--t2)',letterSpacing:'.5px',marginBottom:6,marginTop:4}}>LATEST ADVISORIES</div>
             {advisories.filter(function(adv){return /iran|iraq|israel|lebanon|syria|yemen|jordan|saudi|bahrain|qatar|kuwait|oman|egypt|palestine|gaza/i.test(adv.country);}).slice(0,8).map(function(adv,i){
               var inner=<div key={i} style={{padding:'5px 0',borderBottom:'1px solid var(--bdr)'}}>
                 <div style={{display:'flex',alignItems:'center',gap:6}}>
@@ -1977,7 +2012,7 @@ function App(){
 
       {/* MENA War Ticker — Iran/MENA focused scrolling wire */}
       <div className="newstick">
-        <span className="label">◆ MENA WIRE</span>
+        <span className="label">◆ GLOBAL WIRE</span>
         <div className="nscroll">
           {iranEvents.length>0?
             [...iranEvents,...iranEvents].map(function(ev,i){return <span key={i} className="nitem">
@@ -2023,7 +2058,7 @@ function App(){
             <div className="ad-item" style={{marginTop:6}}><span style={{fontWeight:600}}>Detail:</span> {airspaceDetail.detail}</div>
           </div>
 
-          {/* Related Iran / MENA Events */}
+          {/* Related Global Security Events */}
           {iranEvents.filter(n=>(n.title||'').toLowerCase().includes(airspaceDetail.zone.toLowerCase())||(n.detail||'').toLowerCase().includes(airspaceDetail.zone.toLowerCase())).length>0&&<div className="ad-section">
             <div className="ad-section-title">Related Airspace Threats</div>
             {iranEvents.filter(n=>(n.title||'').toLowerCase().includes(airspaceDetail.zone.toLowerCase())||(n.detail||'').toLowerCase().includes(airspaceDetail.zone.toLowerCase())).slice(0,5).map((n,i)=><div key={i} className="ad-item"><span style={{color:IRAN_SEV_COLORS[n.sev]||'#ccc',fontWeight:700}}>{n.icon} {n.domain}</span>: {n.title.slice(0,55)}</div>)}
@@ -2101,9 +2136,9 @@ function App(){
                 </div>
               </div>
 
-              {/* MENA Airspace Warnings */}
+              {/* Global Airspace Warnings */}
               {flightChecker.result.warnings&&flightChecker.result.warnings.length>0&&<div className="flight-warning">
-                <div className="flight-warning-title">⚠ MENA Airspace Restrictions Active</div>
+                <div className="flight-warning-title">⚠ Global Airspace Restrictions Active</div>
                 {flightChecker.result.warnings.map(function(w,i){
                   return <div key={i} className="flight-warning-item">
                     <span style={{color:w.color,fontWeight:700}}>{w.status}</span> — <strong>{w.zone}</strong>: {w.detail}
@@ -2116,7 +2151,7 @@ function App(){
             {/* No query yet — show prompt */}
             {!flightChecker.result&&!flightChecker.loading&&<div style={{textAlign:'center',padding:'20px 0',color:'var(--t3)'}}>
               <div style={{fontSize:32,marginBottom:10}}>✈</div>
-              <div style={{font:'400 10px/1.6 Inter,sans-serif'}}>Enter a flight number above to check real-time status,<br/>gate info, delays, and MENA airspace warnings.</div>
+              <div style={{font:'400 10px/1.6 Inter,sans-serif'}}>Enter a flight number above to check real-time status,<br/>gate info, delays, and global airspace warnings.</div>
               <div style={{font:'400 9px var(--mono)',color:'var(--t3)',marginTop:12}}>Examples: EK203 · BA115 · QR777 · TK1 · LH600 · SV123</div>
             </div>}
           </div>
